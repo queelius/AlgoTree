@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import json, argparse, sys, logging, textwrap
-from dicttree import DictTree
+from treekit.dicttree import DictTree
 
 def show_json_spec():
     print(textwrap.dedent(f'''
