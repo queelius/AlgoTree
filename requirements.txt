@@ -1,0 +1,4 @@
+anytree==2.12.1
+graphviz==0.20.3
+six==1.16.0
+treekit==0.1.0
