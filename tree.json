@@ -1,0 +1,23 @@
+{
+    "metadata": {
+        "author": "John Doe",
+        "version": "1.0"
+    },
+    "mapping": {
+        "node1": {
+            "parent": "root",
+            "children": ["node2", "node3"],
+            "data": "Some data for node1"
+        },
+        "node2": {
+            "parent": "node1",
+            "children": [],
+            "data": "Some data for node2"
+        },
+        "node3": {
+            "parent": "node1",
+            "children": [],
+            "data": "Some data for node3"
+        }
+    }
+}
