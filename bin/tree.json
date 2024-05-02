@@ -5,19 +5,24 @@
     },
     "mapping": {
         "node1": {
-            "parent": "root",
-            "children": ["node2", "node3"],
-            "data": "Some data for node1"
+            "parent": null,
+            "data": "Some data for node1 (root)"
         },
         "node2": {
             "parent": "node1",
-            "children": [],
             "data": "Some data for node2"
         },
         "node3": {
             "parent": "node1",
-            "children": [],
             "data": "Some data for node3"
+        },
+        "node4": {
+            "parent": "node2",
+            "data": "Some data for node4"
+        },
+        "node5": {
+            "parent": "node2",
+            "data": "Some data for node5"
         }
     }
 }

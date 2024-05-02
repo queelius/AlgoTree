@@ -23,17 +23,14 @@ We have a JSON file that represents a tree structure:
     "mapping": {
         "node1": {
             "parent": "root",
-            "children": ["node2", "node3"],
             "data": "Some data for node1"
         },
         "node2": {
             "parent": "node1",
-            "children": [],
             "data": "Some data for node2"
         },
         "node3": {
             "parent": "node1",
-            "children": [],
             "data": "Some data for node3"
         }
     }
@@ -43,7 +40,7 @@ We have a JSON file that represents a tree structure:
 To convert this JSON to a visual tree structure:
 
 ```bash
-./jsontree.py tree.json
+./bin/jsontree-view.py tree.json
 # node1
 # ├── node2
 # └── node3
@@ -52,9 +49,9 @@ To convert this JSON to a visual tree structure:
 Here is another example:
 
 ```bash
-./jsontree.py \
+./jsontree-view.py \
     --mapping-key "mapping" \
-    --node-name "lambda n: f'{n.name}: {n.payload[\"data\"]}'" tree.json 
+    --node-name "lambda n: f'{n.name}: {n.data}'" tree.json 
 # node1: Some data for node1
 # ├── node2: Some data for node2
 # └── node3: Some data for node3
@@ -63,47 +60,17 @@ Here is another example:
 For more options, you can use the help command:
 
 ```bash
-./jsontree.py --help
-# usage: jsontree.py [-h]
-#           [--flatten]
-#           [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-#           [--output OUTPUT]
-#           [--fallback-node-name FALLBACK_NODE_NAME]
-#           [--node-name NODE_NAME]
-#           [--json-spec]
-#           [--version]
-#           [--mapping-key MAPPING_KEY]
-#           [file]
-#
-# Render a tree from JSON data
-#
-# positional arguments:
-#  file                  Path to JSON file
-#
-# options:
-#   -h, --help            show this help message and exit
-#   --flatten             Flatten the tree (list of paths)
-#   --log {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-#                         Log level
-#   --output OUTPUT       Output file name
-#   --fallback-node-name FALLBACK_NODE_NAME
-#                         Fallback function to generate node names
-#   --node-name NODE_NAME
-#                         Function to generate node names
-#   --json-spec           Specification of the JSON data
-#   --version             show program's version number and exit
-#   --mapping-key MAPPING_KEY
-#                         The key that maps to the structure of the tree
+./jsontree-view.py --help
 ```
 
-## `dicttree` Class
+## `DictTree` Class
 
-The `DictTree` class is a Python class that can be used to create tree structures from dictionary data. It can be used to create a tree structure from a dictionary, add nodes to the tree, and visualize the tree.
+`DictTree` is a Python class that can be used to create tree structures from dictionary (or JSON) data. It provides a robust API for creating, managing, and visualizing tree structures.
 
-This is the main workhorse of the `jsontree` command line tool.
+This is the main workhorse for the set of `jsontree-*.py` command line tools.
 
 ```python
-from treekit import dicttree
+from treekit import DictTree
 # Load a tree from a JSON file and save it as a PNG file
 tree = DictTree(json.load("tree.json")).save("tree.png")
 ```

@@ -11,8 +11,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'anytree>=2.8.0',
-        'graphviz>=0.16'
-    ],
+        'graphviz>=0.16'],
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
