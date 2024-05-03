@@ -5,7 +5,7 @@ The dict (or JSON) data should have the following structure:
 ```json
 {
     // Meta-data (optional key-value pairs)
-    "<key>": "<value>", ...
+    "<key>": "<value>", // ... more key-value pairs
 
     "<mapping_key>": {
         "<node_key>": {
@@ -14,15 +14,14 @@ The dict (or JSON) data should have the following structure:
 
             // Children node keys (optional)
             "children": [
-                "<child_node_key>", ...
+                "<child_node_key>" // ... more child node keys
             ],
                 
-            // Node data (optional key-value pairs)
-            "<key>": "<value>", ...
-        },
+            // Node payload (optional key-value pairs)
+            "<key>": "<value>" // ... more key-value pairs
+        }
 
-        // More node key-value pairs
-        ...
+        // ... more node key-value pairs
     }
 }
 ```
@@ -33,6 +32,9 @@ where:
 - <node_key> is the key of the node.
 - <parent_node_key> is the key of the parent node.
 - <child_node_key> is the key of a child node.
+- If a node has no parent key specified, it is assumed to be the root node.
+- If a node has no children key specified, it is assumed to be a leaf node.
+- There is, however, only one root node, which either may be specified
 - Additional key-value pairs can be added to each node to store arbitrary data.
 - The JSON data can have additional key-value pairs for meta-data, such as the name of the tree.
 - You can also create the tree structure using the `DictTree` class directly, e.g.,
