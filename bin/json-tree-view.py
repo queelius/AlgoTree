@@ -4,8 +4,7 @@ import json
 import argparse
 import sys
 import logging
-import textwrap
-from treekit.dicttree import DictTree
+from treekit.flattree import FlatTree
 
 def main():
     parser = argparse.ArgumentParser(
@@ -19,19 +18,14 @@ def main():
     parser.add_argument("--output", help="Output file name to save the tree")
     parser.add_argument("--node-name", default="lambda node: node.name", type=str, metavar="LAMBA_EXPRESSION",
                         help="Lambda expression to generate node names from a node, defaults to `lambda node: node.name`")
-    parser.add_argument("--fallback-node-name", type=str, metavar="LAMBA_EXPRESSION",
-                        help="Fallback lambda expression to generate node names if the node-name LAMBA_EXPRESSION fails")
-    parser.add_argument("--json-spec", action="store_true", help="Print the specification of the JSON data structure")
+    parser.add_argument("--schema", action="store_true", help="Print the specification of the JSON data structure")
     parser.add_argument("--version", action="version", version="%(prog)s 1.0")
-    parser.add_argument("--mapping-key", default="mapping", type=str,
-                        nargs=1, metavar='KEY',
-                        help="The key in the JSON that maps to the structure of the tree")
 
     args = parser.parse_args()
 
     try:
-        if args.json_spec:
-            DictTree.json_spec()
+        if args.schema:
+            FlatTree.schema()
             sys.exit(0)
 
         # Caution: eval can be risky with untrusted input

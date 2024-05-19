@@ -5,7 +5,7 @@ setup(
     version='0.1.0',
     author='Alex Towell',
     author_email='lex@metafunctor.com',
-    description='A toolkit for managing and visualizing tree structures from JSON and dictionary data.',
+    description='A toolkit for working with tree structures in Python',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     packages=find_packages(),
