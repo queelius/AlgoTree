@@ -39,18 +39,12 @@ def main():
                         help="Flatten the tree into a list of paths and print as JSON")
     parser.add_argument("file", type=argparse.FileType('r'), default=sys.stdin,
                         help="Path to JSON file (reads from stdin if not provided)")
-    parser.add_argument("--log", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                        help="Set the logging level")
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--output", help="Output file name to save the tree")
     parser.add_argument("--node-name", default="lambda node: node.name", type=str, metavar="LAMBA_EXPRESSION",
                         help="Lambda expression to generate node names from a node, defaults to `lambda node: node.name`")
-    parser.add_argument("--fallback-node-name", type=str, metavar="LAMBA_EXPRESSION",
-                        help="Fallback lambda expression to generate node names if the node-name LAMBA_EXPRESSION fails")
-    parser.add_argument("--json-spec", action="store_true", help="Print the specification of the JSON data structure")
+    parser.add_argument("--schema", action="store_true", help="Print the specification of the JSON data structure")
     parser.add_argument("--version", action="version", version="%(prog)s 1.0")
-    parser.add_argument("--mapping-key", default="mapping", type=str,
-                        nargs=1, metavar='KEY',
-                        help="The key in the JSON that maps to the structure of the tree")
     parser.add_argument("--size", action="store_true",
                         help="Print the size of the tree")
     parser.add_argument("--siblings", metavar='NODE_KEY',

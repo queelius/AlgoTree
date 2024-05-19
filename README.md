@@ -16,18 +16,17 @@ We have a JSON file that represents a tree structure:
 
 ```json
 {
-    "metadata": {
-        "author": "John Doe",
-        "version": "1.0"
-    },
+    "author": "John Doe",
+    "version": "1.0"
     "mapping": {
         "node1": {
-            "parent": "root",
+            // no parent specified, will connect to the root node
             "data": "Some data for node1"
         },
         "node2": {
             "parent": "node1",
-            "data": "Some data for node2"
+            "data": "Some data for node2",
+            "more_data": "More data"
         },
         "node3": {
             "parent": "node1",
@@ -41,20 +40,22 @@ To convert this JSON to a visual tree structure:
 
 ```bash
 ./bin/jsontree-view.py tree.json
-# node1
-# ├── node2
-# └── node3
+# __root__
+# └── node1
+#     ├── node2
+#     └── node3
 ```
 
 Here is another example:
 
 ```bash
 ./jsontree-view.py \
-    --mapping-key "mapping" \
-    --node-name "lambda n: f'{n.name}: {n.data}'" tree.json 
-# node1: Some data for node1
-# ├── node2: Some data for node2
-# └── node3: Some data for node3
+    --node-name "lambda n: f'{n.name}: {n.payload}'" tree.json 
+
+# __root__: { "author": "John Doe", "version": "1.0" }
+# └── node1: { "data": "Some data for node1" }
+# ├── node2: { "data": "Some data for node2", "more_data": "More data" }
+# └── node3: { "data": "Some data for node3" }
 ```
 
 For more options, you can use the help command:
@@ -65,14 +66,16 @@ For more options, you can use the help command:
 
 ## `DictTree` Class
 
-`DictTree` is a Python class that can be used to create tree structures from dictionary (or JSON) data. It provides a robust API for creating, managing, and visualizing tree structures.
+`DictTree` is a Python class that can be used to create tree structures from
+dictionary (or JSON) data. It provides a robust API for creating, editing,
+searching/querying, and viewing/visualizing tree structures.
 
-This is the main workhorse for the set of `jsontree-*.py` command line tools.
+This is what the command line tools use for most of the heavy lifting.
 
 ```python
 from treekit import DictTree
 # Load a tree from a JSON file and save it as a PNG file
-tree = DictTree(json.load("tree.json")).save("tree.png")
+DictTree(json.load("tree.json")).save("tree.png")
 ```
 
 This generates the PNG file `tree.png`:

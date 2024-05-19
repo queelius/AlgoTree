@@ -7,26 +7,6 @@ import logging
 import textwrap
 from treekit.dicttree import DictTree
 
-def show_json_spec():
-    print(textwrap.dedent('''
-        The JSON data should have the following structure:
-
-            {
-                # Meta-data (optional key-value pairs)
-                ...
-
-                'mapping': {
-                    'node_key': {
-                        'parent': 'parent_node_key',
-                        # Additional payload data
-                        ...
-                    },
-
-                    # More nodes
-                    ...
-                }
-            }
-        '''))
 
 
 def main():
