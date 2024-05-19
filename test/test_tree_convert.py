@@ -1,7 +1,14 @@
 import pytest
 from treekit.treenode import TreeNode
 from treekit.flattree import FlatTree
-from treekit.tree_convert import treenode_to_flattree, flattree_to_treenode, treenode_to_anytree, anytree_to_treenode, anytree_to_flattree, flattree_to_anytree
+from treekit.tree_convert import (
+    treenode_to_flattree,
+    flattree_to_treenode,
+    treenode_to_anytree,
+    anytree_to_treenode,
+    anytree_to_flattree,
+    flattree_to_anytree,
+)
 from anytree import Node
 
 def test_treenode_to_flattree():

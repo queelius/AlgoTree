@@ -1,6 +1,5 @@
 import pytest
 from anytree import Node
-from treekit.tree_viz import to_text, to_image
 
 def test_to_text():
     root = Node("root")
