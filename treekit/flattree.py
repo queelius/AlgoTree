@@ -1,8 +1,4 @@
-from treekit.treenode import TreeNode
-from anytree import Node
-import treekit.tree_convert as tc
 from typing import List
-import treekit.tree_viz
 
 class FlatTree(dict):
     """
@@ -147,60 +143,4 @@ class FlatTree(dict):
         children = self.children(key)
         for child in children:
             del self[child]
-        super().__delitem__(key)
-
-    def to_treenode(self) -> TreeNode:
-        """
-        Convert the FlatTree to a TreeNode representation.
-
-        :return: TreeNode representation of the tree.
-        """
-        return tc.flatree_to_treenode(self)
-    
-    def to_anytree(self) -> Node:
-        """
-        Convert the FlatTree to an anytree representation.
-
-        :return: The root anytree node.
-        """
-        return tc.flatree_to_anytree(self)
-
-    @staticmethod
-    def from_anytree(root : Node, uniq_key=None) -> 'FlatTree':
-        """
-        Construct a FlatTree from any anytree node. `node` will be the new
-        root of the tree.
-
-        :param root: An anytree node.
-        :param uniq_key: The function to map anytree nodes to unique keys.
-        :return: A FlatTree object.
-        """
-        return tc.anytree_to_flatree(root, uniq_key)
-    
-    @staticmethod
-    def from_treenode(node : TreeNode, uniq_key=None) -> 'FlatTree':
-        """
-        Convert a TreeNode representation to a FlatTree.
-
-        :param treenode: The root TreeNode of the tree.
-        :param uniq_key: The function to map TreeNodes to unique keys.
-        :return: FlatTree representation of the tree.
-        """
-        return tc.treenode_to_flatree(node, uniq_key)
-
-    def to_fancy_string(self,
-                        node_name=lambda node: node.name,
-                        style=anytree.ContStyle()) -> str:
-        """
-        Generate a fancy string representation of the tree.
-
-        :param node_name: Function to generate node names.
-        :return: str
-        """
-
-        tree_viz.to_text(self.to_anytree())
-
-    def to_image(self, out: str, node_name=lambda node: node.name) -> None:
-        """
-        Save the tree to an image or dot file. The outfile should include the format extension (e.g., 'tree.png' or 'tree.dot').
-
+        super().__delitem__(key)\
