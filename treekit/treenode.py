@@ -1,7 +1,5 @@
 from collections import deque
 from copy import deepcopy
-from treekit import tree_convert as tc
-from anytree import Node
 from typing import List, Optional, Dict
 
 class TreeNode(dict):
@@ -164,40 +162,5 @@ class TreeNode(dict):
             result = child.remove(key, value)
             if result:
                 return result
+
         return None
-
-    def to_flattree(self) -> 'tc.FlatTree':
-        """
-        Convert the TreeNode to a FlatTree representation.
-
-        :return: FlatTree representation of the tree.
-        """
-        return tc.treenode_to_flatree(self)
-
-    def to_anytree(self) -> Node:
-        """
-        Convert the TreeNode to an anytree representation.
-
-        :return: The root anytree node.
-        """
-        return tc.treenode_to_anytree(self)
-    
-    @staticmethod
-    def from_anytree(node: Node) -> 'TreeNode':
-        """
-        Convert an anytree node to a TreeNode.
-
-        :param node: An anytree node.
-        :return: A TreeNode object.
-        """
-        return tc.anytree_to_treenode(node)
-
-    @staticmethod
-    def from_flattree(flat_tree: 'tc.FlatTree') -> 'TreeNode':
-        """
-        Convert a FlatTree to a TreeNode representation.
-
-        :param flat_tree: A FlatTree object.
-        :return: TreeNode representation of the tree.
-        """
-        return tc.flatree_to_treenode(flat_tree)
