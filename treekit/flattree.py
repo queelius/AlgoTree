@@ -15,6 +15,9 @@ class FlatTree(dict):
     dictionary but is the parent of all nodes without a 'parent' key.
     """
 
+    LOGICAL_ROOT = '__logical_root__'
+    PARENT_KEY = 'parent'
+
     class ProxyNode(collections.abc.MutableMapping):
         __slots__ = ('_tree', '_key')
 
@@ -22,41 +25,45 @@ class FlatTree(dict):
             self._tree = tree
             self._key = key
 
-        def name(self):
+        def key(self):
             return self._key
         
         def get_parent(self) -> 'FlatTree.ProxyNode':
-            if self._key == '__logical_root__':
+            if self._key == FlatTree.LOGICAL_ROOT:
                 return None
-            parent_key = self._tree[self._key].get('parent', None)
-            return self._tree.get_node(parent_key) if parent_key is not None else None
+            par_key = self._tree[self._key].get(FlatTree.PARENT_KEY, None)
+            return self._tree.get_node(par_key) if par_key is not None else None
 
         def __repr__(self):
-            if self._key == '__logical_root__':
-                return f"ProxyNode(key=__logical_root__)"
+            if self._key == FlatTree.LOGICAL_ROOT:
+                return f"{__class__.__name__}({self._key})"
             else:
-                return f"ProxyNode({self._key}: {self._tree[self._key]})"
+                return f"{__class__.__name__}({self._key}: {self._tree[self._key]})"
 
         def __getitem__(self, key):
-            if self._key == '__logical_root__':
-                raise TypeError("__logical_root__ is empty")
+            if self._key == FlatTree.LOGICAL_ROOT:
+                raise TypeError(f"{self} is immutable")
             return self._tree[self._key][key]
 
         def __setitem__(self, key, value):
-            if self._key == '__logical_root__':
-                raise TypeError("__logical_root__ is immutable")
+            if self._key == FlatTree.LOGICAL_ROOT:
+                raise TypeError(f"{self} is immutable")
             self._tree[self._key][key] = value
 
         def __delitem__(self, key):
-            if self._key == '__logical_root__':
-                raise TypeError("__logical_root__ is immutable")
+            if self._key == FlatTree.LOGICAL_ROOT:
+                raise TypeError(f"{self} is immutable")
             del self._tree[self._key][key]
 
         def __iter__(self):
-            return iter([]) if self._key == '__logical_root__' else iter(self._tree[self._key])
+            if self._key == FlatTree.LOGICAL_ROOT:
+                return iter([])
+            return iter(self._tree[self._key])
 
         def __len__(self):
-            return 0 if self._key == '__logical_root__' else len(self._tree[self._key])
+            if self._key == FlatTree.LOGICAL_ROOT:
+                return 0
+            return len(self._tree[self._key])
 
         def add_child(self, key=None, **kwargs) -> 'FlatTree.ProxyNode':
             """
@@ -69,23 +76,26 @@ class FlatTree(dict):
             if key is None:
                 key = str(uuid.uuid4())
 
+
             if key in self._tree:
                 raise KeyError("Node key already exists")
-            if 'parent' in kwargs and kwargs['parent'] != self._key:
+            if FlatTree.PARENT_KEY in kwargs and kwargs[FlatTree.PARENT_KEY] != self._key:
                 raise ValueError("Cannot set a different parent")
             
-            if self._key == '__logical_root__':
-                kwargs['parent'] = None
+            if self._key == FlatTree.LOGICAL_ROOT:
+                kwargs[FlatTree.PARENT_KEY] = None
             else:
-                kwargs['parent'] = self._key
+                kwargs[FlatTree.PARENT_KEY] = self._key
             self._tree[key] = kwargs
             return self._tree.get_node(key)
 
         def children(self):
-            if self._key == '__logical_root__':
-                return [self._tree.get_node(k) for k in self._tree if self._tree[k].get('parent') is None]
+            if self._key == FlatTree.LOGICAL_ROOT:
+                return [self._tree.get_node(k) for k in self._tree if
+                        self._tree[k].get(FlatTree.PARENT_KEY) is None]
             else:
-                return [self._tree.get_node(k) for k in self._tree if self._tree[k].get('parent') == self._key]
+                return [self._tree.get_node(k) for k in self._tree if
+                        self._tree[k].get(FlatTree.PARENT_KEY) == self._key]
 
 
     def get_schema(self) -> dict:
@@ -95,9 +105,9 @@ class FlatTree(dict):
         :return: Dictionary representing the schema of the tree.
         """
         return {
-            'unique_node_key':
+            '<unique_node_key>':
             {
-                'parent': 'parent_node_key|None',
+                FlatTree.PARENT_KEY: '<parent_node_key|None>',
                 # Additional data
             }
             # More nodes
@@ -115,20 +125,13 @@ class FlatTree(dict):
 
     def get_root(self) -> ProxyNode:
         """
-        Get the root node of the tree.
+        Lazily computes a logical root. It is the parent of all nodes
+        without a parent key or a parent key that maps to None.
 
-        If there is a single node without a 'parent' key, it is the root node.
-        Otherwise, the tree has a logical root node that is not represented in
-        the dictionary.
-
-        :return: The key of the root node.
+        :return: The logical root node.
         """
-        root_keys = [k for k, v in self.items() if v.get('parent', None) is None]
-        if len(root_keys) == 1:
-            return FlatTree.ProxyNode(self, root_keys[0])
-        else:
-            return FlatTree.ProxyNode(self, '__logical_root__')
-    
+        return FlatTree.ProxyNode(self, FlatTree.LOGICAL_ROOT)
+
     def check_valid(self) -> None:
         """
         Validate the tree structure to ensure the structural integrity of the tree.
@@ -137,15 +140,15 @@ class FlatTree(dict):
         Raises a ValueError if the tree structure is invalid.
         """
         if len(self) != len(set(self.keys())):  # check for duplicate keys
-            raise ValueError("Duplicate node key")
+            raise KeyError("Duplicate node key")
 
         for key, value in self.items():
-            if 'parent' in value:
-                parent = value['parent']
-                if parent is not None and parent not in self:
-                    raise ValueError(f"Parent key not found: {parent!r}")
-                if parent == key:
-                    raise ValueError(f"Node cannot be its own parent: {key!r}")
+            if FlatTree.PARENT_KEY in value:
+                par_key = value[FlatTree.PARENT_KEY]
+                if par_key is not None and par_key not in self:
+                    raise KeyError(f"Parent node non-existent: {par_key!r}")
+                if par_key == key:
+                    raise KeyError(f"Node cannot be its own parent: {key!r}")
 
     def __setitem__(self, key, value):
         """
