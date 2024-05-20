@@ -1,6 +1,7 @@
 from collections import deque
 from copy import deepcopy
 from typing import List, Optional, Dict
+import json
 
 class TreeNode(dict):
     """
@@ -22,8 +23,15 @@ class TreeNode(dict):
         :param args: Arguments to be passed to the dictionary constructor.
         :param kwargs: Keyword arguments to be passed to the dictionary constructor.
         """
+        # Extract children from kwargs if present
+        children = kwargs.pop('children', None)
+
+        # Initialize the dict part
         super().__init__(*args, **kwargs)
-        self['children'] = [TreeNode(child) for child in self.children()]
+        
+        # Only add the 'children' key if it was present in the kwargs
+        if children is not None:
+            self['children'] = [TreeNode(child) if not isinstance(child, TreeNode) else child for child in children]
 
     def children(self) -> List['TreeNode']:
         """
@@ -94,27 +102,6 @@ class TreeNode(dict):
 
         return _walk(self, ctx, depth=0)
 
-    def breadth_first(self, fn, max_depth=None):
-        """
-        Applies a function `fn` to the nodes in the tree using breadth-first traversal.
-
-        :param fn: Function to apply to each node.
-        :param max_depth: Maximum depth to traverse. If None, traverses the entire tree.
-        :return: The tree with the function `fn` applied to its nodes.
-        """
-        queue = deque([(self, 0)])
-        while queue:
-            node, depth = queue.popleft()
-            # Apply the function to the node first
-            node = fn(node)
-            # If max_depth is specified and reached, continue without adding children
-            if max_depth is not None and depth >= max_depth:
-                continue
-            # Extend queue with the current node's children, incrementing the depth
-            queue.extend((child, depth + 1) for child in node.children())
-
-        return self
-
     def search(self, key, value=None) -> Optional['TreeNode']:
         """
         Search for a node by a specific key and value. Returns the first node
@@ -139,6 +126,34 @@ class TreeNode(dict):
                 return result
 
         return None
+
+    def get_parent(self) -> Optional['TreeNode']:
+        """
+        Get the parent of a node.
+
+        :return: The parent node (TreeNode) if it exists, None otherwise.
+        """
+        # we must iterate through the entire tree to find the parent
+        # using a depth-first search
+
+        def _find_parent(node, parent):
+            if node is self:
+                return parent
+            for child in node.children():
+                result = _find_parent(child, node)
+                if result:
+                    return result
+            return None
+
+        return _find_parent(self, None)
+    
+    def name(self):
+        """
+        Get the name of the node.
+
+        :return: The name of the node.
+        """
+        return self.get('__name__', hash(json.dumps((self))))
 
     def remove(self, key, value=None) -> Optional['TreeNode']:
         """

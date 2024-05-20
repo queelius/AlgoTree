@@ -3,6 +3,7 @@ from treekit.treenode import TreeNode
 from treekit.flattree import FlatTree
 from functools import singledispatch as sd
 import hashlib
+from typing import Optional
 
 class TreeConverter:
     """
@@ -10,53 +11,49 @@ class TreeConverter:
     """
     
     @staticmethod
-    def treenode_to_flattree(root : TreeNode,
-                            uniq_key : callable = None) -> FlatTree:
+    def to_flattree(tree, node_name : Optional[callable] = None) -> FlatTree:
         """
-        Convert a TreeNode representation to a FlatTree.
+        Convert a tree to a FlatTree representation
 
-        :param root: The root TreeNode of the tree.
-        :param uniq_key: The function to map TreeNodes to unique keys.
+        :param tree: The tree to convert.
+        :param node_name: The function to map TreeNodes to unique keys.
         :return: FlatTree representation of the tree.
         """
-        if uniq_key is None:
-            def _hash_key(node):
-                hash = hashlib.sha256()
-                hash.update(str(node).encode())
-                while hash.hexdigest() in flat_tree:
-                    hash.update(b'_')
-                return hash.hexdigest()
-            uniq_key = _hash_key
+        #if node_name is None:
+        #    node_name = lambda node: node.name()
 
-        flat_tree = FlatTree()
-        def add(node, parent_key=None):
-            key = uniq_key(node)
-            flat_tree[key] = {'parent': parent_key, **{k: v for k, v in node.items() if k != 'children'}}
+        tree = FlatTree()
+        def _build(node):
+            #key = node_name(node)
+            import uuid
+            key = uuid.uuid4()
+            tree[key] = {'parent': node_name(node.get_parent()),
+                         **{k: v for k, v in node.items() }}
             for child in node.children():
-                add(child, key)
-
-        add(root)
-        return flat_tree
+                _build(child)
+        _build(tree.get_root())
+        return tree
 
     @staticmethod
-    def flattree_to_treenode(flat_tree : FlatTree) -> TreeNode:
+    def to_treenode(tree, node_name : Optional[callable] = None) -> TreeNode:
         """
         Convert a FlatTree to a TreeNode representation.
 
         :param flat_tree: A FlatTree object.
         :return: TreeNode representation of the tree.
         """
-        def build(node_key):
-            node_data = flat_tree[node_key].copy()
-            node_data.pop('parent', None)
-            node = TreeNode(**node_data)
-            children_keys = flat_tree.children(node_key)
-            for child_key in children_keys:
-                node.add_child(build(child_key))
-            return node
+        if node_name is None:
+            node_name = lambda node: node.name()
 
-        root_key = next((k for k, v in flat_tree.items() if v.get('parent') is None), None)
-        return build(root_key) if root_key else None
+        def _build(tree: TreeNode, node) -> TreeNode:
+            tree['__name__'] = node_name(node)
+            tree.update(node)
+            tree['children'] = [_build(TreeNode(), child) for child in node.children()]
+            #for child in node.children():
+            #    tree['children'].append(_build(TreeNode(), child))
+            return tree
+
+        return _build(TreeNode(), tree.get_root())
 
     @staticmethod
     def treenode_to_anytree(root : TreeNode,
