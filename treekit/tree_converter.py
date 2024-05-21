@@ -26,7 +26,7 @@ class TreeConverter:
             #childs = cur.pop('children', [])
             if FlatTree.PARENT_KEY in cur:
                 del cur[FlatTree.PARENT_KEY]
-            new_node = flat_node.add_child(key=node_name(cur), **cur.get_data())
+            new_node = flat_node.add_child(key=node_name(cur), data=cur.get_data())
             for child in cur.children():
                 _build(child, new_node)
 
@@ -68,11 +68,10 @@ class TreeConverter:
             node_name = lambda node: node.name
 
         def _build(cur, parent):
-            cur = deepcopy(cur)
-            #childs = cur.children()
-            if 'parent' in cur:
-                del cur['parent']
-            new_node = Node(node_name(cur), parent=parent, **cur.get_data())
+            cur_data = deepcopy(cur.get_data())
+            if 'parent' in cur_data:
+                del cur_data['parent']
+            new_node = Node(node_name(cur), parent=parent, **cur_data)
             for child in cur.children():
                 _build(child, new_node)
 
