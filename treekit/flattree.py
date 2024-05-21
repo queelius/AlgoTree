@@ -25,14 +25,15 @@ class FlatTree(dict):
             self._tree = tree
             self._key = key
 
-        def key(self):
+        @property
+        def name(self):
             return self._key
         
         def get_parent(self) -> 'FlatTree.ProxyNode':
             if self._key == FlatTree.LOGICAL_ROOT:
                 return None
             par_key = self._tree[self._key].get(FlatTree.PARENT_KEY, None)
-            return self._tree.get_node(par_key) if par_key is not None else None
+            return self._tree.get_node(par_key) if par_key is not None else self._tree.get_root()
 
         def __repr__(self):
             if self._key == FlatTree.LOGICAL_ROOT:
@@ -54,6 +55,11 @@ class FlatTree(dict):
             if self._key == FlatTree.LOGICAL_ROOT:
                 raise TypeError(f"{self} is immutable")
             del self._tree[self._key][key]
+
+        def get_data(self):
+            if self._key == FlatTree.LOGICAL_ROOT:
+                return {}
+            return self._tree[self._key]
 
         def __iter__(self):
             if self._key == FlatTree.LOGICAL_ROOT:

@@ -1,7 +1,5 @@
-from collections import deque
 from copy import deepcopy
-from typing import List, Optional, Dict
-import json
+from typing import List, Optional, Dict, Any
 
 class TreeNode(dict):
     """
@@ -19,22 +17,28 @@ class TreeNode(dict):
     NAME_KEY = '__name__'
     CHILDREN_KEY = 'children'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, data: Dict[str, Any] = None, **kwargs):
         """
         Initialize a TreeNode.
 
-        :param args: Arguments to be passed to the dictionary constructor.
-        :param kwargs: Keyword arguments to be passed to the dictionary constructor.
+        :param data: Dictionary to initialize the TreeNode with.
+        :param kwargs: Additional keyword arguments to initialize the TreeNode.
         """
-        # Extract children from kwargs if present
-        children = kwargs.pop(TreeNode.CHILDREN_KEY, None)
-
-        # Initialize the dict part
-        super().__init__(*args, **kwargs)
+        # Initialize the dict part with data and kwargs
+        print(data)
+        if data is None:
+            data = {}
+        data.update(kwargs)
         
-        # Only add the 'children' key if it was present in the kwargs
+        # Extract children from data if present
+        children = data.pop(self.CHILDREN_KEY, None)
+        
+        # Initialize the dictionary part
+        super().__init__(data)
+        
+        # Initialize children if present
         if children is not None:
-            self[TreeNode.CHILDREN_KEY] = [TreeNode(child) if not isinstance(child, TreeNode) else child for child in children]
+            self[self.CHILDREN_KEY] = [TreeNode(child) if not isinstance(child, TreeNode) else child for child in children]
 
     def children(self) -> List['TreeNode']:
         """
@@ -58,6 +62,19 @@ class TreeNode(dict):
         self[TreeNode.CHILDREN_KEY].append(child)
         return child
 
+    @property
+    def name(self) -> str:
+        """
+        Get the name of the node.
+    
+        :return: The name of the node.
+        """
+        try_name = self.get(TreeNode.NAME_KEY, None)
+        if try_name:
+            return try_name
+        else:
+            return str(self.get_data())
+
     def __repr__(self) -> str:
         return f"TreeNode({dict(self)})"
 
@@ -69,25 +86,10 @@ class TreeNode(dict):
         """
         return self
 
-    def depth_first(self, fn, ctx=None, order='post', max_depth=None):
+    def get_data(self) -> Dict:
         """
-        Applies a function `fn` to the nodes in the tree using depth-first traversal.
+        Get the data (minus the children) stored in the tree.
 
-        :param fn: Function to apply to each node. Should accept two arguments: the node and the context.
-        :param ctx: Optional context data to pass to the function.
-        :param order: The order in which the function is applied ('pre' or 'post'). Default is 'post'.
-        :param max_depth: Maximum depth to traverse. If None, traverses the entire tree.
-        :return: The tree with the function `fn` applied to its nodes.
+        :return: The data stored in the tree.
         """
-        def _walk(node, ctx, depth):
-            if max_depth is not None and depth > max_depth:
-                return node
-            ctx = deepcopy(ctx)
-            if order == 'pre':
-                node = fn(node, ctx)
-            node[TreeNode.CHILDREN_KEY] = [_walk(c, ctx, depth + 1) for c in node.children()]
-            if order == 'post':
-                node = fn(node, ctx)
-            return node
-
-        return _walk(self, ctx, depth=0)
+        return {k: v for k, v in self.items() if k != TreeNode.CHILDREN_KEY}
