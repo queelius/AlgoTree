@@ -1,7 +1,7 @@
 from typing import List
 import uuid
 import collections.abc
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Optional, Iterator
 
 class FlatTree(dict):
     """
@@ -37,21 +37,21 @@ class FlatTree(dict):
         def name(self):
             return self._key
         
-        def get_parent(self) -> 'FlatTree.ProxyNode':
+        def get_parent(self) -> Optional['FlatTree.ProxyNode']:
             if self._key == FlatTree.LOGICAL_ROOT:
                 return None
             par_key = self.get_parent_key()
             return self._tree.get_node(par_key) if par_key is not None \
                 else self._tree.get_root()
         
-        def get_parent_key(self) -> str:
+        def get_parent_key(self) -> Optional[str]:
             return None if self._key == FlatTree.LOGICAL_ROOT else \
                 self._tree[self._key].get(FlatTree.PARENT_KEY)
 
         def __repr__(self):
             return f"{__class__.__name__}({self._key}: {self.get_data()})"
 
-        def __getitem__(self, key):
+        def __getitem__(self, key) -> Dict[str, Any]:
             return {} if self._key == FlatTree.LOGICAL_ROOT else \
                 self._tree[self._key][key]
 
@@ -74,7 +74,7 @@ class FlatTree(dict):
             """
             self._tree.detach(self._key)
 
-        def get_data(self):
+        def get_data(self) -> Dict[str, Any]:
             """
             Get the data of the node.
 
@@ -82,17 +82,17 @@ class FlatTree(dict):
             """
             return {} if self._key == FlatTree.LOGICAL_ROOT else self._tree[self._key]
 
-        def __iter__(self):
+        def __iter__(self) -> Iterator[Any]:
             if self._key == FlatTree.LOGICAL_ROOT:
                 return iter([])
             return iter(self._tree[self._key])
 
-        def __len__(self):
+        def __len__(self) -> int:
             if self._key == FlatTree.LOGICAL_ROOT:
                 return 0
             return len(self._tree[self._key])
         
-        def add_child(self, key: str = None, *args, **kwargs) -> 'FlatTree.ProxyNode':
+        def add_child(self, key: Optional[str] = None, *args, **kwargs) -> 'FlatTree.ProxyNode':
             """
             Add a child node. If the key is None, a UUID is generated.
 
@@ -118,7 +118,7 @@ class FlatTree(dict):
             self._tree[key] = child
             return self._tree.get_node(key)
 
-        def children(self):
+        def children(self) -> List['FlatTree.ProxyNode']:
             """
             Get the children of the node.
             """
@@ -199,9 +199,8 @@ class FlatTree(dict):
         :raises KeyError: If the node is not found in the tree.
         """
         def _post_del(node):
-            childs = node.children()
-            for child in childs:
-                _post_del(child)  # post-order deletion
+            for child in node.children():
+                _post_del(child)
             del self[node._key]
 
         _post_del(self.get_node(key))
