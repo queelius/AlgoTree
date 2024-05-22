@@ -64,23 +64,21 @@ For more options, you can use the help command:
 ./jsontree-view.py --help
 ```
 
-## `DictTree` Class
+## `FlatTree` Class
 
-`DictTree` is a Python class that can be used to create tree structures from
-dictionary (or JSON) data. It provides a robust API for creating, editing,
-searching/querying, and viewing/visualizing tree structures.
+`FlatTree` is a Python class that can be used to create tree structures from
+flat dictionary (or JSON) data. It provides a robust API for working with
+trees, including methods for manipulating and visualizing them.
 
-This is what the command line tools use for most of the heavy lifting.
+See the [FlatTree tutorial](FLATTREE.md) for more information.
 
-```python
-from treekit import DictTree
-# Load a tree from a JSON file and save it as a PNG file
-DictTree(json.load("tree.json")).save("tree.png")
-```
+## `TreeNode` Class
 
-This generates the PNG file `tree.png`:
+`TreeNode` is a Python class that can be used to create tree structures from
+highly nested dictionary (or JSON) data. 
 
-![Tree](tree.png)
+See the [TreeNode expression tree tutorial](TREENODE.md) for more information.
+Otherwise, the interface is similar to `FlatTree`.
 
 ## Development
 
