@@ -3,6 +3,7 @@ from treekit.treenode import TreeNode
 from treekit.flattree import FlatTree
 from anytree import Node
 from treekit.tree_converter import TreeConverter as tc
+from typing import Union
 
 # Dispatch functions for converting between tree representations
 @singledispatch
@@ -10,24 +11,14 @@ def to_treenode(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_treenode.register
-def _(tree: FlatTree) -> TreeNode:
+def _(tree: Union[Node, FlatTree]) -> TreeNode:
     """
-    Convert a FlatTree to a TreeNode representation.
+    Convert a tree to a TreeNode representation.
 
     :param tree: The FlatTree.
     :return: TreeNode representation of the tree.
     """
-    return tc.flattree_to_treenode(tree)
-
-@to_treenode.register
-def _(tree: Node) -> TreeNode:
-    """
-    Convert an anytree node to a TreeNode representation.
-
-    :param tree: The anytree.Node.
-    :return: TreeNode representation of the tree.
-    """
-    return tc.anytree_to_treenode(tree)
+    return tc.to_treenode(tree)
 
 @to_treenode.register
 def _(tree: TreeNode) -> TreeNode:
@@ -44,24 +35,14 @@ def to_flattree(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_flattree.register
-def _(tree: TreeNode) -> FlatTree:
+def _(tree: Union[Node, TreeNode]) -> FlatTree:
     """
-    Convert a TreeNode to a FlatTree representation.
-
-    :param tree: The TreeNode.
-    :return: FlatTree representation of the tree.
-    """
-    return tc.treenode_to_flattree(tree)
-
-@to_flattree.register
-def _(tree: Node) -> FlatTree:
-    """
-    Convert an anytree node to a FlatTree representation.
+    Convert a tree a FlatTree representation.
 
     :param tree: The anytree.Node.
     :return: FlatTree representation of the tree.
     """
-    return tc.anytree_to_flattree(tree)
+    return tc.to_flattree(tree)
 
 @to_flattree.register
 def _(tree: FlatTree) -> FlatTree:
@@ -78,24 +59,14 @@ def to_anytree(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_anytree.register
-def _(tree: TreeNode) -> Node:
+def _(tree: Union[TreeNode, FlatTree]) -> Node:
     """
-    Convert the TreeNode to an anytree.Node representation.
+    Convert a tree a anytree.Node representation.
 
     :param tree: The TreeNode.
     :return: anytree.Node representation of the tree.
     """
-    return tc.treenode_to_anytree(tree)
-
-@to_anytree.register
-def _(tree: FlatTree) -> Node:
-    """
-    Convert the FlatTree to an anytree.Node representation.
-
-    :param tree: The FlatTree.
-    :return: anytree.Node representation of the tree.
-    """
-    return tc.flattree_to_anytree(tree)
+    return tc.anytree(tree)
 
 @to_anytree.register
 def _(tree: Node) -> Node:
