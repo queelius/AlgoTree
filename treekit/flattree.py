@@ -183,11 +183,11 @@ class FlatTree(dict):
         This is equivalent to removing all nodes that have a parent key that
         is `FlatTree.DETACHED_KEY`.
         """
-        for key in list(self):
-            print(f"{key=}")
-            if key in self and self[key].get(FlatTree.PARENT_KEY) == FlatTree.DETACHED_KEY:
-                print(f"Pruning detached {key=}")
-                self.prune(key)
+
+        # find the nodes with parent key as FlatTree.DETACHED_KEY
+        detached = [key for key, value in self.items() if value.get(FlatTree.PARENT_KEY) == FlatTree.DETACHED_KEY]
+        for key in detached:
+            self.prune(key)
 
     def prune(self, key: str) -> None:
         """
@@ -199,12 +199,10 @@ class FlatTree(dict):
         :raises KeyError: If the node is not found in the tree.
         """
         def _post_del(node):
-            print(f"{node=}")
-            for child in node.children():
+            childs = node.children()
+            for child in childs:
                 _post_del(child)  # post-order deletion
-                if node._key in self:
-                    print(f"Deleting {node._key=}")
-                    del self[node._key]
+            del self[node._key]
 
         _post_del(self.get_node(key))
         
