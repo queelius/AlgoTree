@@ -1,4 +1,4 @@
-# Expression Trees with `treekit`
+# Expression Trees with `TreeNode`
 
 In this tutorial, we will explore the concept of expression trees. We will demonstrate how they relate to our tree structures, specifically the `TreeNode` class, and how to evaluate expression trees using post-order traversal.
 
