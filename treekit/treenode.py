@@ -1,8 +1,5 @@
-from collections import deque
 from copy import deepcopy
-from treekit import tree_convert as tc
-from anytree import Node
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 class TreeNode(dict):
     """
@@ -17,15 +14,31 @@ class TreeNode(dict):
     of each node, and we provide methods to manipulate the tree structure.
     """
 
-    def __init__(self, *args, **kwargs):
+    NAME_KEY = '__name__'
+    CHILDREN_KEY = 'children'
+
+    def __init__(self, key: str = None, data: Dict[str, Any] = None, **kwargs):
         """
         Initialize a TreeNode.
 
-        :param args: Arguments to be passed to the dictionary constructor.
-        :param kwargs: Keyword arguments to be passed to the dictionary constructor.
+        :param data: Dictionary to initialize the TreeNode with.
+        :param kwargs: Additional keyword arguments to initialize the TreeNode.
         """
-        super().__init__(*args, **kwargs)
-        self['children'] = [TreeNode(child) for child in self.children()]
+        # Initialize the dict part with data and kwargs
+        if data is None:
+            data = {}
+        super().__init__(data)
+        self.update(kwargs)
+
+        if key is not None:
+            self[self.NAME_KEY] = key
+        
+        # Extract children from data if present
+        children = data.pop(self.CHILDREN_KEY, None)
+        
+        # Initialize children if present
+        if children is not None:
+            self[self.CHILDREN_KEY] = [TreeNode(child) if not isinstance(child, TreeNode) else child for child in children]
 
     def children(self) -> List['TreeNode']:
         """
@@ -33,9 +46,24 @@ class TreeNode(dict):
 
         :return: List of child nodes (TreeNode objects).
         """
-        return self.get('children', [])
+        return self.get(TreeNode.CHILDREN_KEY, [])
 
-    def add_child(self, *args, **kwargs) -> 'TreeNode':
+    def add_child(self, key: str = None, data: Dict[str, Any] = None, **kwargs) -> 'TreeNode':
+        """
+        Add a child node to the tree.
+
+        :param args: Arguments to be passed to the TreeNode constructor for the child.
+        :param kwargs: Keyword arguments to be passed to the TreeNode constructor for the child.
+        :return: The newly added child node (TreeNode object).
+        """
+        child = TreeNode(key, data, **kwargs)
+        if TreeNode.CHILDREN_KEY not in self:
+            self[TreeNode.CHILDREN_KEY] = []
+        self[TreeNode.CHILDREN_KEY].append(child)
+        return child
+
+
+    def add_child_not_sure_if_keep(self, *args, **kwargs) -> 'TreeNode':
         """
         Add a child node to the tree.
 
@@ -44,160 +72,39 @@ class TreeNode(dict):
         :return: The newly added child node (TreeNode object).
         """
         child = TreeNode(*args, **kwargs)
-        if 'children' not in self:
-            self['children'] = []
-        self['children'].append(child)
+        if TreeNode.CHILDREN_KEY not in self:
+            self[TreeNode.CHILDREN_KEY] = []
+        self[TreeNode.CHILDREN_KEY].append(child)
         return child
 
-    def height(self) -> int:
+    @property
+    def name(self) -> str:
         """
-        Get the height of the tree.
-
-        :return: Integer representing the height of the tree.
+        Get the name of the node.
+    
+        :return: The name of the node.
         """
-        return 1 + max([c.height() for c in self.children()], default=0)
+        try_name = self.get(TreeNode.NAME_KEY, None)
+        if try_name:
+            return try_name
+        else:
+            return str(self.get_data())
 
-    def width(self) -> int:
+    def __repr__(self) -> str:
+        return f"TreeNode({dict(self)})"
+
+    def get_root(self) -> 'TreeNode':
         """
-        Get the width of the tree.
+        Get the root of the tree.
 
-        :return: Integer representing the width of the tree.
+        :return: The root node of the tree.
         """
-        return max([1 + c.width() for c in self.children()], default=0)
-
-    def is_leaf(self) -> bool:
-        """
-        Determine if a node is a leaf.
-
-        :return: True if the node is a leaf, False otherwise.
-        """
-        return not self.children()
-
-    def depth_first(self, fn, ctx=None, order='post', max_depth=None):
-        """
-        Applies a function `fn` to the nodes in the tree using depth-first traversal.
-
-        :param fn: Function to apply to each node. Should accept two arguments: the node and the context.
-        :param ctx: Optional context data to pass to the function.
-        :param order: The order in which the function is applied ('pre' or 'post'). Default is 'post'.
-        :param max_depth: Maximum depth to traverse. If None, traverses the entire tree.
-        :return: The tree with the function `fn` applied to its nodes.
-        """
-        def _walk(node, ctx, depth):
-            if max_depth is not None and depth > max_depth:
-                return node
-            ctx = deepcopy(ctx)
-            if order == 'pre':
-                node = fn(node, ctx)
-            node['children'] = [_walk(c, ctx, depth + 1) for c in node.children()]
-            if order == 'post':
-                node = fn(node, ctx)
-            return node
-
-        return _walk(self, ctx, depth=0)
-
-    def breadth_first(self, fn, max_depth=None):
-        """
-        Applies a function `fn` to the nodes in the tree using breadth-first traversal.
-
-        :param fn: Function to apply to each node.
-        :param max_depth: Maximum depth to traverse. If None, traverses the entire tree.
-        :return: The tree with the function `fn` applied to its nodes.
-        """
-        queue = deque([(self, 0)])
-        while queue:
-            node, depth = queue.popleft()
-            # Apply the function to the node first
-            node = fn(node)
-            # If max_depth is specified and reached, continue without adding children
-            if max_depth is not None and depth >= max_depth:
-                continue
-            # Extend queue with the current node's children, incrementing the depth
-            queue.extend((child, depth + 1) for child in node.children())
-
         return self
 
-    def search(self, key, value=None) -> Optional['TreeNode']:
+    def get_data(self) -> Dict:
         """
-        Search for a node by a specific key and value. Returns the first node
-        that matches the key and value, or None if not found.
+        Get the data (minus the children) stored in the tree.
 
-        If value is None, the search will return the first node that has the key
-        regardless of the value.
-
-        :param key: The key to search for.
-        :param value: The value to search for.
-        :return: The first node that matches the key and value, or None if not found.
+        :return: The data stored in the tree.
         """
-        if value is None:
-            if key in self:
-                return self
-        elif self.get(key) == value:
-            return self
-
-        for child in self.children():
-            result = child.search(key, value)
-            if result:
-                return result
-
-        return None
-
-    def remove(self, key, value=None) -> Optional['TreeNode']:
-        """
-        Remove a node from the tree by a specific key and value. Removes the
-        first node that matches the key and value, or None if not found.
-
-        If value is None, the search will remove the first node that has the key
-        regardless of the value.
-
-        :param key: The key to identify the node to be removed.
-        :param value: The value to identify the node to be removed.
-        :return: The removed node (TreeNode) if found and removed, None otherwise.
-        """
-        for i, child in enumerate(self.children()):
-            if value is None:
-                if key in child:
-                    return self['children'].pop(i)
-            else:
-                if child.get(key) == value:
-                    return self['children'].pop(i)
-            result = child.remove(key, value)
-            if result:
-                return result
-        return None
-
-    def to_flattree(self) -> 'tc.FlatTree':
-        """
-        Convert the TreeNode to a FlatTree representation.
-
-        :return: FlatTree representation of the tree.
-        """
-        return tc.treenode_to_flatree(self)
-
-    def to_anytree(self) -> Node:
-        """
-        Convert the TreeNode to an anytree representation.
-
-        :return: The root anytree node.
-        """
-        return tc.treenode_to_anytree(self)
-    
-    @staticmethod
-    def from_anytree(node: Node) -> 'TreeNode':
-        """
-        Convert an anytree node to a TreeNode.
-
-        :param node: An anytree node.
-        :return: A TreeNode object.
-        """
-        return tc.anytree_to_treenode(node)
-
-    @staticmethod
-    def from_flattree(flat_tree: 'tc.FlatTree') -> 'TreeNode':
-        """
-        Convert a FlatTree to a TreeNode representation.
-
-        :param flat_tree: A FlatTree object.
-        :return: TreeNode representation of the tree.
-        """
-        return tc.flatree_to_treenode(flat_tree)
+        return {k: v for k, v in self.items() if k != TreeNode.CHILDREN_KEY}

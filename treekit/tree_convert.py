@@ -1,37 +1,27 @@
-from functools import singledispatch as sd
+from functools import singledispatch
 from treekit.treenode import TreeNode
 from treekit.flattree import FlatTree
 from anytree import Node
 from treekit.tree_converter import TreeConverter as tc
+from typing import Union
 
 # Dispatch functions for converting between tree representations
-@sd.singledispatch
+@singledispatch
 def to_treenode(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
-@to_treenode.register(FlatTree)
-def to_treenode(tree: FlatTree) -> TreeNode:
+@to_treenode.register
+def _(tree: Union[Node, FlatTree]) -> TreeNode:
     """
-    Convert a FlatTree to a TreeNode representation.
+    Convert a tree to a TreeNode representation.
 
     :param tree: The FlatTree.
     :return: TreeNode representation of the tree.
     """
-    return tc.flattree_to_treenode(tree)
+    return tc.to_treenode(tree)
 
-@to_treenode.register(Node)
-def to_treenode(tree: Node) -> TreeNode:
-    """
-    Convert an anytree node to a TreeNode representation.
-
-    :param tree: The anytree.Node.
-    :return: TreeNode representation of the tree.
-    """
-    return tc.anytree_to_treenode(tree)
-
-
-@to_treenode.register(TreeNode)
-def to_treenode(tree: TreeNode) -> TreeNode:
+@to_treenode.register
+def _(tree: TreeNode) -> TreeNode:
     """
     No conversion needed because the input is already a TreeNode.
 
@@ -40,32 +30,22 @@ def to_treenode(tree: TreeNode) -> TreeNode:
     """
     return tree
 
-@sd.singledispatch
+@singledispatch
 def to_flattree(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
-@to_flattree.register(TreeNode)
-def to_flattree(tree: TreeNode) -> FlatTree:
+@to_flattree.register
+def _(tree: Union[Node, TreeNode]) -> FlatTree:
     """
-    Convert a TreeNode to a FlatTree representation.
-
-    :param tree: The TreeNode.
-    :return: FlatTree representation of the tree.
-    """
-    return tc.treenode_to_flattree(tree)
-
-@to_flattree.register(Node)
-def to_flattree(tree: Node) -> FlatTree:
-    """
-    Convert an anytree node to a FlatTree representation.
+    Convert a tree a FlatTree representation.
 
     :param tree: The anytree.Node.
     :return: FlatTree representation of the tree.
     """
-    return tc.anytree_to_flattree(tree)
+    return tc.to_flattree(tree)
 
-@to_flattree.register(FlatTree)
-def to_flattree(tree: FlatTree) -> FlatTree:
+@to_flattree.register
+def _(tree: FlatTree) -> FlatTree:
     """
     No conversion needed because the input is already a FlatTree.
 
@@ -74,32 +54,22 @@ def to_flattree(tree: FlatTree) -> FlatTree:
     """
     return tree
 
-@sd.singledispatch
+@singledispatch
 def to_anytree(tree):
     raise TypeError(f"Unsupported type: {type(tree)}")
 
-@to_anytree.register(TreeNode)
-def to_anytree(tree: TreeNode) -> Node:
+@to_anytree.register
+def _(tree: Union[TreeNode, FlatTree]) -> Node:
     """
-    Convert the TreeNode to an anytree.Node representation.
+    Convert a tree a anytree.Node representation.
 
     :param tree: The TreeNode.
     :return: anytree.Node representation of the tree.
     """
-    return tc.treenode_to_anytree(tree)
+    return tc.anytree(tree)
 
-@to_anytree.register(FlatTree)
-def to_anytree(tree: FlatTree) -> Node:
-    """
-    Convert the FlatTree to an anytree.Node representation.
-
-    :param tree: The FlatTree.
-    :return: anytree.Node representation of the tree.
-    """
-    return tc.flattree_to_anytree(tree)
-
-@to_anytree.register(Node)
-def to_anytree(tree: Node) -> Node:
+@to_anytree.register
+def _(tree: Node) -> Node:
     """
     No conversion needed because the input is already an anytree.Node.
 

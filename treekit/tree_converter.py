@@ -1,69 +1,63 @@
-from anytree import Node, PreOrderIter
+from anytree import Node
 from treekit.treenode import TreeNode
 from treekit.flattree import FlatTree
-from functools import singledispatch as sd
-import hashlib
+from typing import Optional, Callable
+from copy import deepcopy
 
 class TreeConverter:
     """
     Utility class for converting between tree representations.
     """
-    
     @staticmethod
-    def treenode_to_flattree(root : TreeNode,
-                            uniq_key : callable = None) -> FlatTree:
+    def to_flattree(node, node_name : Optional[Callable] = None) -> FlatTree:
         """
-        Convert a TreeNode representation to a FlatTree.
+        Convert a tree rooted at `node` to a FlatTree representation
 
-        :param root: The root TreeNode of the tree.
-        :param uniq_key: The function to map TreeNodes to unique keys.
+        :param node: The (sub-tree) rooted at `node` to convert.
+        :param node_name: The function to map nodes to unique keys.
         :return: FlatTree representation of the tree.
         """
-        if uniq_key is None:
-            def _hash_key(node):
-                hash = hashlib.sha256()
-                hash.update(str(node).encode())
-                while hash.hexdigest() in flat_tree:
-                    hash.update(b'_')
-                return hash.hexdigest()
-            uniq_key = _hash_key
+        if node_name is None:
+            node_name = lambda node: node.name
 
         flat_tree = FlatTree()
-        def add(node, parent_key=None):
-            key = uniq_key(node)
-            flat_tree[key] = {'parent': parent_key, **{k: v for k, v in node.items() if k != 'children'}}
-            for child in node.children():
-                add(child, key)
+        def _build(cur, flat_node : FlatTree.ProxyNode):
+            cur = deepcopy(cur)
+            #childs = cur.pop('children', [])
+            if FlatTree.PARENT_KEY in cur:
+                del cur[FlatTree.PARENT_KEY]
+            new_node = flat_node.add_child(key=node_name(cur), data=cur.get_data())
+            for child in cur.children():
+                _build(child, new_node)
 
-        add(root)
+        _build(node, flat_tree.get_root())
         return flat_tree
 
     @staticmethod
-    def flattree_to_treenode(flat_tree : FlatTree) -> TreeNode:
+    def to_treenode(node, node_name : Optional[Callable] = None) -> TreeNode:
         """
-        Convert a FlatTree to a TreeNode representation.
+        Convert a tree rooted at `node` to a TreeNode representation.
 
-        :param flat_tree: A FlatTree object.
+        :param tree: The tree to convert.
         :return: TreeNode representation of the tree.
         """
-        def build(node_key):
-            node_data = flat_tree[node_key].copy()
-            node_data.pop('parent', None)
-            node = TreeNode(**node_data)
-            children_keys = flat_tree.children(node_key)
-            for child_key in children_keys:
-                node.add_child(build(child_key))
-            return node
 
-        root_key = next((k for k, v in flat_tree.items() if v.get('parent') is None), None)
-        return build(root_key) if root_key else None
+        if node_name is None:
+            node_name = lambda n: n.name
+
+        def _build(cur, tree_node: TreeNode) -> TreeNode:
+            tree_node[tree_node.NAME_KEY] = node_name(cur)
+            # tree_node[tree_node.CHILDREN_KEY] = node_name(cur) fails with an error
+            tree_node.update(cur.get_data())
+            tree_node['children'] = [_build(child, TreeNode()) for child in cur.children()]
+            return tree_node
+
+        return _build(node, TreeNode())
 
     @staticmethod
-    def treenode_to_anytree(root : TreeNode,
-                            node_name : callable = None,
-                            parent=None) -> Node:
+    def to_anytree(node, node_name : Optional[Callable] = None) -> Node:
         """
-        Convert a TreeNode to an anytree node.
+        Convert a node to an anytree node.
 
         :param root: The root of the tree.
         :param parent: The parent anytree node, if any.
@@ -71,63 +65,18 @@ class TreeConverter:
         """
 
         if node_name is None:
-            def _hash_key(node):
-                hash = hashlib.sha256()
-                hash.update(str(node).encode())
-                return hash.hexdigest()
-            node_name = _hash_key
+            node_name = lambda node: node.name
 
-        anynode = Node(node_name(root), parent=parent, **root)
-        for child in root.children():
-            TreeConverter.treenode_to_anytree(child, parent=anynode)
-        return anynode
+        def _build(cur, parent):
+            cur_data = deepcopy(cur.get_data())
+            if 'parent' in cur_data:
+                del cur_data['parent']
+            new_node = Node(node_name(cur), parent=parent, **cur_data)
+            for child in cur.children():
+                _build(child, new_node)
 
-    @staticmethod
-    def anytree_to_treenode(node : Node) -> TreeNode:
-        """
-        Convert an anytree node to a TreeNode.
+            return new_node
 
-        :param node: An anytree node.
-        :return: A TreeNode object.
-        """
-        def build_anytree(node):
-            node_data = {key: value for key, value in node.__dict__.items() if not key.startswith('_')}
-            children = [build_anytree(child) for child in node.children]
-            treenode = TreeNode(**node_data)
-            for child in children:
-                treenode.add_child(child)
-            return treenode
+        return _build(node, None)
 
-        return build_anytree(node)
-
-    @staticmethod
-    def anytree_to_flattree(node : Node,
-                            uniq_key : callable = lambda node: node.name) -> FlatTree:
-        """
-        Construct a FlatTree from an anytree node.
-
-        :param node: An anytree node.
-        :param uniq_key: The function to map anytree nodes to unique keys.
-        :return: A FlatTree object.
-        """
-        flat_tree = FlatTree()
-        for n in PreOrderIter(node):
-            node_data = {key: value for key, value in n.__dict__.items() if not key.startswith('_')}
-            flat_tree[n.name] = {
-                'parent': n.parent.name if n.parent else None,
-                **node_data
-            }
-        flat_tree.check_valid()
-        return flat_tree
-
-    @staticmethod
-    def flattree_to_anytree(flat_tree : FlatTree,
-                            node_name : callable = lambda node: node.name) -> Node:
-        """
-        Convert a FlatTree to an anytree node.
-
-        :param flat_tree: A FlatTree object.
-        :return: The root anytree node.
-        """
-        return TreeConverter.treenode_to_anytree(
-            TreeConverter.flattree_to_treenode(flat_tree), node_name=node_name)
+        
