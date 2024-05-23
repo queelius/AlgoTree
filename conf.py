@@ -16,7 +16,7 @@ release = '0.7'
 
 extensions = ['m2r2']
 
-#templates_path = ['_templates']
+templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 
