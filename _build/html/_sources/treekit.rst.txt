@@ -4,21 +4,14 @@ treekit package
 Submodules
 ----------
 
-treekit.dicttree module
------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: treekit.dicttree
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-treekit.tree\_tools module
---------------------------
-
-.. automodule:: treekit.tree_tools
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   treekit.flattree
+   treekit.tree_convert
+   treekit.tree_converter
+   treekit.tree_viz
+   treekit.treenode
 
 Module contents
 ---------------
