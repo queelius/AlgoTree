@@ -17,28 +17,25 @@ class TreeNode(dict):
     NAME_KEY = '__name__'
     CHILDREN_KEY = 'children'
 
-    def __init__(self, key: str = None, data: Dict[str, Any] = None, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
         Initialize a TreeNode.
 
-        :param data: Dictionary to initialize the TreeNode with.
+        :param key: The key to use for the node.
+        :param data: The data to store in the node.
         :param kwargs: Additional keyword arguments to initialize the TreeNode.
         """
         # Initialize the dict part with data and kwargs
-        if data is None:
-            data = {}
-        super().__init__(data)
-        self.update(kwargs)
+        super().__init__(*args, **kwargs)
 
-        if key is not None:
-            self[self.NAME_KEY] = key
-        
         # Extract children from data if present
-        children = data.pop(self.CHILDREN_KEY, None)
+        children = self.pop(self.CHILDREN_KEY, None)
         
         # Initialize children if present
         if children is not None:
-            self[self.CHILDREN_KEY] = [TreeNode(child) if not isinstance(child, TreeNode) else child for child in children]
+            self[self.CHILDREN_KEY] = [TreeNode(child) if \
+                                       not isinstance(child, TreeNode) else \
+                                        child for child in children]
 
     def children(self) -> List['TreeNode']:
         """
@@ -48,22 +45,7 @@ class TreeNode(dict):
         """
         return self.get(TreeNode.CHILDREN_KEY, [])
 
-    def add_child(self, key: str = None, data: Dict[str, Any] = None, **kwargs) -> 'TreeNode':
-        """
-        Add a child node to the tree.
-
-        :param args: Arguments to be passed to the TreeNode constructor for the child.
-        :param kwargs: Keyword arguments to be passed to the TreeNode constructor for the child.
-        :return: The newly added child node (TreeNode object).
-        """
-        child = TreeNode(key, data, **kwargs)
-        if TreeNode.CHILDREN_KEY not in self:
-            self[TreeNode.CHILDREN_KEY] = []
-        self[TreeNode.CHILDREN_KEY].append(child)
-        return child
-
-
-    def add_child_not_sure_if_keep(self, *args, **kwargs) -> 'TreeNode':
+    def add_child(self, *args, **kwargs) -> 'TreeNode':
         """
         Add a child node to the tree.
 
@@ -84,11 +66,7 @@ class TreeNode(dict):
     
         :return: The name of the node.
         """
-        try_name = self.get(TreeNode.NAME_KEY, None)
-        if try_name:
-            return try_name
-        else:
-            return str(self.get_data())
+        return self.get(TreeNode.NAME_KEY, str(self.get_data()))
 
     def __repr__(self) -> str:
         return f"TreeNode({dict(self)})"

@@ -7,11 +7,11 @@ from typing import Union
 
 # Dispatch functions for converting between tree representations
 @singledispatch
-def to_treenode(tree):
+def to_treenode(tree) -> TreeNode:
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_treenode.register
-def _(tree: Union[Node, FlatTree]) -> TreeNode:
+def _(tree: Union[FlatTree, Node]) -> TreeNode:
     """
     Convert a tree to a TreeNode representation.
 
@@ -31,7 +31,7 @@ def _(tree: TreeNode) -> TreeNode:
     return tree
 
 @singledispatch
-def to_flattree(tree):
+def to_flattree(tree) -> FlatTree:
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_flattree.register
@@ -55,7 +55,7 @@ def _(tree: FlatTree) -> FlatTree:
     return tree
 
 @singledispatch
-def to_anytree(tree):
+def to_anytree(tree) -> Node:
     raise TypeError(f"Unsupported type: {type(tree)}")
 
 @to_anytree.register
@@ -66,7 +66,7 @@ def _(tree: Union[TreeNode, FlatTree]) -> Node:
     :param tree: The TreeNode.
     :return: anytree.Node representation of the tree.
     """
-    return tc.anytree(tree)
+    return tc.to_anytree(tree)
 
 @to_anytree.register
 def _(tree: Node) -> Node:
