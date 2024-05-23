@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlatTree Tutorial &mdash; treekit 0.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=48f8e935"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Expression Trees with TreeNode" href="TREENODE.html" />
+    <link rel="prev" title="Python package: treekit" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            treekit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Python package: <code class="docutils literal notranslate"><span class="pre">treekit</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FlatTree Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tree-data-format">Tree Data Format</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#theoretical-background">Theoretical Background</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tree-terminology">Tree Terminology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#proxy-objects-and-views">Proxy Objects and Views</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#proxynode-in-flattree">ProxyNode in FlatTree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#key-features-of-proxynode">Key Features of <code class="docutils literal notranslate"><span class="pre">ProxyNode</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#logical-root-node">Logical Root Node</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#benefits-of-a-logical-root-node">Benefits of a Logical Root Node</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flattree-class"><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> Class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-flattree">Initializing a FlatTree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualizing-the-tree">Visualizing the Tree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#text-visualization">Text Visualization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#image-visualization">Image Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#manipulating-the-tree">Manipulating the Tree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-child-node">Adding a Child Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#viewing-sub-trees">Viewing Sub-trees</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#validating-the-tree">Validating the Tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#detaching-and-pruning-nodes">Detaching and Pruning Nodes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#detaching-a-node">Detaching a Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pruning-detached-nodes">Pruning Detached Nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-errors">Handling Errors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#invalid-parent-reference">Invalid Parent Reference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cycle-detection">Cycle Detection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-conversions">Tree Conversions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#converting-to-treenode">Converting to TreeNode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TREENODE.html">Expression Trees with <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPEC.html">FlatTree Specification</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">treekit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FlatTree Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/FLATTREE.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="flattree-tutorial">
+<h1>FlatTree Tutorial<a class="headerlink" href="#flattree-tutorial" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> is a Python class that represents a tree using a flat dictionary structure where each node has a unique key and an optional ‘parent’ key to reference its parent node. This class provides a view adapter for dict/JSON data of a particular format.</p>
+<section id="tree-data-format">
+<h3>Tree Data Format<a class="headerlink" href="#tree-data-format" title="Link to this heading">¶</a></h3>
+<p>A tree is represented using a dictionary, where each key is a unique node identifier, and the value is another dictionary containing node data and an optional ‘parent’ key indicating the parent node.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;&lt;node_key&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;parent_node_key&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Parent node key (optional)</span>
+<span class="w">      </span><span class="nt">&quot;&lt;key&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;value&gt;&quot;</span><span class="w"> </span><span class="c1">// Node payload (optional key-value pairs)</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// ... more node key-value pairs</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="theoretical-background">
+<h2>Theoretical Background<a class="headerlink" href="#theoretical-background" title="Link to this heading">¶</a></h2>
+<p>Trees are hierarchical data structures consisting of nodes, where each node has a parent and potentially many children. Trees are used in various domains such as databases, file systems, and network routing. They are particularly useful for representing data with a nested or hierarchical nature.</p>
+<section id="tree-terminology">
+<h3>Tree Terminology<a class="headerlink" href="#tree-terminology" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Node:</strong> A structure that contains data and references to its parent. A tree is a collection of nodes related by parent-child relationships.</p></li>
+<li><p><strong>Root:</strong> The top node of a tree.</p></li>
+<li><p><strong>Leaf:</strong> A node with no children.</p></li>
+</ul>
+</section>
+<section id="proxy-objects-and-views">
+<h3>Proxy Objects and Views<a class="headerlink" href="#proxy-objects-and-views" title="Link to this heading">¶</a></h3>
+<p>In computer science, a proxy object is an object that acts as an intermediary for another object. The proxy can control access to the original object, providing additional functionality such as validation, lazy loading, or caching. This is a common design pattern used to create a level of indirection.</p>
+<p>A view in this context is an abstraction that provides a different perspective or representation of the underlying data. For example, a view can present a flat dictionary as a hierarchical tree structure.</p>
+<section id="proxynode-in-flattree">
+<h4>ProxyNode in FlatTree<a class="headerlink" href="#proxynode-in-flattree" title="Link to this heading">¶</a></h4>
+<p>In the <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> class, the <code class="docutils literal notranslate"><span class="pre">ProxyNode</span></code> is an inner class that provides a node-centric interface to interact with the tree. It allows you to treat nodes as first-class objects while maintaining the underlying flat dictionary structure.</p>
+</section>
+<section id="key-features-of-proxynode">
+<h4>Key Features of <code class="docutils literal notranslate"><span class="pre">ProxyNode</span></code><a class="headerlink" href="#key-features-of-proxynode" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Encapsulation:</strong> Provides methods to manipulate individual nodes.</p></li>
+<li><p><strong>Abstraction:</strong> Hides the complexity of the flat dictionary structure, presenting a more intuitive tree-like interface.</p></li>
+<li><p><strong>Flexibility:</strong> Allows you to work with sub-trees and individual nodes seamlessly.</p></li>
+</ul>
+</section>
+</section>
+<section id="logical-root-node">
+<h3>Logical Root Node<a class="headerlink" href="#logical-root-node" title="Link to this heading">¶</a></h3>
+<p>In <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code>, the concept of a logical root node simplifies the representation and manipulation of trees.
+The logical root node is not a physical node in the tree but a conceptual node that serves as the parent of all nodes without an explicit parent reference.
+This approach ensures that a forest (multiple trees) can be represented as a single tree structure.
+However, nodes can still be disconnected from the logical root if they form a cycle amonst each other or are explicitly detached.</p>
+<section id="benefits-of-a-logical-root-node">
+<h4>Benefits of a Logical Root Node<a class="headerlink" href="#benefits-of-a-logical-root-node" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Unified Structure:</strong> Converts a forest into a single tree, simplifying operations and visualizations.</p></li>
+<li><p><strong>Consistency:</strong> Ensures all nodes are part of a single hierarchy, making traversal and manipulation more straightforward.</p></li>
+<li><p><strong>Flexibility:</strong> Allows easy addition of new nodes without worrying about their initial placement in the hierarchy.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="flattree-class">
+<h2><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> Class<a class="headerlink" href="#flattree-class" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> class provides a flexible way to work with tree structures using a flat dictionary format. It offers various methods for manipulating and visualizing trees.</p>
+<section id="initializing-a-flattree">
+<h3>Initializing a FlatTree<a class="headerlink" href="#initializing-a-flattree" title="Link to this heading">¶</a></h3>
+<p>You can initialize a <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> with a dictionary representing the tree data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">treekit</span> <span class="k">as</span> <span class="nn">tk</span>
+
+<span class="n">tree_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;node1&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node1&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;node2&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node2&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;node3&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node3&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;node4&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node4&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;node5&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node5&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">FlatTree</span><span class="p">(</span><span class="n">tree_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;node1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node1&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;node2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node2&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;node3&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node3&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;node4&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node4&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;node5&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node3&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node5&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="visualizing-the-tree">
+<h3>Visualizing the Tree<a class="headerlink" href="#visualizing-the-tree" title="Link to this heading">¶</a></h3>
+<p>You can visualize the tree using the <code class="docutils literal notranslate"><span class="pre">TreeViz</span></code> class.</p>
+<section id="text-visualization">
+<h4>Text Visualization<a class="headerlink" href="#text-visualization" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">treekit.tree_viz</span> <span class="kn">import</span> <span class="n">TreeViz</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">TreeViz</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">tree</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>__ROOT__
+├── node1
+│   └── node3
+│       ├── node4
+│       └── node5
+└── node2
+</pre></div>
+</div>
+</section>
+<section id="image-visualization">
+<h4>Image Visualization<a class="headerlink" href="#image-visualization" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TreeViz</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;./images/tree.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the image (<code class="docutils literal notranslate"><span class="pre">./images/tree.png</span></code> from above) of the tree:</p>
+<a class="reference external image-reference" href="./images/tree.png"><img alt="tree" src="_images/tree.png" /></a>
+</section>
+</section>
+<section id="manipulating-the-tree">
+<h3>Manipulating the Tree<a class="headerlink" href="#manipulating-the-tree" title="Link to this heading">¶</a></h3>
+<section id="adding-a-child-node">
+<h4>Adding a Child Node<a class="headerlink" href="#adding-a-child-node" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">child</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">get_root</span><span class="p">()</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;node36&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;Some data for node36&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ProxyNode</span><span class="p">(</span><span class="n">node36</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="s1">&#39;Some data for node36&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="viewing-sub-trees">
+<h4>Viewing Sub-trees<a class="headerlink" href="#viewing-sub-trees" title="Link to this heading">¶</a></h4>
+<p>You can work with sub-trees rooted at any node.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">TreeViz</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;node3&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>node3
+├── node4
+└── node5
+</pre></div>
+</div>
+</section>
+</section>
+<section id="validating-the-tree">
+<h3>Validating the Tree<a class="headerlink" href="#validating-the-tree" title="Link to this heading">¶</a></h3>
+<p>Ensures that all keys are unique and that parent references are valid.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">check_valid</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="detaching-and-pruning-nodes">
+<h3>Detaching and Pruning Nodes<a class="headerlink" href="#detaching-and-pruning-nodes" title="Link to this heading">¶</a></h3>
+<p>You can detach nodes, which sets their parent to a special key indicating they are detached, and prune detached nodes to remove them from the tree.</p>
+<section id="detaching-a-node">
+<h4>Detaching a Node<a class="headerlink" href="#detaching-a-node" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s2">&quot;node36&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+<span class="n">TreeViz</span><span class="o">.</span><span class="n">image</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;./images/full-tree-post-detach-node-36.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the tree with the detached node 36:</p>
+<a class="reference external image-reference" href="./images/full-tree-post-detach-node-36.png"><img alt="full-tree-post-detach-node-36" src="_images/full-tree-post-detach-node-36.png" /></a>
+</section>
+<section id="pruning-detached-nodes">
+<h4>Pruning Detached Nodes<a class="headerlink" href="#pruning-detached-nodes" title="Link to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">prune_detached</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="handling-errors">
+<h3>Handling Errors<a class="headerlink" href="#handling-errors" title="Link to this heading">¶</a></h3>
+<section id="invalid-parent-reference">
+<h4>Invalid Parent Reference<a class="headerlink" href="#invalid-parent-reference" title="Link to this heading">¶</a></h4>
+<p>Attempting to create a tree with an invalid parent reference will raise an error.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">invalid_tree</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">FlatTree</span><span class="p">({</span>
+        <span class="s2">&quot;node1&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;non_existent_parent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node1&quot;</span>
+        <span class="p">}})</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">TreeViz</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">non_existent_parent_tree</span><span class="p">,</span> <span class="n">node_name</span><span class="o">=</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">non_existent_parent_tree</span><span class="o">.</span><span class="n">check_valid</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Node</span><span class="p">(</span><span class="s1">&#39;/__ROOT__&#39;</span><span class="p">)</span>
+<span class="n">Parent</span> <span class="n">node</span> <span class="n">non</span><span class="o">-</span><span class="n">existent</span><span class="p">:</span> <span class="s1">&#39;non_existent_parent&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="cycle-detection">
+<h4>Cycle Detection<a class="headerlink" href="#cycle-detection" title="Link to this heading">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> class checks for cycles in the tree and raises an error if a cycle is detected.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="n">cycle_tree_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;node0&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node0&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;node1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node2&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node1&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;node2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node3&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node2&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;node3&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node1&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node3&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;node4&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="s2">&quot;node0&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;Some data for node4&quot;</span><span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">cycle_tree</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">FlatTree</span><span class="p">(</span><span class="n">cycle_tree_data</span><span class="p">)</span>
+    <span class="n">cycle_tree</span><span class="o">.</span><span class="n">check_valid</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Node(&#39;/__ROOT__&#39;)
+└── Node(&#39;/__ROOT__/node0&#39;, data=&#39;Some data for node0&#39;)
+    └── Node(&#39;/__ROOT__/node0/node4&#39;, data=&#39;Some data for node4&#39;)
+
+Cycle detected: {&#39;node2&#39;, &#39;node3&#39;, &#39;node1&#39;}
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="tree-conversions">
+<h2>Tree Conversions<a class="headerlink" href="#tree-conversions" title="Link to this heading">¶</a></h2>
+<p>You can convert between different tree representations, such as <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code>, <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code>, and <code class="docutils literal notranslate"><span class="pre">anytree.Node</span></code> objects.</p>
+<section id="converting-to-treenode">
+<h3>Converting to TreeNode<a class="headerlink" href="#converting-to-treenode" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">treekit.tree_converter</span> <span class="k">as</span> <span class="nn">tc</span>
+<span class="n">new_tree</span> <span class="o">=</span> <span class="n">tc</span><span class="o">.</span><span class="n">TreeConverter</span><span class="o">.</span><span class="n">to_treenode</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">new_tree</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">TreeViz</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">new_tree</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Expected Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;class &#39;treekit.tree_node.TreeNode&#39;&gt;
+
+__ROOT__
+├── node1
+│   ├── node15
+│   ├── new_node
+│   └── node77
+├── node2
+└── 27ae3bcc-8248-42c1-8de7-48452c522e40
+    └── 0799a7f1-abd2-4745-9a0f-841f1126d7c4
+        └── 43411d77-f8d5-4b1a-9a58-6228bfdf82bc
+</pre></div>
+</div>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> class provides a flexible and powerful way to represent and manipulate tree structures using a flat dictionary format. With methods for adding, detaching, pruning, and visualizing nodes, <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> can handle various tree-related tasks efficiently. This tutorial has covered the basic and advanced usage of the class, demonstrating its capabilities and versatility.</p>
+<p>For more detailed information and code implementation, refer to the <a class="reference external" href="https://github.com/queelius/treekit">GitHub repository</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="Python package: treekit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="TREENODE.html" class="btn btn-neutral float-right" title="Expression Trees with TreeNode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Towell.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

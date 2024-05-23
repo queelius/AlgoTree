@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python package: treekit &mdash; treekit 0.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/documentation_options.js?v=48f8e935"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="FlatTree Tutorial" href="FLATTREE.html" />
+    <link rel="prev" title="Welcome to treekit’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            treekit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python package: <code class="docutils literal notranslate"><span class="pre">treekit</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#flattree-class"><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#treenode-class"><code class="docutils literal notranslate"><span class="pre">TreeNode</span></code> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="FLATTREE.html">FlatTree Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TREENODE.html">Expression Trees with <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPEC.html">FlatTree Specification</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">treekit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Python package: <code class="docutils literal notranslate"><span class="pre">treekit</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="python-package-treekit">
+<h1>Python package: <code class="docutils literal notranslate"><span class="pre">treekit</span></code><a class="headerlink" href="#python-package-treekit" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">treekit</span></code> is a Python toolkit for creating, managing, and visualizing tree structures derived from JSON and dictionary data.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>Clone this repository and run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<p>We have a JSON file that represents a tree structure:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;John Doe&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="nt">&quot;1.0&quot;</span>
+<span class="w">    </span><span class="nt">&quot;mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;node1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// no parent specified, will connect to the root node</span>
+<span class="w">            </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node1&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;node2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node1&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node2&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;more_data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;More data&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;node3&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node1&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Some data for node3&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To convert this JSON to a visual tree structure:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./bin/jsontree-view.py<span class="w"> </span>tree.json
+<span class="c1"># __root__</span>
+<span class="c1"># └── node1</span>
+<span class="c1">#     ├── node2</span>
+<span class="c1">#     └── node3</span>
+</pre></div>
+</div>
+<p>Here is another example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./jsontree-view.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--node-name<span class="w"> </span><span class="s2">&quot;lambda n: f&#39;{n.name}: {n.payload}&#39;&quot;</span><span class="w"> </span>tree.json
+
+<span class="c1"># __root__: { &quot;author&quot;: &quot;John Doe&quot;, &quot;version&quot;: &quot;1.0&quot; }</span>
+<span class="c1"># └── node1: { &quot;data&quot;: &quot;Some data for node1&quot; }</span>
+<span class="c1"># ├── node2: { &quot;data&quot;: &quot;Some data for node2&quot;, &quot;more_data&quot;: &quot;More data&quot; }</span>
+<span class="c1"># └── node3: { &quot;data&quot;: &quot;Some data for node3&quot; }</span>
+</pre></div>
+</div>
+<p>For more options, you can use the help command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./jsontree-view.py<span class="w"> </span>--help
+</pre></div>
+</div>
+</section>
+<section id="flattree-class">
+<h2><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> Class<a class="headerlink" href="#flattree-class" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">FlatTree</span></code> is a Python class that can be used to create tree structures from
+flat dictionary (or JSON) data. It provides a robust API for working with
+trees, including methods for manipulating and visualizing them.</p>
+<p>See the <a class="reference external" href="FLATTREE.md">FlatTree tutorial</a> for more information.</p>
+</section>
+<section id="treenode-class">
+<h2><code class="docutils literal notranslate"><span class="pre">TreeNode</span></code> Class<a class="headerlink" href="#treenode-class" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">TreeNode</span></code> is a Python class that can be used to create tree structures from
+highly nested dictionary (or JSON) data.</p>
+<p>See the <a class="reference external" href="TREENODE.md">TreeNode expression tree tutorial</a> for more information.
+Otherwise, the interface is similar to <code class="docutils literal notranslate"><span class="pre">FlatTree</span></code>.</p>
+</section>
+<section id="development">
+<h2>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h2>
+<p>To set up a development environment:</p>
+<ol class="arabic simple">
+<li><p>Clone the repository.</p></li>
+<li><p>Install the dependencies:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h2>
+<p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to treekit’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="FLATTREE.html" class="btn btn-neutral float-right" title="FlatTree Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Towell.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
