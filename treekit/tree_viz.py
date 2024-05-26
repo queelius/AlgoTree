@@ -2,13 +2,13 @@ import anytree
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
 from treekit.tree_converter import TreeConverter
-from typing import Callable
+from typing import Callable, Optional
 
 class TreeViz:
     @staticmethod
-    def text(node,
+    def text(node : Node,
              style=anytree.ContStyle(),
-             node_name: Callable=lambda node: node.name,
+             node_name: Callable = lambda node: node.name,
              maxlevel=None) -> str:
         """
         Generate a text string representation of the part of the tree rooted at
@@ -30,20 +30,17 @@ class TreeViz:
         :return: str
         """
 
-        if not isinstance(node, Node):
-            node = TreeConverter.to_anytree(node)
-
         result = ""
         for pre, _, n in RenderTree(node=node, style=style, maxlevel=maxlevel):
             result += f"{pre}{node_name(n)}\n"
         return result
 
     @staticmethod
-    def image(node,
-              filename: str,
-              node_name: Callable=lambda node: node.name,
-              maxlevel=None,
-              **kwargs) -> None:
+    def image(node : Node,
+            filename: str,
+            node_name: Callable=lambda node: node.name,
+            maxlevel=None,
+            **kwargs) -> None:
         """
         Save the tree to an image or dot file. The outfile should include the
         format extension (e.g., 'tree.png' or 'tree.dot').
@@ -59,9 +56,12 @@ class TreeViz:
         :return: None
         """
 
-        if not isinstance(node, Node):
-            node = TreeConverter.to_anytree(node)
+        # Create a dictionary to map each node to a unique identifier
+        node_to_id = {n: f"node{idx}" for idx, n in enumerate([node] + list(node.descendants))}
 
-        dotfile = DotExporter(node=node, nodenamefunc=node_name,
-                              maxlevel=maxlevel, **kwargs)
-        dotfile.to_picture(filename)
+        dot = DotExporter(node=node,
+                        nodenamefunc=lambda node: node_to_id[node],
+                        nodeattrfunc=lambda node: f'label="{node_name(node)}"',
+                        maxlevel=maxlevel,
+                        **kwargs)
+        dot.to_picture(filename)

@@ -37,19 +37,20 @@ class FlatTree(dict):
         def name(self):
             return self._key
         
-        def get_parent(self) -> Optional['FlatTree.ProxyNode']:
+        @property
+        def parent(self) -> Optional['FlatTree.ProxyNode']:
             if self._key == FlatTree.LOGICAL_ROOT:
                 return None
-            par_key = self.get_parent_key()
-            return self._tree.get_node(par_key) if par_key is not None \
-                else self._tree.get_root()
+            key = self.parent_key
+            return self._tree.get_node(key) if key is not None else self._tree.root
         
-        def get_parent_key(self) -> Optional[str]:
+        @property
+        def parent_key(self) -> Optional[str]:
             return None if self._key == FlatTree.LOGICAL_ROOT else \
                 self._tree[self._key].get(FlatTree.PARENT_KEY)
 
         def __repr__(self):
-            return f"{__class__.__name__}({self._key}: {self.get_data()})"
+            return f"{__class__.__name__}({dict(self)})"
 
         def __getitem__(self, key) -> Dict[str, Any]:
             return {} if self._key == FlatTree.LOGICAL_ROOT else \
@@ -74,13 +75,14 @@ class FlatTree(dict):
             """
             self._tree.detach(self._key)
 
-        def get_data(self) -> Dict[str, Any]:
+        @property
+        def payload(self) -> Dict[str, Any]:
             """
-            Get the data of the node.
+            Get the payload data of the node.
 
             :return: Dictionary representing the data of the node.
             """
-            return {} if self._key == FlatTree.LOGICAL_ROOT else self._tree[self._key]
+            return self._tree.payload if self._key == FlatTree.LOGICAL_ROOT else self._tree[self._key]
 
         def __iter__(self) -> Iterator[Any]:
             if self._key == FlatTree.LOGICAL_ROOT:
@@ -117,7 +119,8 @@ class FlatTree(dict):
             
             self._tree[key] = child
             return self._tree.get_node(key)
-
+        
+        @property
         def children(self) -> List['FlatTree.ProxyNode']:
             """
             Get the children of the node.
@@ -129,7 +132,46 @@ class FlatTree(dict):
                 return [self._tree.get_node(k) for k in self._tree if
                         self._tree[k].get(FlatTree.PARENT_KEY) == self._key]
 
-    def __init__(self, *args, **kwargs):
+        def remove_children(self, child: Optional[List['FlatTree.ProxyNode']] = None) -> List['FlatTree.ProxyNode']:
+            """
+            Remove a child node.
+
+            This actually only **detaches** the nodes. If you want to prune
+            them, you can call `prune_detached` on the underlying tree that
+            this proxy node refers to.
+
+            We implement this interface to be consistent with the general
+            API of a tree node. Other alogorithms may use the API to perform
+            operations on the tree without knowing the underlying implementation.
+
+            Note that any descendants of the detached nodes are also detached, but we only include
+            the direct children in the list of detached nodes.
+
+            :param children: The child node to remove.
+            :return: List of detached child nodes of the parent. If `child` is None, all children are detached.
+            """
+
+            if child is None:
+                childs = self.children
+                for c in childs:
+                    c.detach()
+                return childs
+
+            # check that all children are actually children of the parent
+            for c in child:
+                if c.parent != self:
+                    raise ValueError(f"Node {c} is not a child of {self}")
+
+            results: List[FlatTree.ProxyNode] = []
+            for c in child:
+                c.detach()
+                results.append(c)
+
+            return results
+
+    def __init__(self, *args,
+                 #metadata: Optional[Dict[str, Any]] = None,
+                 **kwargs):
         """
         Initialize a FlatTree.
 
@@ -155,9 +197,12 @@ class FlatTree(dict):
         This will return a ProxyNode object that represents the node and its children.
 
         :param args: Positional arguments to be passed to the dictionary constructor.
+        :param metadata: Metadata to be associated with the tree. We associate this data
+                         with the logical root node.
         :param kwargs: Keyword arguments to be passed to the dictionary constructor.
         """
         super().__init__(*args, **kwargs)
+        #self.metadata = metadata or {}
 
     def detach(self, key: str) -> None:
         """
@@ -199,7 +244,7 @@ class FlatTree(dict):
         :raises KeyError: If the node is not found in the tree.
         """
         def _post_del(node):
-            for child in node.children():
+            for child in node.children:
                 _post_del(child)
             del self[node._key]
 
@@ -207,9 +252,20 @@ class FlatTree(dict):
         
     @property
     def name(self) -> str:
+        """
+        Get the name of the tree (logical root).
+        """
         return self.LOGICAL_ROOT
-
-    def get_root(self) -> ProxyNode:
+    
+    @property
+    def parent(self):
+        """
+        Get the parent of the tree (None).
+        """
+        return None
+    
+    @property
+    def root(self) -> ProxyNode:
         """
         Lazily computes a logical root. It is the parent of all nodes
         without a parent key or a parent key that maps to None.
@@ -218,15 +274,16 @@ class FlatTree(dict):
         """
         return FlatTree.ProxyNode(self, FlatTree.LOGICAL_ROOT)
 
-    def get_data(self) -> dict:
+    @property
+    def payload(self) -> dict:
         """
         Get the data of the root node ({})
 
         :return: Dictionary representing the data of the tree.
         """
-        return self.get_root().get_data()
+        return {} #self._metadata
     
-    def add_child(self, key: str = None, *args, **kwargs) -> ProxyNode:
+    def add_child(self, key: Optional[str] = None, *args, **kwargs) -> ProxyNode:
         """
         Add a child node to the logical root.
 
@@ -239,16 +296,17 @@ class FlatTree(dict):
         :param kwargs: Additional attributes for the node.
         :return: The newly added node.
         """
-        return self.get_root().add_child(key, *args, **kwargs)
+        return self.root.add_child(key, *args, **kwargs)
     
+    @property
     def children(self) -> List[ProxyNode]:
         """
         Get the children of the logical root node.
 
         :return: List of children nodes.
         """
-        return self.get_root().children()
-
+        return self.root.children
+    
     def check_valid(self) -> None:
         """
         Validate the tree structure to ensure the structural integrity of the tree.
@@ -261,7 +319,7 @@ class FlatTree(dict):
                 raise ValueError(f"Cycle detected: {visited}")
             visited.add(key)
             par_key = self[key].get(FlatTree.PARENT_KEY, None)
-            if par_key is not None:
+            if par_key is not None and par_key != FlatTree.DETACHED_KEY:
                 _check_cycle(par_key, visited)
 
         for key, value in self.items():
@@ -269,6 +327,9 @@ class FlatTree(dict):
                 raise ValueError(f"Node {key}'s value must be a dictionary: {value=}")
 
             par_key = value.get(FlatTree.PARENT_KEY, None)
+            if par_key == FlatTree.DETACHED_KEY:
+                continue
+
             if par_key is not None and par_key not in self:
                 raise KeyError(f"Parent node non-existent: {par_key!r}")
             
