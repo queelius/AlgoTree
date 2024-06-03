@@ -14,54 +14,53 @@ class TreeNode(dict):
     of each node, and we provide methods to manipulate the tree structure.
     """
 
-    DEFAULT_NAME_KEY = '__name__'
+    NAME_KEY = '__name__'
     """
-    The default key used to store the name of a node.
-    If the node does not contain a key with this name, the name is extracted
-    from the data using the `payload` method.
+    The key used to store the name of a node. It does not need to exist in the
+    dictionary, but if it is present, it will be used as the name of the node.
     """
 
-    DEFAULT_CHILDREN_KEY = 'children'
+    CHILDREN_KEY = 'children'
     """
-    The default key used to store the children of a node.
+    The key used to store the children of a node.
     """
 
     def __init__(self,
                  *args,
-                 children_key = DEFAULT_CHILDREN_KEY,
-                 name_key = DEFAULT_NAME_KEY,
+                 parent: Optional['TreeNode'] = None,
+                 name: Optional[str] = None,
                  **kwargs):
         """
         Initialize a TreeNode.
 
         :param args: Positional arguments to initialize the TreeNode.
-        :children_key: The key to use to store the children of the node.
+        :param parent: The parent node of the current node. Default is None.
+        :param name: The name of the node. Default is None.
         :param kwargs: Additional keyword arguments to initialize the TreeNode.
         """
         # Initialize the dict part with data and kwargs
         super().__init__(*args, **kwargs)
 
-        self.children_key = children_key if children_key is not None else self.DEFAULT_CHILDREN_KEY
-        self.name_key = name_key
+        if name is not None:
+            self[TreeNode.NAME_KEY] = name
 
-        # Extract children from data if present
-        children = self.pop(self.children_key, None)
-
+        children = self.pop(TreeNode.CHILDREN_KEY, None)
         # Initialize children if present
         if children is not None:
-            for child in children:
-                self.add_child(child, children_key=children_key, name_key=name_key)
+            self[TreeNode.CHILDREN_KEY] = [ TreeNode(child) if
+                not isinstance(child, TreeNode) else child for child in children]
 
-            #self[children_key] = [TreeNode(child, children_key=children_key, \
-            #                               name_key=name_key) if \
-            #                           not isinstance(child, TreeNode) else \
-            #                            child for child in children]
+        if parent is not None:
+            if TreeNode.CHILDREN_KEY not in parent:
+                parent[TreeNode.CHILDREN_KEY] = []
+            parent[TreeNode.CHILDREN_KEY].append(self)
 
     def __setitem__(self, key, value):
-        if key == self.children_key:
+        if key == TreeNode.CHILDREN_KEY:
             if not isinstance(value, list):
                 value = [value]
-            value = [TreeNode(child, children_key=self.children_key, name_key=self.name_key) if not isinstance(child, TreeNode) else child for child in value]
+            value = [TreeNode(child) if not
+                     isinstance(child, TreeNode) else child for child in value]
         super().__setitem__(key, value)
         
 
@@ -72,7 +71,7 @@ class TreeNode(dict):
 
         :return: The name of the node.
         """
-        return self.get(self.name_key, self.payload)
+        return self.get(TreeNode.NAME_KEY, hash(str(self.payload)))
 
     # let's allow for attribute access to the dictionary, read-only though
     def __getattr__(self, name):
@@ -88,9 +87,9 @@ class TreeNode(dict):
 
         :return: List of child nodes (TreeNode objects).
         """
-        return self.get(self.children_key, [])
+        return self.get(TreeNode.CHILDREN_KEY, [])
 
-    def add_child(self, *args, **kwargs) -> 'TreeNode':
+    def add_child(self, name: Optional[str] = None, *args, **kwargs) -> 'TreeNode':
         """
         Add a child node to the tree.
 
@@ -98,32 +97,27 @@ class TreeNode(dict):
         :param kwargs: Keyword arguments to be passed to the TreeNode constructor for the child.
         :return: The newly added child node (TreeNode object).
         """
-
-        child = TreeNode(*args, **kwargs)
-        if self.children_key not in self:
-            self[self.children_key] = []
-        self[self.children_key].append(child)
-        return child
+        return TreeNode(*args, parent=self, name=name, **kwargs)
     
     def remove_children(self, child: Optional[List['TreeNode']] = None) -> List['TreeNode']:
         """
         Remove a child node from the tree.
 
         :param child: The child node to remove.
-        :return: None
+        :return: The removed child nodes (List of TreeNode objects).
         """
-
         if child is None:
-            childs = deepcopy(self.children)
-            if self.children_key in self:
-                del self[self.children_key]
-            return childs
+            if TreeNode.CHILDREN_KEY in self:
+                childs = deepcopy(self.children)
+                del self[TreeNode.CHILDREN_KEY]
+                return childs
+            else:
+                return []
 
         results : List['TreeNode'] = []
         for i, c in enumerate(self.children):
             if c == child:
-                results.append(self[self.children_key].pop(i))
-
+                results.append(self[TreeNode.CHILDREN_KEY].pop(i))
         return results
 
     def __repr__(self) -> str:
@@ -145,4 +139,4 @@ class TreeNode(dict):
 
         :return: The data stored in the tree.
         """
-        return {k: v for k, v in self.items() if k != self.children_key}
+        return {k: v for k, v in self.items() if k != TreeNode.CHILDREN_KEY}
