@@ -1,6 +1,8 @@
 import unittest
+
 from treekit.flattree import FlatTree
 from treekit.flattree_node import FlatTreeNode
+
 
 class TestFlatTreeNode(unittest.TestCase):
 
@@ -11,7 +13,7 @@ class TestFlatTreeNode(unittest.TestCase):
             "c": {"parent": "a"},
             "d": {"parent": "b"},
             "e": {"parent": "b"},
-            "f": {"parent": "c"}
+            "f": {"parent": "c"},
         }
         self.flat_tree = FlatTree(self.tree_data)
         self.node_a = FlatTreeNode.proxy(self.flat_tree, "a")
@@ -61,7 +63,7 @@ class TestFlatTreeNode(unittest.TestCase):
 
     def test_len_and_iter(self):
         self.assertEqual(len(self.node_a), 0)
-        self.node_a.payload = {"data": "value"}             
+        self.node_a.payload = {"data": "value"}
         self.assertEqual(self.node_a.payload, {"data": "value"})
 
     def test_getitem_setitem_delitem(self):
@@ -71,5 +73,6 @@ class TestFlatTreeNode(unittest.TestCase):
         with self.assertRaises(KeyError):
             _ = self.node_a["key1"]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

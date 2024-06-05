@@ -1,8 +1,10 @@
-import unittest
 import json
+import unittest
 import uuid
+
 from treekit.flattree import FlatTree
 from treekit.flattree_node import FlatTreeNode
+
 
 class TestFlatTreeNodeAdditional(unittest.TestCase):
 
@@ -20,7 +22,7 @@ class TestFlatTreeNodeAdditional(unittest.TestCase):
         node1 = self.root.add_child(name="node1", data=1)
         node2 = self.root.add_child(name="node2", data=2)
         node3 = node1.add_child(name="node3", data=3)
-        
+
         # Attempt to create a cycle: making node1 a child of node3
         with self.assertRaises(ValueError):
             node1.parent = node3
@@ -30,13 +32,13 @@ class TestFlatTreeNodeAdditional(unittest.TestCase):
         node1 = self.root.add_child(name="node1", data="data1")
         node2 = self.root.add_child(name="node2", data="data2")
         node3 = node1.add_child(name="node3", data="data3")
-        
+
         # Serialize to JSON
         tree_json = json.dumps(self.tree, indent=2)
         # Deserialize back to FlatTree
         deserialized_tree_data = json.loads(tree_json)
         deserialized_tree = FlatTree(deserialized_tree_data)
-        
+
         # Verify structure is the same
         self.assertEqual(self.tree, deserialized_tree)
 
@@ -44,7 +46,7 @@ class TestFlatTreeNodeAdditional(unittest.TestCase):
         # Create a tree with non-serializable data (function)
         non_serializable_data = {"node1": {"data": lambda x: x}}
         non_serializable_tree = FlatTree(non_serializable_data)
-        
+
         # Verify serialization fails
         with self.assertRaises(TypeError):
             json.dumps(non_serializable_tree)
@@ -53,7 +55,7 @@ class TestFlatTreeNodeAdditional(unittest.TestCase):
         node1 = self.root.add_child(name="node1", data=1)
         node2 = self.root.add_child(name="node2", data=2)
         node3 = node1.add_child(name="node3", data=3)
-        
+
         def pretty_print(node, depth=0):
             result = ""
             if depth != 0:
@@ -75,5 +77,6 @@ class TestFlatTreeNodeAdditional(unittest.TestCase):
         actual_output = pretty_print(self.root)
         self.assertEqual(expected_output, actual_output)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,10 @@
-from typing import List, TYPE_CHECKING, Union, Any, Optional
+from typing import TYPE_CHECKING, Any, List, Optional, Union
+
 from treekit import utils
 
 if TYPE_CHECKING:
     from flattree_node import FlatTreeNode
+
 
 class FlatTree(dict):
     """
@@ -32,11 +34,11 @@ class FlatTree(dict):
     ```python
     {
         "<node_key>": {
-        
+
             # Parent key (optional). If blank or null/None, parent is the
             # logical root node.
             "parent": "<parent_node_key>",
-            
+
             # Node payload (optional key-value pairs)
             "<key>": "<value>",
             <key>: <value>,
@@ -48,10 +50,10 @@ class FlatTree(dict):
 
     Finally, and perhaps most powerfully, we provide a `FlatTreeNode` class
     which provides an interface to the underlying `FlatTree` object centered
-    around nodes. See ``flattree_node.py`` for more details. 
+    around nodes. See ``flattree_node.py`` for more details.
     """
 
-    LOGICAL_ROOT = '__ROOT__'
+    LOGICAL_ROOT = "__ROOT__"
     """
     The key of the logical root node. This node is always the root node of
     FlatTree objects. the logical root node is a convenience to represent a
@@ -63,13 +65,13 @@ class FlatTree(dict):
     nodes in the tree.
     """
 
-    PARENT_KEY = 'parent'
+    PARENT_KEY = "parent"
     """
     The key used to store the parent key of a node. Modify this if you want to
     use a different key to store the parent key.
     """
 
-    DETACHED_KEY = '__DETACHED__'
+    DETACHED_KEY = "__DETACHED__"
     """
     The key used to represent a detached node. This is a special key that is
     assumed to not exist in the tree. When a node is detached, its parent key
@@ -107,8 +109,11 @@ class FlatTree(dict):
         keys = [FlatTree.LOGICAL_ROOT, FlatTree.DETACHED_KEY]
         keys += list(self.keys())
         # we must exclude None, since it is not a valid key
-        keys += [v.get(FlatTree.PARENT_KEY) for v in self.values() if
-                 v.get(FlatTree.PARENT_KEY) is not None]
+        keys += [
+            v.get(FlatTree.PARENT_KEY)
+            for v in self.values()
+            if v.get(FlatTree.PARENT_KEY) is not None
+        ]
         return list(set(keys))
 
     def child_keys(self, key: str) -> List[str]:
@@ -124,7 +129,7 @@ class FlatTree(dict):
         par_key = None if key == FlatTree.LOGICAL_ROOT else key
         return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) == par_key]
 
-    def detach(self, key: str) -> 'FlatTreeNode':
+    def detach(self, key: str) -> "FlatTreeNode":
         """
         Detach node with key `key` by setting its parent to `FlatTree.DETACHED_KEY`
         which refers to a special key that we assume doesn't exist in the tree.
@@ -137,8 +142,8 @@ class FlatTree(dict):
             raise KeyError(f"Node not found: {key!r}")
         self[key][FlatTree.PARENT_KEY] = FlatTree.DETACHED_KEY
         return self.node(key)
-       
-    def prune(self, node: Union[str, 'FlatTreeNode']) -> List[str]:
+
+    def prune(self, node: Union[str, "FlatTreeNode"]) -> List[str]:
         """
         Prune the subtree rooted at the given node (`node` can be a
         unique key for the node or a `FlatTreeNode` object).
@@ -159,9 +164,9 @@ class FlatTree(dict):
             return False
 
         pruned = []
-        utils.visit(node=node, func=_prune, order='post')
+        utils.visit(node=node, func=_prune, order="post")
         return pruned
-    
+
     @staticmethod
     def check_valid(tree) -> None:
         """
@@ -176,10 +181,11 @@ class FlatTree(dict):
 
         Note: This function ignores detached nodes, since they are not part of
         the tree structure and represent a separate tree structure rooted
-        under `FlatTree.DETACHED_KEY`. 
+        under `FlatTree.DETACHED_KEY`.
 
         Raises a ValueError if the tree structure is invalid.
         """
+
         def _check_cycle(key, visited):
             if key in visited:
                 raise ValueError(f"Cycle detected: {visited}")
@@ -198,10 +204,10 @@ class FlatTree(dict):
 
             if par_key is not None and par_key not in tree:
                 raise KeyError(f"Parent {par_key!r} not in tree for node {key!r}")
-            
+
             _check_cycle(key, set())
-    
-    def node(self, key: str, root: Optional[str] = None) -> 'FlatTreeNode':
+
+    def node(self, key: str, root: Optional[str] = None) -> "FlatTreeNode":
         """
         Get sub-tree rooted at `root` node, with the current node set
         to the node with key `key`. Default root is current key.
@@ -214,13 +220,13 @@ class FlatTree(dict):
 
         if key not in self.unique_keys():
             raise KeyError(f"Key not found: {key!r}")
-        
-        return FlatTreeNode.proxy(tree=self,
-                                  node_key=key,
-                                  root_key=key if root is None else root)
+
+        return FlatTreeNode.proxy(
+            tree=self, node_key=key, root_key=key if root is None else root
+        )
 
     @property
-    def root(self) -> 'FlatTreeNode':
+    def root(self) -> "FlatTreeNode":
         """
         Retrive the logical root of the tree. The represents the entire tree
         structure.
@@ -230,7 +236,7 @@ class FlatTree(dict):
         return self.node(FlatTree.LOGICAL_ROOT)
 
     @property
-    def detached(self) -> 'FlatTreeNode':
+    def detached(self) -> "FlatTreeNode":
         """
         Retrieve the detached tree. (This is detached from the logical root
         and is rooted at the logical node with the key `FlatTree.DETACHED_KEY`.)

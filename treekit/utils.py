@@ -1,10 +1,10 @@
-from typing import Callable, Any, List, Deque, Tuple, Type
 from collections import deque
+from typing import Any, Callable, Deque, List, Tuple, Type
 
-def visit(node: Any,
-          func: Callable[[Any], bool],
-          order: str = 'post',
-          **kwargs) -> bool:
+
+def visit(
+    node: Any, func: Callable[[Any], bool], order: str = "post", **kwargs
+) -> bool:
     """
     Visit the nodes in the tree rooted at `node` in a pre-order or post-order
     traversal. The procedure `proc` should have a side-effect you want to
@@ -34,24 +34,24 @@ def visit(node: Any,
     if not callable(func):
         raise TypeError("func must be callable")
 
-    if order not in ('pre', 'post', 'level'):
+    if order not in ("pre", "post", "level"):
         raise ValueError(f"Invalid order: {order}")
 
-    if not hasattr(node, 'children'):
+    if not hasattr(node, "children"):
         raise AttributeError("node must have a 'children' property")
 
-    if order == 'level':
+    if order == "level":
         return breadth_first(node, func, **kwargs)
-    
+
     s = deque([node])
     while s:
         node = s.pop()
-        if order == 'pre':
+        if order == "pre":
             if func(node, **kwargs):
                 return True
-            
+
         s.extend(reversed(node.children))
-        if order == 'post':
+        if order == "post":
             if func(node, **kwargs):
                 return True
 
@@ -67,17 +67,15 @@ def visit(node: Any,
     # if order == 'post':
     #     if func(node, **kwargs):
     #         return True
-        
+
     return False
 
-def map(node: Any,
-        func: Callable[[Any], Any],
-        order: str = 'post',
-        **kwargs) -> Any:
+
+def map(node: Any, func: Callable[[Any], Any], order: str = "post", **kwargs) -> Any:
     """
     Map a function over the nodes in the tree rooted at `node`. It is a map
     operation over trees. In particular, the function `func`, of type
-    
+
         func : Node -> Node,
 
     is called on each node in pre or post order traversal. The function should
@@ -106,22 +104,23 @@ def map(node: Any,
     if not callable(func):
         raise TypeError("func must be callable")
 
-    if order not in ('pre', 'post'):
+    if order not in ("pre", "post"):
         raise ValueError(f"Invalid order: {order}")
 
-    if not hasattr(node, 'children'):
+    if not hasattr(node, "children"):
         raise AttributeError("node must have a 'children' property")
 
-    if order == 'pre':
+    if order == "pre":
         node = func(node, **kwargs)
 
     # Traverse children and apply `func` recursively
     node.children = [map(c, func, order, **kwargs) for c in node.children]
 
-    if order == 'post':
+    if order == "post":
         node = func(node, **kwargs)
 
     return node
+
 
 def descendants(node) -> List:
     """
@@ -131,10 +130,9 @@ def descendants(node) -> List:
     :return: List of descendant nodes.
     """
     results = []
-    visit(node, 
-          lambda n: results.append(n) or False,
-          order='pre')
+    visit(node, lambda n: results.append(n) or False, order="pre")
     return results
+
 
 def ancestors(node) -> List:
     """
@@ -143,14 +141,17 @@ def ancestors(node) -> List:
     :param node: The root node.
     :return: List of ancestor nodes.
     """
+
     def _ancestors(n):
         nonlocal anc
         if not is_root(n):
             anc.append(n.parent)
             _ancestors(n.parent)
+
     anc = []
     _ancestors(node)
     return anc
+
 
 def siblings(node) -> List:
     """
@@ -161,6 +162,7 @@ def siblings(node) -> List:
     """
     return [] if is_root(node) else [c for c in node.parent.children if c != node]
 
+
 def leaves(node) -> List:
     """
     Get the leaves of a node.
@@ -169,10 +171,13 @@ def leaves(node) -> List:
     :return: List of leaf nodes.
     """
     results = []
-    visit(node,
-          lambda n: results.append(n) or False if not n.children else False,
-          order='post')
+    visit(
+        node,
+        lambda n: results.append(n) or False if not n.children else False,
+        order="post",
+    )
     return results
+
 
 def height(node) -> int:
     """
@@ -183,6 +188,7 @@ def height(node) -> int:
     """
     return 0 if is_leaf(node) else 1 + max(height(c) for c in node.children)
 
+
 def depth(node) -> int:
     """
     Get the depth of a node.
@@ -191,6 +197,7 @@ def depth(node) -> int:
     :return: The depth of the node.
     """
     return 0 if is_root(node) else 1 + depth(node.parent)
+
 
 def is_root(node) -> bool:
     """
@@ -201,6 +208,7 @@ def is_root(node) -> bool:
     """
     return node.parent is None
 
+
 def is_leaf(node) -> bool:
     """
     Check if a node is a leaf node.
@@ -210,6 +218,7 @@ def is_leaf(node) -> bool:
     """
     return not is_internal(node)
 
+
 def is_internal(node) -> bool:
     """
     Check if a node is an internal node.
@@ -218,6 +227,7 @@ def is_internal(node) -> bool:
     :return: True if the node is an internal node, False otherwise.
     """
     return len(node.children) > 0
+
 
 def is_ancestor(node, other) -> bool:
     """
@@ -229,6 +239,7 @@ def is_ancestor(node, other) -> bool:
     """
     return other in descendants(node)
 
+
 def is_descendant(node, other) -> bool:
     """
     Check if a node is a descendant of another node.
@@ -238,6 +249,7 @@ def is_descendant(node, other) -> bool:
     :return: True if the node is a descendant of the other node, False otherwise.
     """
     return node in descendants(other)
+
 
 def is_sibling(node, other) -> bool:
     """
@@ -249,9 +261,8 @@ def is_sibling(node, other) -> bool:
     """
     return node in siblings(other)
 
-def breadth_first(node: Any,
-                  func: Callable[[Any], bool],
-                  **kwargs) -> bool:
+
+def breadth_first(node: Any, func: Callable[[Any], bool], **kwargs) -> bool:
     """
     Traverse the tree in breadth-first order. The function `func` is called on
     each node and level. The function should have a side-effect you want to
@@ -262,14 +273,14 @@ def breadth_first(node: Any,
     return True immediately. Otherwise, it will return False after traversing
     all nodes. This is useful if you want to find a node that satisfies a
     condition, and you want to stop the traversal as soon as you find it.
-    
+
     Requirement:
 
     - This function requires that the node has a `children` property that is
       iterable.
 
     - The function `func` should have the signature:
-    
+
         `func(node: Any, **kwargs) -> bool`
 
     :param node: The root node.
@@ -283,22 +294,21 @@ def breadth_first(node: Any,
     """
     if not callable(func):
         raise TypeError("func must be callable")
-    
-    if not hasattr(node, 'children'):
+
+    if not hasattr(node, "children"):
         raise AttributeError("node must have a 'children' property")
 
     q: Deque[Tuple[Any, int]] = deque([(node, 0)])
     while q:
         cur, lvl = q.popleft()
-        kwargs['level'] = lvl
+        kwargs["level"] = lvl
         if func(cur, **kwargs):
             return True
         q.extend((child, lvl + 1) for child in cur.children)
     return False
 
-def find_nodes(node: Any,
-               pred: Callable[[Any], bool],
-               **kwargs) -> List[Any]:
+
+def find_nodes(node: Any, pred: Callable[[Any], bool], **kwargs) -> List[Any]:
     """
     Find nodes that satisfy a predicate.
 
@@ -307,13 +317,15 @@ def find_nodes(node: Any,
     :return: List of nodes that satisfy the predicate.
     """
     nodes: List[Any] = []
-    visit(node, lambda n, **kwargs: nodes.append(n) or False if pred(n, **kwargs) else False,
-          order='pre')
+    visit(
+        node,
+        lambda n, **kwargs: nodes.append(n) or False if pred(n, **kwargs) else False,
+        order="pre",
+    )
     return nodes
 
-def find_node(node: Any,
-              pred: Callable[[Any], bool],
-              **kwargs) -> Any:
+
+def find_node(node: Any, pred: Callable[[Any], bool], **kwargs) -> Any:
     """
     Find closest node that satisfies a predicate. The predicate function should
     return True if the node satisfies the condition. It can also accept
@@ -328,6 +340,7 @@ def find_node(node: Any,
     :return: The node that satisfies the predicate.
     """
     result = None
+
     def _pred(n, **kwargs):
         nonlocal result
         if pred(n, **kwargs):
@@ -335,6 +348,6 @@ def find_node(node: Any,
             return True
         else:
             return False
-    
+
     breadth_first(node, _pred, **kwargs)
     return result

@@ -1,22 +1,33 @@
 import unittest
+
 from treekit.flattree import FlatTree
 from treekit.flattree_node import FlatTreeNode
+
 
 class TestFlatTree(unittest.TestCase):
 
     def setUp(self):
         self.tree_data = {
-            "node1": {"data": "Some data for node1", "more": "Some more data for node1"},
+            "node1": {
+                "data": "Some data for node1",
+                "more": "Some more data for node1",
+            },
             "node2": {"data": "Some data for node2"},
-            "node3": {"parent": "node1", "data": "Some data for node3", "test": "Some test data for node3"},
+            "node3": {
+                "parent": "node1",
+                "data": "Some data for node3",
+                "test": "Some test data for node3",
+            },
             "node4": {"parent": "node3", "data": "Some data for node4"},
-            "node5": {"parent": "node3", "data": "Some data for node5"}
+            "node5": {"parent": "node3", "data": "Some data for node5"},
         }
         self.flat_tree = FlatTree(self.tree_data)
 
     def test_parent(self):
         self.assertEqual(self.flat_tree.root.parent, None)
-        self.assertEqual(self.flat_tree.node("node3", "node1").parent, self.flat_tree.node("node1"))
+        self.assertEqual(
+            self.flat_tree.node("node3", "node1").parent, self.flat_tree.node("node1")
+        )
         self.assertEqual(self.flat_tree.node("node3").parent, None)
 
     def test_initialization(self):
@@ -26,7 +37,15 @@ class TestFlatTree(unittest.TestCase):
 
     def test_unique_keys(self):
         unique_keys = self.flat_tree.unique_keys()
-        expected_keys = ["__ROOT__", "__DETACHED__", "node1", "node2", "node3", "node4", "node5"]
+        expected_keys = [
+            "__ROOT__",
+            "__DETACHED__",
+            "node1",
+            "node2",
+            "node3",
+            "node4",
+            "node5",
+        ]
         self.assertCountEqual(unique_keys, expected_keys)
 
     def test_child_keys(self):
@@ -72,11 +91,18 @@ class TestFlatTreeNode(unittest.TestCase):
 
     def setUp(self):
         self.tree_data = {
-            "node1": {"data": "Some data for node1", "more": "Some more data for node1"},
+            "node1": {
+                "data": "Some data for node1",
+                "more": "Some more data for node1",
+            },
             "node2": {"data": "Some data for node2"},
-            "node3": {"parent": "node1", "data": "Some data for node3", "test": "Some test data for node3"},
+            "node3": {
+                "parent": "node1",
+                "data": "Some data for node3",
+                "test": "Some test data for node3",
+            },
             "node4": {"parent": "node3", "data": "Some data for node4"},
-            "node5": {"parent": "node3", "data": "Some data for node5"}
+            "node5": {"parent": "node3", "data": "Some data for node5"},
         }
         self.flat_tree = FlatTree(self.tree_data)
         self.node1 = FlatTreeNode.proxy(self.flat_tree, "node1")
@@ -134,5 +160,6 @@ class TestFlatTreeNode(unittest.TestCase):
             self.node3.parent = node6
             FlatTree.check_valid(self.flat_tree)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

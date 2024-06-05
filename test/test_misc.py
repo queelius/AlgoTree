@@ -1,10 +1,12 @@
+import logging
+import time
 import unittest
+
 from treekit.treenode import TreeNode
 from treekit.utils import visit
-import time
-import logging
 
 logging.basicConfig(level=logging.DEBUG)
+
 
 class TestTreeNodeAdvanced(unittest.TestCase):
 
@@ -12,8 +14,12 @@ class TestTreeNodeAdvanced(unittest.TestCase):
         self.root = TreeNode(name="root", value="root_value")
         self.child1 = TreeNode(name="child1", parent=self.root, value="child1_value")
         self.child2 = TreeNode(name="child2", parent=self.root, value="child2_value")
-        self.child1_1 = TreeNode(name="child1_1", parent=self.child1, value="child1_1_value")
-        self.child2_1 = TreeNode(name="child2_1", parent=self.child2, value="child2_1_value")
+        self.child1_1 = TreeNode(
+            name="child1_1", parent=self.child1, value="child1_1_value"
+        )
+        self.child2_1 = TreeNode(
+            name="child2_1", parent=self.child2, value="child2_1_value"
+        )
 
         # tree looks like this:
         # root
@@ -45,7 +51,9 @@ class TestTreeNodeAdvanced(unittest.TestCase):
             TreeNode.check_valid(self.root)
 
     def test_custom_payload_and_attributes(self):
-        custom_node = TreeNode(name="custom", parent=self.root, custom_attr="custom_value")
+        custom_node = TreeNode(
+            name="custom", parent=self.root, custom_attr="custom_value"
+        )
         self.assertEqual(custom_node.custom_attr, "custom_value")
         self.assertIn(custom_node, self.root.children)
 
@@ -62,7 +70,7 @@ class TestTreeNodeAdvanced(unittest.TestCase):
 
         # Measure traversal time
         start_time = time.time()
-        visit(large_root, lambda n: False, order='pre')
+        visit(large_root, lambda n: False, order="pre")
         traversal_time = time.time() - start_time
 
         # Assert traversal time is within acceptable limits (e.g., 1 second)
@@ -81,5 +89,6 @@ class TestTreeNodeAdvanced(unittest.TestCase):
         self.assertIsNone(single_node_tree.parent)
         self.assertEqual(single_node_tree.name, "single")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

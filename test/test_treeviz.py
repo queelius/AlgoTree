@@ -1,7 +1,10 @@
-import unittest
-from anytree import Node
-from treekit.tree_viz import TreeViz
 import os
+import unittest
+
+from anytree import Node
+
+from treekit.tree_viz import TreeViz
+
 
 class TestTreeViz(unittest.TestCase):
 
@@ -30,5 +33,6 @@ class TestTreeViz(unittest.TestCase):
         # Clean up
         os.remove(filename)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

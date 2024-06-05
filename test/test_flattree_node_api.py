@@ -1,6 +1,8 @@
 import unittest
+
 from treekit.flattree import FlatTree
 from treekit.flattree_node import FlatTreeNode
+
 
 class TestFlatTreeNodeAPI(unittest.TestCase):
 
@@ -86,5 +88,6 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         node3.children = []
         self.assertEqual(node3.children, [])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

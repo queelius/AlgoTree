@@ -1,16 +1,21 @@
+from typing import Callable, Optional
+
 import anytree
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
+
 from treekit.tree_converter import TreeConverter
-from typing import Callable, Optional
+
 
 class TreeViz:
     @staticmethod
-    def text(node,
-             style=anytree.ContStyle(),
-             node_name: Callable = TreeConverter.default_node_name,
-             extract: Callable = TreeConverter.default_extract,
-             **kwargs) -> str:
+    def text(
+        node,
+        style=anytree.ContStyle(),
+        node_name: Callable = TreeConverter.default_node_name,
+        extract: Callable = TreeConverter.default_extract,
+        **kwargs,
+    ) -> str:
         """
         Generate a text string representation of the part of the tree rooted at
         `node`. The `style` parameter controls the presentation of the tree.
@@ -32,8 +37,9 @@ class TreeViz:
         """
 
         if not isinstance(node, Node):
-            node = TreeConverter.convert(source_node=node, target_type=Node,
-                                         node_name=node_name)
+            node = TreeConverter.convert(
+                source_node=node, target_type=Node, node_name=node_name
+            )
 
         result = ""
         for pre, _, n in RenderTree(node=node, style=style, **kwargs):
@@ -41,10 +47,12 @@ class TreeViz:
         return result
 
     @staticmethod
-    def image(node,
-              filename: str,
-              node_name: Callable=TreeConverter.default_node_name,
-              **kwargs) -> None:
+    def image(
+        node,
+        filename: str,
+        node_name: Callable = TreeConverter.default_node_name,
+        **kwargs,
+    ) -> None:
         """
         Save the tree to an image or dot file. The outfile should include the
         format extension (e.g., 'tree.png' or 'tree.dot').
@@ -58,18 +66,20 @@ class TreeViz:
         """
 
         if not isinstance(node, Node):
-            node = TreeConverter.convert(source_node=node,
-                                         target_type=Node,
-                                         node_name=node_name)
+            node = TreeConverter.convert(
+                source_node=node, target_type=Node, node_name=node_name
+            )
 
         # Create a dictionary to map each node to a unique identifier
-        node_to_id = {n: f"node{idx}" for idx, n in
-                      enumerate([node] + list(node.descendants))}
+        node_to_id = {
+            n: f"node{idx}" for idx, n in enumerate([node] + list(node.descendants))
+        }
 
         dot = DotExporter(
             node=node,
             nodenamefunc=lambda node: node_to_id[node],
             nodeattrfunc=lambda node: f'label="{node_name(node)}"',
-            **kwargs)
+            **kwargs,
+        )
 
         dot.to_picture(filename)

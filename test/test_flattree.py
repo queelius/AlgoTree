@@ -1,10 +1,11 @@
 import unittest
+
 from treekit.flattree import FlatTree
 from treekit.flattree_node import FlatTreeNode
 
+
 class TestFlatTree(unittest.TestCase):
 
-    
     def setUp(self):
         self.tree_data = {
             "a": {"parent": None},
@@ -12,7 +13,7 @@ class TestFlatTree(unittest.TestCase):
             "c": {"parent": "a"},
             "d": {"parent": "b"},
             "e": {"parent": "b"},
-            "f": {"parent": "c"}
+            "f": {"parent": "c"},
         }
         self.flat_tree = FlatTree(self.tree_data)
 
@@ -78,5 +79,6 @@ class TestFlatTree(unittest.TestCase):
         detached_node = self.flat_tree.detached
         self.assertEqual(detached_node._key, FlatTree.DETACHED_KEY)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
