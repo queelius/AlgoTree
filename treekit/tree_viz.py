@@ -32,7 +32,8 @@ class TreeViz:
         """
 
         if not isinstance(node, Node):
-            node = TreeConverter.to_anytree(node=node)
+            node = TreeConverter.convert(source_node=node, target_type=Node,
+                                         node_name=node_name)
 
         result = ""
         for pre, _, n in RenderTree(node=node, style=style, **kwargs):
@@ -57,8 +58,9 @@ class TreeViz:
         """
 
         if not isinstance(node, Node):
-            node = TreeConverter.to_anytree(node=node,
-                                            node_name=node_name)
+            node = TreeConverter.convert(source_node=node,
+                                         target_type=Node,
+                                         node_name=node_name)
 
         # Create a dictionary to map each node to a unique identifier
         node_to_id = {n: f"node{idx}" for idx, n in

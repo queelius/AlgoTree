@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING, Union, Callable, Any, Optional
+from typing import List, TYPE_CHECKING, Union, Any, Optional
 from treekit import utils
 
 if TYPE_CHECKING:
@@ -106,7 +106,9 @@ class FlatTree(dict):
         """
         keys = [FlatTree.LOGICAL_ROOT, FlatTree.DETACHED_KEY]
         keys += list(self.keys())
-        keys += [v.get(FlatTree.PARENT_KEY) for v in self.values()]
+        # we must exclude None, since it is not a valid key
+        keys += [v.get(FlatTree.PARENT_KEY) for v in self.values() if
+                 v.get(FlatTree.PARENT_KEY) is not None]
         return list(set(keys))
 
     def child_keys(self, key: str) -> List[str]:
@@ -127,10 +129,6 @@ class FlatTree(dict):
         Detach node with key `key` by setting its parent to `FlatTree.DETACHED_KEY`
         which refers to a special key that we assume doesn't exist in the tree.
 
-        NOTE: Cannot detach purely logical nodes like the logical root node
-              and the root of all detached nodes. They are lazily generated
-              and are not part of the tree structure.
-
         :param key: The key of the node to detach.
         :return: The detached subtree rooted at the node.
         :raises KeyError: If the node is not found in the tree.
@@ -138,7 +136,7 @@ class FlatTree(dict):
         if key not in self:
             raise KeyError(f"Node not found: {key!r}")
         self[key][FlatTree.PARENT_KEY] = FlatTree.DETACHED_KEY
-        return self.root_under(key, key, self.child_keys(key))
+        return self.node(key)
        
     def prune(self, node: Union[str, 'FlatTreeNode']) -> List[str]:
         """
@@ -158,6 +156,7 @@ class FlatTree(dict):
             if node._key in self:
                 pruned.append(node._key)
                 del self[node._key]
+            return False
 
         pruned = []
         utils.visit(node=node, func=_prune, order='post')
@@ -180,16 +179,6 @@ class FlatTree(dict):
         under `FlatTree.DETACHED_KEY`. 
 
         Raises a ValueError if the tree structure is invalid.
-
-        TODO: Move check_valid to FlatTreeNode.check_valid, so that it
-              checks to see if the sub-tree rooted at the node is valid.
-              Then, check_valid for the FlatTree is just:
-                FlatTreeNode.check_valid(root),
-              but we have more granularity and flexibility in checking the
-              validity of tree structures, e.g., we can apply it to detached
-              trees or, any sub-tree, and other logical groupings of nodes
-              rooted at some logical node.
-
         """
         def _check_cycle(key, visited):
             if key in visited:
@@ -212,37 +201,13 @@ class FlatTree(dict):
             
             _check_cycle(key, set())
     
-    def root_under(self,
-                   key: str,
-                   root_key: str,
-                   root_child_keys: Optional[List[str]] = None) -> 'FlatTreeNode':
+    def node(self, key: str, root: Optional[str] = None) -> 'FlatTreeNode':
         """
-        Create a node view of sub-tree rooted at a logical root with key
-        'root_key' with the nodes in 'root_child_keys' as its children. The
-        current node in this subtree is set to node with the key `key`.
-
-        :param key: The key of the node that is a descendant of the root.
-        :param root_key: The key of the root node.
-        :param root_child_keys: The keys which are children of the root.
-        :return: The node with key `key` in the sub-tree rooted at `root_key`
-                 which has children `root_child_keys`.
-        """
-        from .flattree_node import FlatTreeNode
-        return FlatTreeNode.proxy(self, key, root_key, root_child_keys)
-
-    def node(self, key: str, rooted_at: Optional[str] = None) -> 'FlatTreeNode':
-        """
-        Get sub-tree rooted at `rooted_at` node, with the current node set
-        to the node with key `key`. If `rooted_at` is None, the root of the
-        subtree is set to the node with key `key`.
-
-        The reason we allow for the `rooted_at` to differ from the `key` is
-        so that we can view the tree structure from the perspective of a
-        different node, but we want the current node in this tree view to be
-        the node with key `key`.
+        Get sub-tree rooted at `root` node, with the current node set
+        to the node with key `key`. Default root is current key.
 
         :param key: The unique key of the node.
-        :param rooted_at: The key of the root node of the sub-tree.
+        :param root: The key of the root node of the sub-tree.
         :return: FlatTreeNode proxy representing the node.
         """
         from .flattree_node import FlatTreeNode
@@ -250,11 +215,9 @@ class FlatTree(dict):
         if key not in self.unique_keys():
             raise KeyError(f"Key not found: {key!r}")
         
-        if rooted_at is None:
-            rooted_at = key
-
-        root_child_keys = self.child_keys(key)
-        return FlatTreeNode.proxy(self, key, rooted_at, root_child_keys)
+        return FlatTreeNode.proxy(tree=self,
+                                  node_key=key,
+                                  root_key=key if root is None else root)
 
     @property
     def root(self) -> 'FlatTreeNode':
@@ -264,10 +227,7 @@ class FlatTree(dict):
 
         :return: The logical root node.
         """
-        from .flattree_node import FlatTreeNode
-        return FlatTreeNode.proxy(self, FlatTree.LOGICAL_ROOT, FlatTree.LOGICAL_ROOT,
-                                  None)
-            #self.child_keys(FlatTree.LOGICAL_ROOT))
+        return self.node(FlatTree.LOGICAL_ROOT)
 
     @property
     def detached(self) -> 'FlatTreeNode':
@@ -277,8 +237,4 @@ class FlatTree(dict):
 
         :return: The detached logical tree.
         """
-        from .flattree_node import FlatTreeNode
-        return FlatTreeNode.proxy(self, FlatTree.DETACHED_KEY, FlatTree.DETACHED_KEY,
-                                  None)
-            #self.child_keys(FlatTree.DETACHED_KEY))
-
+        return self.node(FlatTree.DETACHED_KEY)

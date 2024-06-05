@@ -13,6 +13,7 @@ setup(
         'anytree>=2.8.0',
         'graphviz>=0.16'],
     python_requires='>=3.6',
+    test_suite='tests',
 #    entry_points={
 #        'console_scripts': [
 #            'jsontree=bin.jsontree:main',
