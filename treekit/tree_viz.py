@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 import anytree
 from anytree import Node, RenderTree

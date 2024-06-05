@@ -5,7 +5,6 @@ from treekit.flattree_node import FlatTreeNode
 
 
 class TestFlatTreeNode(unittest.TestCase):
-
     def setUp(self):
         self.tree_data = {
             "a": {"parent": None},

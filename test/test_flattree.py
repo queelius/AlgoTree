@@ -5,7 +5,6 @@ from treekit.flattree_node import FlatTreeNode
 
 
 class TestFlatTree(unittest.TestCase):
-
     def setUp(self):
         self.tree_data = {
             "a": {"parent": None},
@@ -24,7 +23,16 @@ class TestFlatTree(unittest.TestCase):
 
     def test_unique_keys(self):
         unique_keys = self.flat_tree.unique_keys()
-        expected_keys = ["__ROOT__", "__DETACHED__", "a", "b", "c", "d", "e", "f"]
+        expected_keys = [
+            "__ROOT__",
+            "__DETACHED__",
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+        ]
         self.assertCountEqual(unique_keys, expected_keys)
 
     def test_child_keys(self):

@@ -196,14 +196,16 @@ class FlatTree(dict):
 
         for key, value in tree.items():
             if not isinstance(value, dict):
-                raise ValueError(f"Node {key!r} does not have dictionary: {value=}")
+                raise ValueError(
+                    f"Node {key!r} does not have dictionary: {value=}")
 
             par_key = value.get(FlatTree.PARENT_KEY, None)
             if par_key == FlatTree.DETACHED_KEY:
                 continue
 
             if par_key is not None and par_key not in tree:
-                raise KeyError(f"Parent {par_key!r} not in tree for node {key!r}")
+                raise KeyError(
+                    f"Parent {par_key!r} not in tree for node {key!r}")
 
             _check_cycle(key, set())
 

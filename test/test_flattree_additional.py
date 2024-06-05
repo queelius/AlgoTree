@@ -7,7 +7,6 @@ from treekit.flattree_node import FlatTreeNode
 
 
 class TestFlatTreeNodeAdditional(unittest.TestCase):
-
     def setUp(self):
         self.root = FlatTreeNode(name="root", data=0)
         self.tree = self.root._tree

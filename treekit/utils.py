@@ -1,10 +1,11 @@
 from collections import deque
-from typing import Any, Callable, Deque, List, Tuple, Type
+from typing import Any, Callable, Deque, List, Tuple
 
 
-def visit(
-    node: Any, func: Callable[[Any], bool], order: str = "post", **kwargs
-) -> bool:
+def visit(node: Any,
+          func: Callable[[Any], bool],
+          order: str = "post",
+          **kwargs) -> bool:
     """
     Visit the nodes in the tree rooted at `node` in a pre-order or post-order
     traversal. The procedure `proc` should have a side-effect you want to
@@ -71,7 +72,10 @@ def visit(
     return False
 
 
-def map(node: Any, func: Callable[[Any], Any], order: str = "post", **kwargs) -> Any:
+def map(node: Any,
+        func: Callable[[Any], Any],
+        order: str = "post",
+        **kwargs) -> Any:
     """
     Map a function over the nodes in the tree rooted at `node`. It is a map
     operation over trees. In particular, the function `func`, of type
@@ -141,7 +145,6 @@ def ancestors(node) -> List:
     :param node: The root node.
     :return: List of ancestor nodes.
     """
-
     def _ancestors(n):
         nonlocal anc
         if not is_root(n):
@@ -160,7 +163,9 @@ def siblings(node) -> List:
     :param node: The root node.
     :return: List of sibling nodes.
     """
-    return [] if is_root(node) else [c for c in node.parent.children if c != node]
+    return [] if is_root(node) else [
+        c for c in node.parent.children if c != node
+    ]
 
 
 def leaves(node) -> List:
@@ -319,7 +324,8 @@ def find_nodes(node: Any, pred: Callable[[Any], bool], **kwargs) -> List[Any]:
     nodes: List[Any] = []
     visit(
         node,
-        lambda n, **kwargs: nodes.append(n) or False if pred(n, **kwargs) else False,
+        lambda n, **kwargs: (nodes.append(n) or False
+                             if pred(n, **kwargs) else False),
         order="pre",
     )
     return nodes

@@ -3,7 +3,6 @@ import uuid
 from typing import Any, Dict, Iterator, List, Optional
 
 from treekit.flattree import FlatTree
-from treekit.utils import visit
 
 
 class FlatTreeNode(collections.abc.MutableMapping):
@@ -90,7 +89,8 @@ class FlatTreeNode(collections.abc.MutableMapping):
         if self._key == self._root_key:
             return None
 
-        par_key = self._tree[self._key].get(FlatTree.PARENT_KEY, self._root_key)
+        par_key = self._tree[self._key].get(
+            FlatTree.PARENT_KEY, self._root_key)
         return FlatTreeNode.proxy(
             tree=self._tree, node_key=par_key, root_key=self._root_key
         )
@@ -189,7 +189,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
                 f"{self._key} is an immutable logical root without a payload"
             )
         if FlatTree.PARENT_KEY in data:
-            raise ValueError(f"Cannot set parent using payload setter")
+            raise ValueError("Cannot set parent using payload setter")
 
         self._tree[self._key] = data
 

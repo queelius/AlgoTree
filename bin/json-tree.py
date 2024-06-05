@@ -132,10 +132,18 @@ def main():
         nargs=1,
     )
     parser.add_argument(
-        "--get-node", metavar="NODE_KEY", help="Get node by key", type=str, nargs=1
+        "--get-node",
+        metavar="NODE_KEY",
+        help="Get node by key",
+        type=str,
+        nargs=1,
     )
-    parser.add_argument("--get-root", action="store_true", help="Get the root node")
-    parser.add_argument("--get-leaves", action="store_true", help="Get the leaf nodes")
+    parser.add_argument(
+        "--get-root", action="store_true", help="Get the root node"
+    )
+    parser.add_argument(
+        "--get-leaves", action="store_true", help="Get the leaf nodes"
+    )
     parser.add_argument(
         "--get-level",
         metavar="LEVEL",
@@ -218,11 +226,15 @@ def main():
         )
 
         if args.file == sys.stdin and sys.stdin.isatty():
-            logging.error("No JSON data provided, please provide a file or pipe data")
+            logging.error(
+                "No JSON data provided, please provide a file or pipe data"
+            )
             parser.print_usage()
             sys.exit(1)
 
-        tree = DictTree(data=json.load(args.file), mapping_key=args.mapping_key)
+        tree = DictTree(
+            data=json.load(args.file), mapping_key=args.mapping_key
+        )
         tree.verify_integrity()
 
         if args.size:
@@ -248,7 +260,9 @@ def main():
             )
         else:
             print(
-                tree.to_string(NODE_KEY=NODE_KEY, fallback_NODE_KEY=fallback_NODE_KEY)
+                tree.to_string(
+                    NODE_KEY=NODE_KEY, fallback_NODE_KEY=fallback_NODE_KEY
+                )
             )
 
     except Exception as e:

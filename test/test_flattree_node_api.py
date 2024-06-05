@@ -5,7 +5,6 @@ from treekit.flattree_node import FlatTreeNode
 
 
 class TestFlatTreeNodeAPI(unittest.TestCase):
-
     def setUp(self):
         self.root = FlatTreeNode(name="root", data=0)
         self.tree = self.root._tree
@@ -42,7 +41,9 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         node7 = FlatTreeNode(name="node7", data=7, parent=node3)
         node3.children = [node4, node5, node7]
         updated_children_names = [child.name for child in node3.children]
-        self.assertCountEqual(updated_children_names, ["node4", "node5", "node7"])
+        self.assertCountEqual(
+            updated_children_names, ["node4", "node5", "node7"]
+        )
 
     def test_detach_and_prune(self):
         # Create nodes
@@ -54,7 +55,9 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         # Detach node3
         detached_node3 = node3.detach()
         self.assertEqual(self.tree["node3"]["parent"], FlatTree.DETACHED_KEY)
-        detached_children_names = [child.name for child in detached_node3.children]
+        detached_children_names = [
+            child.name for child in detached_node3.children
+        ]
         self.assertCountEqual(detached_children_names, ["node4", "node5"])
 
         # Prune detached node3

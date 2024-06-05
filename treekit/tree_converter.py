@@ -1,12 +1,8 @@
 import uuid
 from copy import deepcopy
-from typing import Any, Callable, Optional, Type
-
-from anytree import Node
+from typing import Any, Callable, Type
 
 from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
-from treekit.treenode import TreeNode
 
 
 class TreeConverter:
@@ -70,7 +66,8 @@ class TreeConverter:
         :param extract: A callable to extract relevant data from a node.
         :return: The converted tree.
         """
-        target_root = target_type(name=node_name(source_node), **extract(source_node))
+        target_root = target_type(name=node_name(
+            source_node), **extract(source_node))
 
         for child in source_node.children:
             TreeConverter.copy_under(child, target_root, node_name, extract)

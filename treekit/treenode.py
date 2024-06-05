@@ -1,7 +1,6 @@
-from copy import deepcopy
-from typing import Callable, Dict, List, Optional
+from typing import Dict, List, Optional
 
-from treekit.utils import find_node, visit
+from treekit.utils import find_node
 
 
 class TreeNode(dict):
@@ -217,7 +216,7 @@ class TreeNode(dict):
         :param data: The data to store in the tree.
         """
         if TreeNode.CHILDREN_KEY in data:
-            raise ValueError(f"Cannot set children using payload setter")
+            raise ValueError("Cannot set children using payload setter")
 
         children = self.pop(TreeNode.CHILDREN_KEY, None)
         self.clear()

@@ -7,7 +7,6 @@ from treekit.tree_viz import TreeViz
 
 
 class TestTreeViz(unittest.TestCase):
-
     def setUp(self):
         # Create a sample tree for testing
         self.root = Node("root")

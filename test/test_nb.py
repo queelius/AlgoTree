@@ -5,7 +5,6 @@ from treekit.flattree_node import FlatTreeNode
 
 
 class TestFlatTree(unittest.TestCase):
-
     def setUp(self):
         self.tree_data = {
             "node1": {
@@ -26,13 +25,18 @@ class TestFlatTree(unittest.TestCase):
     def test_parent(self):
         self.assertEqual(self.flat_tree.root.parent, None)
         self.assertEqual(
-            self.flat_tree.node("node3", "node1").parent, self.flat_tree.node("node1")
+            self.flat_tree.node("node3", "node1").parent,
+            self.flat_tree.node("node1"),
         )
         self.assertEqual(self.flat_tree.node("node3").parent, None)
 
     def test_initialization(self):
-        self.assertEqual(self.flat_tree["node1"]["data"], "Some data for node1")
-        self.assertEqual(self.flat_tree["node2"]["data"], "Some data for node2")
+        self.assertEqual(
+            self.flat_tree["node1"]["data"], "Some data for node1"
+        )
+        self.assertEqual(
+            self.flat_tree["node2"]["data"], "Some data for node2"
+        )
         self.assertEqual(self.flat_tree["node3"]["parent"], "node1")
 
     def test_unique_keys(self):
@@ -50,12 +54,16 @@ class TestFlatTree(unittest.TestCase):
 
     def test_child_keys(self):
         self.assertEqual(self.flat_tree.child_keys("node1"), ["node3"])
-        self.assertEqual(self.flat_tree.child_keys("node3"), ["node4", "node5"])
+        self.assertEqual(
+            self.flat_tree.child_keys("node3"), ["node4", "node5"]
+        )
         self.assertEqual(self.flat_tree.child_keys("node2"), [])
 
     def test_detach(self):
         detached_node = self.flat_tree.detach("node3")
-        self.assertEqual(self.flat_tree["node3"]["parent"], FlatTree.DETACHED_KEY)
+        self.assertEqual(
+            self.flat_tree["node3"]["parent"], FlatTree.DETACHED_KEY
+        )
         self.assertEqual(detached_node._key, "node3")
 
     def test_prune(self):
@@ -88,7 +96,6 @@ class TestFlatTree(unittest.TestCase):
 
 
 class TestFlatTreeNode(unittest.TestCase):
-
     def setUp(self):
         self.tree_data = {
             "node1": {
@@ -128,7 +135,9 @@ class TestFlatTreeNode(unittest.TestCase):
     def test_detach(self):
         detached_node = self.node3.detach()
         self.assertEqual(detached_node._key, "node3")
-        self.assertEqual(self.flat_tree["node3"]["parent"], FlatTree.DETACHED_KEY)
+        self.assertEqual(
+            self.flat_tree["node3"]["parent"], FlatTree.DETACHED_KEY
+        )
 
     def test_repr(self):
         repr_str = repr(self.node1)

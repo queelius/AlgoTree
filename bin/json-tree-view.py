@@ -62,7 +62,9 @@ def main():
             )
             parser.print_usage()
             sys.exit(1)
-        tree = DictTree(data=json.load(args.file), mapping_key=args.mapping_key)
+        tree = DictTree(
+            data=json.load(args.file), mapping_key=args.mapping_key
+        )
         tree.verify_integrity()
 
         if args.output:

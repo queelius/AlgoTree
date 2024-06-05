@@ -1,14 +1,28 @@
 import unittest
 
 from treekit.treenode import TreeNode
-from treekit.utils import (ancestors, breadth_first, depth, descendants,
-                           find_node, find_nodes, height, is_ancestor,
-                           is_descendant, is_internal, is_leaf, is_root,
-                           is_sibling, leaves, map, siblings, visit)
+from treekit.utils import (
+    ancestors,
+    breadth_first,
+    depth,
+    descendants,
+    find_node,
+    find_nodes,
+    height,
+    is_ancestor,
+    is_descendant,
+    is_internal,
+    is_leaf,
+    is_root,
+    is_sibling,
+    leaves,
+    map,
+    siblings,
+    visit,
+)
 
 
 class TestTreeNodeUtils(unittest.TestCase):
-
     def setUp(self):
         self.root = TreeNode(name="root", value=0)
         self.node1 = TreeNode(name="node1", parent=self.root, value=1)
@@ -44,7 +58,8 @@ class TestTreeNodeUtils(unittest.TestCase):
         result = []
         visit(
             self.root,
-            lambda n, **kwargs: result.append((n.name, kwargs["level"])) or False,
+            lambda n, **kwargs: result.append((n.name, kwargs["level"]))
+            or False,
             order="level",
         )
         self.assertEqual(
@@ -66,10 +81,13 @@ class TestTreeNodeUtils(unittest.TestCase):
     def test_visit_stop_on_match(self):
         result = []
         visit(
-            self.root, lambda n: result.append(n.name) or n.name == "node6", order="pre"
+            self.root,
+            lambda n: result.append(n.name) or n.name == "node6",
+            order="pre",
         )
         self.assertEqual(
-            result, ["root", "node1", "node2", "node3", "node4", "node5", "node6"]
+            result,
+            ["root", "node1", "node2", "node3", "node4", "node5", "node6"],
         )
 
     def test_map(self):
@@ -85,7 +103,8 @@ class TestTreeNodeUtils(unittest.TestCase):
     def test_descendants(self):
         desc = [n.name for n in descendants(self.node3)]
         self.assertEqual(
-            desc, ["node3", "node4", "node5", "node6", "node9", "node7", "node8"]
+            desc,
+            ["node3", "node4", "node5", "node6", "node9", "node7", "node8"],
         )
 
     def test_ancestors(self):
@@ -99,7 +118,8 @@ class TestTreeNodeUtils(unittest.TestCase):
     def test_leaves(self):
         leaf = [n.name for n in leaves(self.root)]
         self.assertEqual(
-            leaf, ["node1", "node2", "node4", "node5", "node9", "node7", "node8"]
+            leaf,
+            ["node1", "node2", "node4", "node5", "node9", "node7", "node8"],
         )
 
     def test_height(self):
@@ -140,7 +160,8 @@ class TestTreeNodeUtils(unittest.TestCase):
         result = []
         breadth_first(
             self.root,
-            lambda n, **kwargs: result.append((n.name, kwargs["level"])) or False,
+            lambda n, **kwargs: result.append((n.name, kwargs["level"]))
+            or False,
         )
         self.assertEqual(
             result,
