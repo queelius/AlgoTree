@@ -56,19 +56,6 @@ def visit(node: Any,
             if func(node, **kwargs):
                 return True
 
-    # if order == 'pre':
-    #     if func(node, **kwargs):
-    #         return True
-
-    # # Traverse children and apply `func` recursively
-    # for child in node.children:
-    #     if visit(child, func, order, **kwargs):
-    #         return True
-
-    # if order == 'post':
-    #     if func(node, **kwargs):
-    #         return True
-
     return False
 
 

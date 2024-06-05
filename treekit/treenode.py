@@ -75,6 +75,7 @@ class TreeNode(dict):
                 TreeNode(child) if not isinstance(child, TreeNode) else child
                 for child in children
             ]
+        self._parent = None
         self.parent = parent
 
     @property
@@ -121,7 +122,7 @@ class TreeNode(dict):
     def __getattr__(self, key):
         if key in self:
             return self[key]
-        return None
+        raise AttributeError(f"Attribute not found: {key}")
 
     def node(self, name: str) -> "TreeNode":
         """
@@ -142,7 +143,7 @@ class TreeNode(dict):
 
         :return: The name of the node.
         """
-        return self.get(TreeNode.NAME_KEY, str(hash(str(self.payload))))
+        return self.get(TreeNode.NAME_KEY, None)
 
     @property
     def children(self) -> List["TreeNode"]:

@@ -12,10 +12,24 @@ class TreeConverter:
 
     @staticmethod
     def default_extract(node):
+        """
+        Default extractor of relevant payload from a node.
+
+        :param node: The node to extract payload data from.
+        :return: The extracted data.
+        """
         return node.payload if hasattr(node, "payload") else {}
 
     @staticmethod
     def default_node_name(node):
+        """
+        Default function to map nodes to unique keys. If the node has a
+        `name` attribute, then it is used as the unique key. Otherwise,
+        a random UUID is generated.
+
+        :param node: The node to map to a unique key.
+        :return: The unique key for the node.
+        """
         return node.name if hasattr(node, "name") else str(uuid.uuid4())
 
     @staticmethod

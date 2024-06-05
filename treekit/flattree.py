@@ -27,30 +27,9 @@ class FlatTree(dict):
     structure. You can then convert the `FlatTree` object back to a dictionary
     using the `dict` constructor.
 
-    # FlatTree Specification
-
-    The `dict` should have the following structure:
-
-    ```python
-    {
-        "<node_key>": {
-
-            # Parent key (optional). If blank or null/None, parent is the
-            # logical root node.
-            "parent": "<parent_node_key>",
-
-            # Node payload (optional key-value pairs)
-            "<key>": "<value>",
-            <key>: <value>,
-            # ... more key-value pairs representing the node's payload
-        }
-        # ... more key-value pairs representing the tree's nodes
-    }
-    ```
-
-    Finally, and perhaps most powerfully, we provide a `FlatTreeNode` class
-    which provides an interface to the underlying `FlatTree` object centered
-    around nodes. See ``flattree_node.py`` for more details.
+    We provide a `FlatTreeNode` class which provides an interface to the
+    underlying `FlatTree` object centered around nodes. See `flattree_node.py`
+    for more details.
     """
 
     LOGICAL_ROOT = "__ROOT__"
@@ -243,6 +222,6 @@ class FlatTree(dict):
         Retrieve the detached tree. (This is detached from the logical root
         and is rooted at the logical node with the key `FlatTree.DETACHED_KEY`.)
 
-        :return: The detached logical tree.
+        :return: The detached logical root node.
         """
         return self.node(FlatTree.DETACHED_KEY)

@@ -1,18 +1,21 @@
-.. treekit documentation master file, created by
-   sphinx-quickstart on Tue Jun  4 23:10:50 2024.
+.. Treekit documentation master file, created by
+   sphinx-quickstart on Thu Jun  3 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to treekit's documentation!
-===================================
+Welcome to Treekit's documentation!
+====================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
-introduction
-modules
+   introduction
+   flattree
+   treenode
+   api
+   flattree_notebook
+   expression_tree_notebook
 
 Indices and tables
 ==================

@@ -1,7 +1,7 @@
 import collections.abc
 import uuid
 from typing import Any, Dict, Iterator, List, Optional
-
+from copy import deepcopy
 from treekit.flattree import FlatTree
 
 
@@ -77,6 +77,11 @@ class FlatTreeNode(collections.abc.MutableMapping):
 
     @property
     def name(self):
+        """
+        Get the unique name of the node.
+
+        :return: The unique name of the node.
+        """
         return self._key
 
     @property
@@ -159,7 +164,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
         """
         Detach the node from the tree.
 
-        :return: The sub-tree rooted at node.
+        :return: The detached node.
         """
         return self._tree.detach(self._key)
 
@@ -239,3 +244,15 @@ class FlatTreeNode(collections.abc.MutableMapping):
             nodes = [nodes]
         for node in nodes:
             node.parent = self
+
+    def __deepcopy__(self, memo):
+        # Create a new instance without calling __init__
+        new_node = FlatTreeNode.__new__(FlatTreeNode)
+        memo[id(self)] = new_node
+
+        # Deepcopy the internal attributes
+        new_node._tree = deepcopy(self._tree, memo)
+        new_node._key = deepcopy(self._key, memo)
+        new_node._root_key = deepcopy(self._root_key, memo)
+
+        return new_node
