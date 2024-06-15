@@ -102,7 +102,7 @@ You can initialize a `FlatTree` with a dictionary representing the tree data.
 
 .. code-block:: python
 
-    import treekit as tk
+    import AlgoTree
 
     tree_data = {
         "node1": {
@@ -125,7 +125,7 @@ You can initialize a `FlatTree` with a dictionary representing the tree data.
         }
     }
 
-    tree = tk.FlatTree(tree_data)
+    tree = AlgoTree.FlatTree(tree_data)
     print(json.dumps(tree, indent=2))
 
 Expected Output:
@@ -163,7 +163,7 @@ Text Visualization
 
 .. code-block:: python
 
-    from treekit.tree_viz import TreeViz
+    from AlgoTree.tree_viz import TreeViz
     print(TreeViz.text(tree))
 
 Expected Output:
@@ -266,7 +266,7 @@ Attempting to create a tree with an invalid parent reference will raise an error
 .. code-block:: python
 
     try:
-        invalid_tree = tk.FlatTree({
+        invalid_tree = AlgoTree.FlatTree({
             "node1": {
                 "parent": "non_existent_parent",
                 "data": "Some data for node1"
@@ -298,7 +298,7 @@ The `FlatTree` class checks for cycles in the tree and raises an error if a cycl
             "node3": {"parent": "node1", "data": "Some data for node3"},
             "node4": {"parent": "node0", "data": "Some data for node4"}
         }
-        cycle_tree = tk.FlatTree(cycle_tree_data)
+        cycle_tree = AlgoTree.FlatTree(cycle_tree_data)
         cycle_tree.check_valid()
     except ValueError as e:
         print(e)
@@ -325,8 +325,8 @@ Converting to `TreeNode`
 
 .. code-block:: python
 
-    import treekit.tree_converter as tc
-    new_tree = tc.TreeConverter.convert(tree, target_type=tk.TreeNode)
+    import AlgoTree.tree_converter as tc
+    new_tree = tc.TreeConverter.convert(tree, target_type=AlgoTree.TreeNode)
     print(type(new_tree))
     print(TreeViz.text(new_tree))
 
@@ -334,7 +334,7 @@ Expected Output:
 
 .. code-block:: text
 
-    <class 'treekit.treenode.TreeNode'>
+    <class 'AlgoTree.treenode.TreeNode'>
 
     __ROOT__
     ├── node1
@@ -348,4 +348,4 @@ Conclusion
 
 The `FlatTree` class provides a flexible and powerful way to represent and manipulate tree structures using a flat dictionary format. With methods for adding, detaching, pruning, and visualizing nodes, `FlatTree` can handle various tree-related tasks efficiently. This tutorial has covered the basic and advanced usage of the class, demonstrating its capabilities and versatility.
 
-For more detailed information and code implementation, refer to the [GitHub repository](https://github.com/queelius/treekit).
+For more detailed information and code implementation, refer to the [GitHub repository](https://github.com/queelius/AlgoTree).

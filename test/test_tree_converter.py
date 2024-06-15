@@ -2,14 +2,24 @@ import unittest
 
 from anytree import Node
 
-from treekit.flattree_node import FlatTreeNode
-from treekit.tree_converter import TreeConverter
-from treekit.treenode import TreeNode
+from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.tree_converter import TreeConverter
+from AlgoTree.treenode import TreeNode
 
 
 class TestTreeConverter(unittest.TestCase):
     def setUp(self):
-        # Setup a sample tree for testing
+        """
+        Create a sample tree for testing
+
+        Here is what the tree looks like::
+
+            root
+            ├── child1
+            │   └── child1_1
+            └── child2
+                └── child2_1
+        """
         self.root = TreeNode(name="root", value="root_value")
         self.child1 = TreeNode(
             name="child1", parent=self.root, value="child1_value"
@@ -27,8 +37,9 @@ class TestTreeConverter(unittest.TestCase):
     def test_copy_under(self):
         # Test copying a subtree under another node
         new_root = TreeNode(name="new_root", value="new_root_value")
-        TreeConverter.copy_under(self.root, new_root)
+        from AlgoTree.tree_print import pretty_tree
 
+        TreeConverter.copy_under(self.root, new_root)
         # Verify the structure
         self.assertEqual(len(new_root.children), 1)
         copied_root = new_root.children[0]

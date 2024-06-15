@@ -6,7 +6,7 @@ import logging
 import sys
 import textwrap
 
-from treekit.dicttree import DictTree
+from AlgoTree.dicttree import DictTree
 
 
 def main():

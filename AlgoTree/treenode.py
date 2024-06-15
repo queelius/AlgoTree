@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
-
-from treekit.utils import find_node
+from typing import Dict, List, Optional, Union
+import copy
+from AlgoTree.utils import find_node
 
 
 class TreeNode(dict):
@@ -46,6 +46,18 @@ class TreeNode(dict):
             _check_cycle(node.parent, visited)
 
         _check_cycle(node, set())
+
+
+    def clone(self, parent=None) -> "TreeNode":
+        """
+        Clone the current node and all its children.
+
+        :param parent: The parent of the new node.
+        :return: A new TreeNode object with the same data as the current node.
+        """
+        new_node = copy.deepcopy(self)
+        new_node.parent = parent
+        return new_node
 
     def __init__(
         self,
@@ -94,6 +106,9 @@ class TreeNode(dict):
 
         :param parent: The new parent of the node.
         """
+        #if self._root == self:
+        #    raise ValueError("Cannot set parent of root node of subtree")
+
         if self._parent is not None:
             self._parent.children = [
                 child for child in self._parent.children if child != self
@@ -103,6 +118,50 @@ class TreeNode(dict):
             if TreeNode.CHILDREN_KEY not in parent:
                 parent[TreeNode.CHILDREN_KEY] = []
             parent[TreeNode.CHILDREN_KEY].append(self)
+
+    @property
+    def root(self) -> "TreeNode":
+        """
+        Get the root of the tree.
+
+        :return: The root node of the tree.
+        """
+        node = self
+        while node.parent:
+            node = node.parent
+        return node
+
+    @property
+    def payload(self) -> Dict:
+        """
+        Get the data (minus the children) stored in the tree.
+
+        :return: The data stored in the tree.
+        """
+        return {
+            k: v
+            for k, v in self.items()
+            if k != TreeNode.CHILDREN_KEY and k != TreeNode.NAME_KEY
+        }
+
+    @payload.setter
+    def payload(self, data: Dict) -> None:
+        """
+        Set the data (minus the children) stored in the tree.
+
+        :param data: The data to store in the tree.
+        """
+        if TreeNode.CHILDREN_KEY in data:
+            raise ValueError("Cannot set children using payload setter")
+        
+        if TreeNode.NAME_KEY in data:
+            raise ValueError("Cannot set name using payload setter")
+
+        children = self.pop(TreeNode.CHILDREN_KEY, None)
+        self.clear()
+        if children is not None:
+            self[TreeNode.CHILDREN_KEY] = children
+        self.update(data)
 
     def __setitem__(self, key, value):
         if key == TreeNode.CHILDREN_KEY:
@@ -120,21 +179,26 @@ class TreeNode(dict):
         return super().__getitem__(key)
 
     def __getattr__(self, key):
+        if key in ["parent", "root", "payload", "name", "children"]:
+            return object.__getattribute__(self, key)
         if key in self:
             return self[key]
-        raise AttributeError(f"Attribute not found: {key}")
-
+        return None
+    
+    
     def node(self, name: str) -> "TreeNode":
         """
-        Get the node with the given name.
+        Get the node with the given name in the current sub-tree. The sub-tree
+        remains the same, we just change the current node position. If the name
+        is not found, raise a KeyError.
 
         :param name: The name of the node.
-        :return: The nodes with the given name.
+        :return: The node with the given name.
         """
-        result = find_node(self, lambda n, **_: n.name == name)
-        if result is None:
+        new_node = find_node(self, lambda n, **_: n.name == name)
+        if new_node is None:
             raise KeyError(f"Node not found: {name}")
-        return result
+        return new_node
 
     @property
     def name(self) -> Optional[str]:
@@ -143,7 +207,39 @@ class TreeNode(dict):
 
         :return: The name of the node.
         """
-        return self.get(TreeNode.NAME_KEY, None)
+        if TreeNode.NAME_KEY in self:
+            return self[TreeNode.NAME_KEY]
+        
+        return self.__hash__()  
+
+    def __hash__(self) -> int:
+        path_index = ()
+        node = self
+        while node.parent:
+            path_index = (node.parent.children.index(node),) + path_index
+            node = node.parent
+        return hash(path_index)
+
+    def __deepcopy__(self, memo):
+        # Create a new instance of TreeNode with a copy of the current node's data
+        new_node = TreeNode(copy.deepcopy(dict(self), memo))
+        # Deep copy the children
+        new_node[TreeNode.CHILDREN_KEY] = [copy.deepcopy(child, memo) for child in self.children]
+        # Set the parent of the new node
+        new_node._parent = self._parent
+        return new_node
+    
+    @name.setter
+    def name(self, name: Optional[str]) -> None:
+        """
+        Set the name of the node.
+
+        :param name: The name of the node.
+        """
+        if name is None:
+            self.pop(TreeNode.NAME_KEY, None)
+        else:
+            self[TreeNode.NAME_KEY] = name
 
     @property
     def children(self) -> List["TreeNode"]:
@@ -179,48 +275,9 @@ class TreeNode(dict):
         return TreeNode(*args, parent=self, name=name, **kwargs)
 
     def __repr__(self) -> str:
-        result = "TreeNode("
-        if self.name is not None:
-            result += f"name={self.name}"
-        if self.parent is not None:
+        result = f"TreeNode(name={self.name}"
+        if self._parent is not None:
             result += f", parent={self.parent.name}"
+        result += f", root={self.root.name}"
         result += f", payload={self.payload})"
         return result
-
-    @property
-    def root(self) -> "TreeNode":
-        """
-        Get the root of the tree.
-
-        :return: The root node of the tree.
-        """
-        return self
-
-    @property
-    def payload(self) -> Dict:
-        """
-        Get the data (minus the children) stored in the tree.
-
-        :return: The data stored in the tree.
-        """
-        return {
-            k: v
-            for k, v in self.items()
-            if k != TreeNode.CHILDREN_KEY and k != TreeNode.NAME_KEY
-        }
-
-    @payload.setter
-    def payload(self, data: Dict) -> None:
-        """
-        Set the data (minus the children) stored in the tree.
-
-        :param data: The data to store in the tree.
-        """
-        if TreeNode.CHILDREN_KEY in data:
-            raise ValueError("Cannot set children using payload setter")
-
-        children = self.pop(TreeNode.CHILDREN_KEY, None)
-        self.clear()
-        if children is not None:
-            self[TreeNode.CHILDREN_KEY] = children
-        self.update(data)

@@ -1,6 +1,6 @@
 import unittest
 
-from treekit.treenode import TreeNode
+from AlgoTree.treenode import TreeNode
 
 
 class TestTreeNode(unittest.TestCase):
@@ -65,12 +65,12 @@ class TestTreeNode(unittest.TestCase):
     def test_repr(self):
         root = TreeNode(name="root", value=10)
         self.assertEqual(
-            repr(root), "TreeNode(name=root, payload={'value': 10})"
+            repr(root), "TreeNode(name=root, root=root, payload={'value': 10})"
         )
         child = TreeNode(name="child", value=1, parent=root)
         self.assertEqual(
             repr(child),
-            "TreeNode(name=child, parent=root, payload={'value': 1})",
+            "TreeNode(name=child, parent=root, root=root, payload={'value': 1})",
         )
 
 

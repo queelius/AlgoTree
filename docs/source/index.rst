@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Treekit's documentation!
+Welcome to AlgoTree's documentation!
 ====================================
 
 .. toctree::
@@ -13,9 +13,9 @@ Welcome to Treekit's documentation!
    introduction
    flattree
    treenode
-   api
    flattree_notebook
    expression_tree_notebook
+   modules
 
 Indices and tables
 ==================

@@ -6,34 +6,12 @@ import logging
 import sys
 import textwrap
 
-from treekit.dicttree import DictTree
-
+from AlgoTree.flattree import FlatTree
+from AlgoTree.treenode import TreeNode
+from AlgoTree import utils
 
 def show_json_spec():
-    print(
-        textwrap.dedent(
-            """
-        The JSON data should have the following structure:
-
-            {
-                # Meta-data (optional key-value pairs)
-                ...
-
-                'mapping': {
-                    'node_key': {
-                        'parent': 'parent_node_key',
-                        # Additional payload data
-                        ...
-                    },
-
-                    # More nodes
-                    ...
-                }
-            }
-        """
-        )
-    )
-
+    print()
 
 def main():
     parser = argparse.ArgumentParser(

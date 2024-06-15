@@ -2,8 +2,8 @@ import logging
 import time
 import unittest
 
-from treekit.treenode import TreeNode
-from treekit.utils import visit
+from AlgoTree.treenode import TreeNode
+from AlgoTree.utils import visit
 
 logging.basicConfig(level=logging.DEBUG)
 

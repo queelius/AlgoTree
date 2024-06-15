@@ -1,8 +1,8 @@
 import unittest
 
-from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
-from treekit.utils import (
+from AlgoTree.flattree import FlatTree
+from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.utils import (
     ancestors,
     breadth_first,
     depth,
@@ -20,29 +20,52 @@ from treekit.utils import (
     map,
     siblings,
     visit,
+    size
 )
 
 
 class TestTreeUtils(unittest.TestCase):
     def setUp(self):
-        self.root = FlatTreeNode(name="root", data=0)
-        self.node1 = FlatTreeNode(name="node1", parent=self.root, data=1)
-        self.node2 = FlatTreeNode(name="node2", parent=self.root, data=2)
-        self.node3 = FlatTreeNode(name="node3", parent=self.root, data=3)
+        self.node0 = FlatTreeNode(name="node0", data=0)
+        self.node1 = FlatTreeNode(name="node1", parent=self.node0, data=1)
+        self.node2 = FlatTreeNode(name="node2", parent=self.node0, data=2)
+        self.node3 = FlatTreeNode(name="node3", parent=self.node0, data=3)
         self.node4 = FlatTreeNode(name="node4", parent=self.node3, data=4)
         self.node5 = FlatTreeNode(name="node5", parent=self.node3, data=5)
         self.node6 = FlatTreeNode(name="node6", parent=self.node3, data=6)
         self.node7 = FlatTreeNode(name="node7", parent=self.node3, data=7)
         self.node8 = FlatTreeNode(name="node8", parent=self.node3, data=8)
         self.node9 = FlatTreeNode(name="node9", parent=self.node6, data=9)
+        self.nodes = [
+            self.node0.tree.root,
+            self.node0, self.node1, self.node2, self.node3, self.node4,
+            self.node5, self.node6, self.node7, self.node8, self.node9
+        ]
+        self.tree = self.node0.tree
+        """
+        Create a sample tree for testing
+
+        Here is what the tree looks like::
+
+            node0
+            ├── node1
+            ├── node2
+            └── node3
+                ├── node4
+                ├── node5
+                ├── node6
+                │   └── node9
+                ├── node7
+                └── node8
+        """
 
     def test_visit_pre_order(self):
         result = []
-        visit(self.root, lambda n: result.append(n.name) or False, order="pre")
+        visit(self.node0, lambda n: result.append(n.name) or False, order="pre")
         self.assertEqual(
             result,
             [
-                "root",
+                "node0",
                 "node1",
                 "node2",
                 "node3",
@@ -58,7 +81,7 @@ class TestTreeUtils(unittest.TestCase):
     def test_visit_level_order(self):
         result = []
         visit(
-            self.root,
+            self.node0,
             lambda n, **kwargs: result.append((n.name, kwargs["level"]))
             or False,
             order="level",
@@ -66,7 +89,7 @@ class TestTreeUtils(unittest.TestCase):
         self.assertEqual(
             result,
             [
-                ("root", 0),
+                ("node0", 0),
                 ("node1", 1),
                 ("node2", 1),
                 ("node3", 1),
@@ -82,13 +105,13 @@ class TestTreeUtils(unittest.TestCase):
     def test_visit_stop_on_match(self):
         result = []
         visit(
-            self.root,
+            self.node0,
             lambda n: result.append(n.name) or n.name == "node6",
             order="pre",
         )
         self.assertEqual(
             result,
-            ["root", "node1", "node2", "node3", "node4", "node5", "node6"],
+            ["node0", "node1", "node2", "node3", "node4", "node5", "node6"],
         )
 
     def test_map(self):
@@ -96,46 +119,79 @@ class TestTreeUtils(unittest.TestCase):
             node["data"] += 1
             return node
 
-        map(self.root, increment_data)
-        self.assertEqual(self.root["data"], 1)
+        map(self.node0, increment_data)
+        self.assertEqual(self.node0["data"], 1)
         self.assertEqual(self.node1["data"], 2)
         self.assertEqual(self.node9["data"], 10)
 
-    def test_descendants(self):
-        desc = [n.name for n in descendants(self.node3)]
-        self.assertEqual(
-            desc,
-            ["node3", "node4", "node5", "node6", "node9", "node7", "node8"],
+    def test_descendants_node0(self):
+        self.assertCountEqual(
+            descendants(self.node0),
+            [self.node1, self.node2, self.node3, self.node4, self.node5, self.node6, self.node7, self.node8, self.node9]
+        )
+
+    def test_descendants_root(self):
+        true_descendants = [self.tree.node(n.name) for n in self.nodes[1:]]
+        self.assertCountEqual(descendants(self.tree.root), true_descendants)
+
+    def test_descendants_node3(self):
+        self.assertCountEqual(
+            descendants(self.node3),
+            [self.node4, self.node5, self.node6, self.node9, self.node7, self.node8]
         )
 
     def test_ancestors(self):
-        node9 = self.root.tree.node("node9", "root")
+        node9 = self.node0.tree.node("node9")
         anc = [n.name for n in ancestors(node9)]
-        self.assertEqual(anc, ["node6", "node3", "root"])
+        self.assertEqual(anc, ["node6", "node3", "node0", FlatTree.LOGICAL_ROOT])
+
+    def test_subtree(self):
+        subtree = self.tree.subtree("node3")
+        self.assertEqual(subtree.name, "node3")
+        self.assertEqual(subtree.root.name, "node3")
+        self.assertEqual(subtree.parent, None)
+        true_childs = [self.tree.subtree("node3").node("node4"),
+                       self.tree.subtree("node3").node("node5"),
+                       self.tree.subtree("node3").node("node6"),
+                       self.tree.subtree("node3").node("node7"),
+                       self.tree.subtree("node3").node("node8")]
+        for n in true_childs:
+            print(n)
+        self.assertCountEqual(subtree.children, true_childs)
 
     def test_siblings(self):
-        sib = [n.name for n in siblings(self.node6)]
-        self.assertEqual(sib, ["node4", "node5", "node7", "node8"])
+        self.assertEqual(siblings(self.node6), [self.node4, self.node5, self.node7, self.node8])
 
     def test_leaves(self):
-        leaf = [n.name for n in leaves(self.root)]
         self.assertEqual(
-            leaf,
-            ["node1", "node2", "node4", "node5", "node9", "node7", "node8"],
+            leaves(self.node0),
+            [self.node1, self.node2, self.node4, self.node5, self.node9, self.node7, self.node8]
         )
 
     def test_height(self):
-        self.assertEqual(height(self.root), 3)
+        self.assertEqual(height(self.node0), 3)
         self.assertEqual(height(self.node3), 2)
         self.assertEqual(height(self.node9), 0)
+        
+    def test_height_subtree(self):
+        self.assertEqual(height(self.node9.subtree()), 0)
+        self.assertEqual(height(self.node9.subtree().node("node9")), 0)
+        self.assertEqual(height(self.node3.subtree()), 2)
+        self.assertEqual(height(self.node3.subtree().subtree("node3")), 2)
+        self.assertEqual(height(self.node3.subtree().subtree().node("node3")), 2)
+        self.assertEqual(height(self.node3.subtree().subtree().node("node9")), 0)
+        self.assertEqual(height(self.node0.subtree()), 3)
+        self.assertEqual(height(self.node0.subtree().node("node0")), 3)
+        self.assertEqual(height(self.node0.subtree().node("node3")), 2)
+        self.assertEqual(height(self.node0.subtree().subtree("node3").node("node9")), 0)
 
     def test_depth(self):
-        self.assertEqual(depth(self.root), 0)
+        self.assertEqual(depth(self.node0), 0)
         self.assertEqual(depth(self.node3), 1)
         self.assertEqual(depth(self.node9), 3)
 
     def test_is_root(self):
-        self.assertTrue(is_root(self.root))
+        self.assertTrue(is_root(self.node0))
         self.assertFalse(is_root(self.node1))
 
     def test_is_leaf(self):
@@ -147,11 +203,11 @@ class TestTreeUtils(unittest.TestCase):
         self.assertFalse(is_internal(self.node1))
 
     def test_is_ancestor(self):
-        self.assertTrue(is_ancestor(self.root, self.node9))
+        self.assertTrue(is_ancestor(self.node0, self.node9))
         self.assertFalse(is_ancestor(self.node1, self.node9))
 
     def test_is_descendant(self):
-        self.assertTrue(is_descendant(self.node9, self.root))
+        self.assertTrue(is_descendant(self.node9, self.node0))
         self.assertFalse(is_descendant(self.node1, self.node9))
 
     def test_is_sibling(self):
@@ -161,14 +217,14 @@ class TestTreeUtils(unittest.TestCase):
     def test_breadth_first(self):
         result = []
         breadth_first(
-            self.root,
+            self.node0,
             lambda n, **kwargs: result.append((n.name, kwargs["level"]))
             or False,
         )
-        self.assertEqual(
+        self.assertCountEqual(
             result,
             [
-                ("root", 0),
+                ("node0", 0),
                 ("node1", 1),
                 ("node2", 1),
                 ("node3", 1),
@@ -182,14 +238,25 @@ class TestTreeUtils(unittest.TestCase):
         )
 
     def test_find_nodes(self):
-        nodes = find_nodes(self.root, lambda n: n["data"] > 3)
+        nodes = find_nodes(self.node0, lambda n: n["data"] > 3)
         self.assertCountEqual(
-            [n.name for n in nodes],
-            ["node4", "node5", "node6", "node7", "node8", "node9"],
+            nodes, [self.node4, self.node5, self.node6, self.node7, self.node8, self.node9]
         )
 
+
+    def test_size(self):
+        self.assertEqual(size(self.node0), 10)
+        self.assertEqual(size(self.tree.node("node0").root), 11)
+        self.assertEqual(size(self.tree.node("node0")), 10)
+        self.assertEqual(size(self.node3), 7)
+        self.assertEqual(size(self.node9.root), 10)
+        self.assertEqual(size(self.node9), 1)
+        self.assertEqual(size(self.node9.subtree().root), 1)
+        self.assertEqual(size(self.node9.subtree()), 1)
+        self.assertEqual(size(self.node9.tree.root), len(self.nodes))
+
     def test_find_node(self):
-        node = find_node(self.root, lambda n, **_: n["data"] == 7)
+        node = find_node(self.node0, lambda n, **_: n["data"] == 7)
         self.assertEqual(node.name, "node7")
 
 

@@ -1,7 +1,7 @@
 import unittest
 
-from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
+from AlgoTree.flattree import FlatTree
+from AlgoTree.flattree_node import FlatTreeNode
 
 
 class TestFlatTreeNode(unittest.TestCase):

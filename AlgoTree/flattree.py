@@ -1,10 +1,8 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Union
-
-from treekit import utils
+from AlgoTree import utils
 
 if TYPE_CHECKING:
     from flattree_node import FlatTreeNode
-
 
 class FlatTree(dict):
     """
@@ -85,7 +83,7 @@ class FlatTree(dict):
 
         :return: List of unique keys in the tree.
         """
-        keys = [FlatTree.LOGICAL_ROOT, FlatTree.DETACHED_KEY]
+        keys = [FlatTree.LOGICAL_ROOT, FlatTree.DETACHED_KEY, None]
         keys += list(self.keys())
         # we must exclude None, since it is not a valid key
         keys += [
@@ -105,8 +103,11 @@ class FlatTree(dict):
 
         if key not in self.unique_keys():
             raise KeyError(f"Key not found: {key!r}")
-        par_key = None if key == FlatTree.LOGICAL_ROOT else key
-        return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) == par_key]
+
+        if key == FlatTree.LOGICAL_ROOT:
+            return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) is None]
+        else:
+            return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) == key]
 
     def detach(self, key: str) -> "FlatTreeNode":
         """
@@ -188,23 +189,48 @@ class FlatTree(dict):
 
             _check_cycle(key, set())
 
-    def node(self, key: str, root: Optional[str] = None) -> "FlatTreeNode":
+    def node(self, name: str) -> "FlatTreeNode":
         """
-        Get sub-tree rooted at `root` node, with the current node set
-        to the node with key `key`. Default root is current key.
+        Reposition the current node in the to the node with name `name`. The
+        tree is not changed, only the current node pointer.
 
-        :param key: The unique key of the node.
-        :param root: The key of the root node of the sub-tree.
+        Note: This behaves differenyly than you might expect. We return a
+        proxy of a node in the tree, not the actual node. In particular, this
+        returns a `FlatTreeNode` object which represents the entire `FlatTree`
+        as the sub-tree with the current node set to the node with key `name`.
+        Subsequently, you can use `node`, `subtree`, `root`, and other methods
+        on the `FlatTreeNode` object to navigate the tree.
+
+        :param name: The name of the node (in the FlatTree, it is a unique key)
+        :return: FlatTreeNode proxy representing the node.
+        :raises KeyError: If the name (key) is not found in the tree.
+        """
+        from .flattree_node import FlatTreeNode
+
+        if name not in self.unique_keys():
+            raise KeyError(f"Key not found: {name!r}")
+
+        return FlatTreeNode.proxy(
+            tree=self, node_key=name, root_key=FlatTree.LOGICAL_ROOT
+        )
+
+    def subtree(self, name: Optional[str] = None) -> "FlatTreeNode":
+        """
+        Get sub-tree rooted at the node with the name `name` with the current
+        node also set to the node with name `name`.
+
+        :param name: The unique key of the node.
         :return: FlatTreeNode proxy representing the node.
         """
         from .flattree_node import FlatTreeNode
 
-        if key not in self.unique_keys():
-            raise KeyError(f"Key not found: {key!r}")
+        if name not in self.unique_keys():
+            raise KeyError(f"Name (unique key) not found: {name!r}")
 
-        return FlatTreeNode.proxy(
-            tree=self, node_key=key, root_key=key if root is None else root
-        )
+        if name is None:
+            name = FlatTree.LOGICAL_ROOT
+
+        return FlatTreeNode.proxy(tree=self, node_key=name, root_key=name)
 
     @property
     def root(self) -> "FlatTreeNode":
@@ -214,7 +240,34 @@ class FlatTree(dict):
 
         :return: The logical root node.
         """
-        return self.node(FlatTree.LOGICAL_ROOT)
+        return self.subtree(FlatTree.LOGICAL_ROOT)
+    
+    @property
+    def parent(self) -> "FlatTreeNode":
+        """
+        Retrieve the parent of the current node.
+
+        :return: The parent node.
+        """
+        return self.root.parent
+
+    @property
+    def payload(self) -> Any:
+        """
+        Retrieve the payload of the current node.
+
+        :return: The payload of the current node.
+        """
+        return self.root.payload
+
+    @property
+    def name(self) -> str:
+        """
+        Retrieve the name of the current node.
+
+        :return: The name of the current node.
+        """
+        return self.root.name
 
     @property
     def detached(self) -> "FlatTreeNode":
@@ -224,4 +277,14 @@ class FlatTree(dict):
 
         :return: The detached logical root node.
         """
-        return self.node(FlatTree.DETACHED_KEY)
+        return self.subtree(FlatTree.DETACHED_KEY)
+
+
+    @property
+    def children(self) -> List["FlatTreeNode"]:
+        """
+        Retrieve the children of the current node.
+
+        :return: List of children nodes.
+        """
+        return self.root.children

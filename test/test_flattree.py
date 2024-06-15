@@ -1,7 +1,7 @@
 import unittest
 
-from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
+from AlgoTree.flattree import FlatTree
+from AlgoTree.flattree_node import FlatTreeNode
 
 
 class TestFlatTree(unittest.TestCase):
@@ -26,6 +26,7 @@ class TestFlatTree(unittest.TestCase):
         expected_keys = [
             "__ROOT__",
             "__DETACHED__",
+            None,
             "a",
             "b",
             "c",

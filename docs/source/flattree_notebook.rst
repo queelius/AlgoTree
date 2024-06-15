@@ -1,5 +1,5 @@
-``FlatTree Notebook``
-=====================
+`FlatTree` Notebook
+-------------------
 
 In this notebook, we explore the ``FlatTree`` data structure, which is a
 tree with a flat memory layout. This data structure is useful when we
@@ -15,10 +15,10 @@ structure using the node interface.
 
 .. code:: ipython3
 
-    from treekit.flattree_node import FlatTreeNode
-    from treekit.tree_viz import TreeViz
-    from treekit.tree_converter import TreeConverter
-    from treekit.flattree import FlatTree
+    from AlgoTree.flattree_node import FlatTreeNode
+    from AlgoTree.tree_viz import TreeViz
+    from AlgoTree.tree_converter import TreeConverter
+    from AlgoTree.flattree import FlatTree
     import json
     
     root = FlatTreeNode(name="root", data=0)
@@ -318,7 +318,7 @@ the tree in text and image format respectively.
 
 .. code:: ipython3
 
-    TreeViz.image(anytree, "images/anytree.png")
+    TreeViz.image(anytree, ",.images/anytree.png")
 
 Here is the image (``anytree.png`` from above) of the tree:
 
@@ -567,7 +567,7 @@ modified in any way.
 .. code:: ipython3
 
     from anytree import Node
-    from treekit.treenode import TreeNode
+    from AlgoTree.treenode import TreeNode
     
     tree1 = TreeConverter.copy_under(tree.root, Node(name="anytree"))
     tree2 = TreeConverter.copy_under(tree.root, TreeNode(name="treenode"))
@@ -965,7 +965,7 @@ We can *detach* nodes. Let’s first view the full tree, pre-detachment.
 
 .. code:: ipython3
 
-    TreeViz.image(tree.root, "images/full-tree-pre-detach-or-prune.png")
+    TreeViz.image(tree.root, "./images/full-tree-pre-detach-or-prune.png")
 
 Here’s the full tree prior to any detachment or pruning:
 
@@ -985,7 +985,7 @@ missing those nodes.
 
 Let’s view the tree with the detached nodes.
 
-.. figure:: ./full-tree-post-detach.png
+.. figure:: images/full-tree-post-detach.png
    :alt: full-tree-post-detach
 
    full-tree-post-detach
@@ -1069,7 +1069,7 @@ at node 3.
     except KeyError as e:
         print(e)
     
-    TreeViz.image(tree.root, "images/post-prune-node-3.png")
+    TreeViz.image(tree.root, "./images/post-prune-node-3.png")
 
 
 .. parsed-literal::
@@ -1080,7 +1080,7 @@ at node 3.
 
 Let’s view the tree after pruning node 3.
 
-.. figure:: post-prune-node-3.png
+.. figure:: images/post-prune-node-3.png
    :alt: post-prune-node-3
 
    post-prune-node-3
@@ -1236,7 +1236,7 @@ tree representations and data structures.
 
 .. parsed-literal::
 
-    <class 'treekit.treenode.TreeNode'>
+    <class 'AlgoTree.treenode.TreeNode'>
 
 
 We see that it’s a different type of tree, a ``TreeNode``, which is a
@@ -1383,9 +1383,9 @@ pretty-print it using ``TreeViz``, we see that it’s the same tree.
     │       └── 6f3a61c7-f4ba-47cd-b73d-4e1bcf7d0505
     └── node200
     
-    <class 'treekit.treenode.TreeNode'>
-    <class 'treekit.treenode.TreeNode'>
-    <class 'treekit.flattree_node.FlatTreeNode'>
+    <class 'AlgoTree.treenode.TreeNode'>
+    <class 'AlgoTree.treenode.TreeNode'>
+    <class 'AlgoTree.flattree_node.FlatTreeNode'>
     __ROOT__
     ├── node1
     │   ├── node15

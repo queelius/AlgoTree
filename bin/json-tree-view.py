@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 
-from treekit.flattree import FlatTree
+from AlgoTree.flattree import FlatTree
 
 
 def main():

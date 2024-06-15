@@ -1,11 +1,11 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="treekit",
+    name="AlgoTree",
     version="0.1.1",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
-    description="A toolkit for working with tree structures in Python",
+    description="A algorithmic tookit for working with trees in Python",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(),

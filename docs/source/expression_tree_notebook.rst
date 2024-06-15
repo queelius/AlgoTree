@@ -9,7 +9,7 @@ First, let’s define our expression tree.
 
 .. code:: ipython3
 
-    from treekit.treenode import TreeNode
+    from AlgoTree.treenode import TreeNode
     import json
     
     # Define the expression tree
@@ -128,8 +128,8 @@ We can use the ``TreeViz`` class to visualize the tree structure.
 
 .. code:: ipython3
 
-    from treekit.tree_converter import TreeConverter
-    from treekit.tree_viz import TreeViz
+    from AlgoTree.tree_converter import TreeConverter
+    from AlgoTree.tree_viz import TreeViz
 
 .. code:: ipython3
 
@@ -227,7 +227,7 @@ We will now design a simple expression tree evaluator, ``Eval``.
 
     from copy import deepcopy
     import uuid
-    from treekit.flattree_node import FlatTreeNode
+    from AlgoTree.flattree_node import FlatTreeNode
     
     class Eval:
         """

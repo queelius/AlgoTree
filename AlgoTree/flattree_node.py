@@ -2,11 +2,45 @@ import collections.abc
 import uuid
 from typing import Any, Dict, Iterator, List, Optional
 from copy import deepcopy
-from treekit.flattree import FlatTree
-
+from AlgoTree.flattree import FlatTree
+from AlgoTree.utils import is_descendant
 
 class FlatTreeNode(collections.abc.MutableMapping):
     __slots__ = ("_tree", "_key", "_root_key")
+
+    def __deepcopy__(self, memo):
+        """
+        Deepcopy the node and its subtree.
+
+        :param memo: The memo dictionary.
+        :return: A new node with a deep copy of the tree (and its subtree)
+        """
+        new_node = FlatTreeNode.__new__(FlatTreeNode)
+        memo[id(self)] = new_node
+        new_node._tree = deepcopy(self._tree, memo)
+        new_node._key = self._key
+        new_node._root_key = self._root_key
+        return new_node
+      
+    def clone(self, parent=None) -> "FlatTreeNode":
+        """
+        Clone the node without its relationships to other nodes. If you want to
+        clone the entire tree, use `deepcopy(tree)` instead. We do allow
+        the parent to be set to a new parent node to facilitate flexible
+        cloning of nodes into new tree structures.
+
+        :return: A new node with the same data but no relationships.
+        """
+        new_node = FlatTreeNode.__new__(FlatTreeNode)
+        if parent is None:
+            new_node._tree = FlatTree({ self._key: deepcopy(self._tree[self._key]) })
+            new_node._root_key = self._key
+        else:
+            new_node._tree = parent._tree
+            new_node._tree[self._key] = deepcopy(self._tree[self._key])
+            new_node._root_key = parent._root_key
+        new_node._key = self._key
+        return new_node
 
     @classmethod
     def proxy(
@@ -36,6 +70,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
         self,
         name: Optional[str] = None,
         parent: Optional["FlatTreeNode"] = None,
+        children: Optional[List["FlatTreeNode"]] = None,
         *args,
         **kwargs,
     ):
@@ -56,18 +91,22 @@ class FlatTreeNode(collections.abc.MutableMapping):
         """
         self._key = str(uuid.uuid4()) if name is None else name
         if parent is not None:
+            if children is not None:
+                raise ValueError("Cannot specify both parent and children.")
             self._tree = parent._tree
             if self._key in self._tree:
                 raise KeyError(f"key already exists in the tree: {self._key}")
-
-            # if parent._key not in self._tree:
-            #    raise ValueError(f"Parent {parent} is not in the tree")
-
             if parent._key == FlatTree.LOGICAL_ROOT:
                 kwargs.pop(FlatTree.PARENT_KEY, None)
             else:
                 kwargs[FlatTree.PARENT_KEY] = parent._key
             self._root_key = parent._root_key
+        elif children is not None and len(children) > 0:
+            self._tree = children[0]._tree
+            if self._key in self._tree:
+                raise KeyError(f"key already exists in the tree: {self._key}")
+            self._root_key = children[0]._root_key
+            self.children = children
         else:
             self._tree = FlatTree()
             self._root_key = self._key
@@ -83,7 +122,18 @@ class FlatTreeNode(collections.abc.MutableMapping):
         :return: The unique name of the node.
         """
         return self._key
+    
+    @property
+    def root(self) -> "FlatTreeNode":
+        """
+        Get the root node of the subtree.
 
+        :return: The root node.
+        """
+        return FlatTreeNode.proxy(
+            tree=self._tree, node_key=self._root_key, root_key=self._root_key
+        )
+        
     @property
     def parent(self) -> Optional["FlatTreeNode"]:
         """
@@ -91,7 +141,12 @@ class FlatTreeNode(collections.abc.MutableMapping):
 
         :return: The parent node.
         """
+
+
         if self._key == self._root_key:
+            return None
+
+        if self._key not in self._tree:
             return None
 
         par_key = self._tree[self._key].get(
@@ -127,13 +182,18 @@ class FlatTreeNode(collections.abc.MutableMapping):
         return self._tree
 
     def __repr__(self):
+
+        if self._key == FlatTree.LOGICAL_ROOT:
+            return f"{__class__.__name__}(name={FlatTree.LOGICAL_ROOT}, payload={{}}"
         if self._key not in self._tree:
             return f"{__class__.__name__}(name={self.name}, payload={self.payload})"
         if FlatTree.PARENT_KEY in self._tree[self._key]:
             par = self._tree[self._key][FlatTree.PARENT_KEY]
         else:
-            par = None
-        return f"{__class__.__name__}(name={self.name}, parent={par}, payload={self.payload})"
+            par = FlatTree.LOGICAL_ROOT
+
+        child_keys = [child.name for child in self.children]
+        return f"{__class__.__name__}(name={self.name}, parent={par}, payload={self.payload}, root={self.root.name}, children={child_keys})"
 
     def __getitem__(self, key) -> Any:
         if self._key not in self._tree:
@@ -156,6 +216,8 @@ class FlatTreeNode(collections.abc.MutableMapping):
         del self._tree[self._key][key]
 
     def __getattr__(self, key) -> Any:
+        if key in ["name", "parent", "root", "tree", "payload", "children"]:
+            return object.__getattribute__(self, key)
         if key in self:
             return self[key]
         return None
@@ -189,6 +251,9 @@ class FlatTreeNode(collections.abc.MutableMapping):
 
         :param data: Dictionary representing the new data of the node.
         """
+        if not isinstance(data, dict):
+            raise ValueError("Payload must be a dictionary")
+
         if self._key not in self._tree:
             raise KeyError(
                 f"{self._key} is an immutable logical root without a payload"
@@ -196,6 +261,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
         if FlatTree.PARENT_KEY in data:
             raise ValueError("Cannot set parent using payload setter")
 
+        data[FlatTree.PARENT_KEY] = self._tree[self._key].get(FlatTree.PARENT_KEY)
         self._tree[self._key] = data
 
     def __iter__(self) -> Iterator[Any]:
@@ -245,14 +311,35 @@ class FlatTreeNode(collections.abc.MutableMapping):
         for node in nodes:
             node.parent = self
 
-    def __deepcopy__(self, memo):
-        # Create a new instance without calling __init__
-        new_node = FlatTreeNode.__new__(FlatTreeNode)
-        memo[id(self)] = new_node
+    def __eq__(self, other):
+        if not isinstance(other, FlatTreeNode):
+            return False
+        return (self._key == other._key and
+                self._root_key == other._root_key and
+                self._tree == other._tree)
 
-        # Deepcopy the internal attributes
-        new_node._tree = deepcopy(self._tree, memo)
-        new_node._key = deepcopy(self._key, memo)
-        new_node._root_key = deepcopy(self._root_key, memo)
+    def node(self, name: Optional[str] = None) -> "FlatTreeNode":
+        """
+        Get an ancestor node with the given name.
 
-        return new_node
+        :param name: The name of the node.
+        :return: The node.
+        """
+
+        if name is None:
+            name = self.name
+
+        return FlatTreeNode.proxy(tree=self._tree, node_key=name, root_key=self._root_key)
+
+    def subtree(self, name: Optional[str] = None) -> "FlatTreeNode":
+        """
+        Get a subtree rooted at the node with the name `name`. If `name` is
+        None, the subtree is rooted at the current node.
+
+        :param name: The name of the root node.
+        :return: A subtree rooted at the given node.
+        """
+
+        if name is None:
+            name = self.name
+        return FlatTreeNode.proxy(tree=self._tree, node_key=name, root_key=name)

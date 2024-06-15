@@ -1,11 +1,25 @@
 import unittest
 
-from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
+from AlgoTree.flattree import FlatTree
+from AlgoTree.flattree_node import FlatTreeNode
 
 
 class TestFlatTree(unittest.TestCase):
     def setUp(self):
+        """
+        Create a sample tree for testing
+
+        Here is what the tree looks like::
+
+        __ROOT__
+          │
+          ├── node1
+          │   └── node3
+          │       ├── node4
+          │       └── node5
+          └── node2
+
+        """
         self.tree_data = {
             "node1": {
                 "data": "Some data for node1",
@@ -25,10 +39,10 @@ class TestFlatTree(unittest.TestCase):
     def test_parent(self):
         self.assertEqual(self.flat_tree.root.parent, None)
         self.assertEqual(
-            self.flat_tree.node("node3", "node1").parent,
+            self.flat_tree.node("node3").parent,
             self.flat_tree.node("node1"),
         )
-        self.assertEqual(self.flat_tree.node("node3").parent, None)
+        self.assertEqual(self.flat_tree.subtree("node3").parent, None)
 
     def test_initialization(self):
         self.assertEqual(
@@ -44,6 +58,7 @@ class TestFlatTree(unittest.TestCase):
         expected_keys = [
             "__ROOT__",
             "__DETACHED__",
+            None,
             "node1",
             "node2",
             "node3",
@@ -97,6 +112,20 @@ class TestFlatTree(unittest.TestCase):
 
 class TestFlatTreeNode(unittest.TestCase):
     def setUp(self):
+        """
+        Create a sample tree for testing
+
+        Here is what the tree looks like::
+
+        __ROOT__
+          │
+          ├── node1
+          │   └── node3
+          │       ├── node4
+          │       └── node5
+          └── node2
+
+        """
         self.tree_data = {
             "node1": {
                 "data": "Some data for node1",
@@ -158,7 +187,7 @@ class TestFlatTreeNode(unittest.TestCase):
 
     def test_child_operations(self):
         self.node1.add_child(name="child1", data="child1 data")
-        child1 = self.flat_tree.node("child1", root="node1")
+        child1 = self.node1.node("child1")
         self.assertEqual(child1.parent.name, "node1")
         self.assertEqual(child1.payload["data"], "child1 data")
 

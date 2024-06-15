@@ -7,7 +7,7 @@ In this tutorial, we will explore the concept of expression trees. We will demon
 First, let's define our expression tree.
 
 ```python
-from treekit.treenode import TreeNode
+from AlgoTree.treenode import TreeNode
 expr = TreeNode({
     "value": "+",
     "type": "op",
@@ -41,7 +41,7 @@ expr = TreeNode({
 Here is what that looks like in a more convenient form.
 
 ```python
-from treekit.tree_viz import TreeViz
+from AlgoTree.tree_viz import TreeViz
 print(TreeViz.text(expr, node_name=lambda n: n.value))
 ```
 

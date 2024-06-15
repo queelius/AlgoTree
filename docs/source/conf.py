@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.abspath("../.."))
 
 
-project = "treekit"
+project = "AlgoTree"
 copyright = "2024, Alex Towell"
 author = "Alex Towell"
 
@@ -29,8 +29,8 @@ extensions = [
 ]
 
 templates_path = ['_templates']
-#exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = 'alabaster'
-html_static_path = ['_static, images']
+html_static_path = ['_static', 'images']
 

@@ -2,8 +2,8 @@ import json
 import unittest
 import uuid
 
-from treekit.flattree import FlatTree
-from treekit.flattree_node import FlatTreeNode
+from AlgoTree.flattree import FlatTree
+from AlgoTree.flattree_node import FlatTreeNode
 
 
 class TestFlatTreeNodeAdditional(unittest.TestCase):

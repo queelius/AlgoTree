@@ -3,7 +3,7 @@
 # Variables
 PYTHON=python3
 PIP=pip
-SOURCES=$(shell find treekit -name "*.py")
+SOURCES=$(shell find AlgoTree -name "*.py")
 TESTS=$(shell find test -name "*.py")
 
 # Phony targets
@@ -33,7 +33,7 @@ clean:
 
 # Generate documentation
 docs:
-	sphinx-apidoc -o docs/source treekit
+	sphinx-apidoc -o docs/source AlgoTree
 	sphinx-build -b html docs/source docs/build
 
 # Run test coverage
