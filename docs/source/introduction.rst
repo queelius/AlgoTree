@@ -71,7 +71,7 @@ We implement two tree data structures:
 
 Each representation has its own strengths and weaknesses. The key design point
 for `FlatTree` and `TreeNode` is that they are both also `dict` objects, i.e.,
-they provide a *view* of dictionaries as tree-like structures, as long as the
+they provide a view of dictionaries as tree-like structures, as long as the
 dictionaries are structured in a certain way. We document that structure
 elsewhere.
 
