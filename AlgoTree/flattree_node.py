@@ -96,10 +96,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
             self._tree = parent._tree
             if self._key in self._tree:
                 raise KeyError(f"key already exists in the tree: {self._key}")
-            if parent._key == FlatTree.LOGICAL_ROOT:
-                kwargs.pop(FlatTree.PARENT_KEY, None)
-            else:
-                kwargs[FlatTree.PARENT_KEY] = parent._key
+            kwargs[FlatTree.PARENT_KEY] = parent._key
             self._root_key = parent._root_key
         elif children is not None and len(children) > 0:
             self._tree = children[0]._tree
@@ -141,12 +138,7 @@ class FlatTreeNode(collections.abc.MutableMapping):
 
         :return: The parent node.
         """
-
-
-        if self._key == self._root_key:
-            return None
-
-        if self._key not in self._tree:
+        if self._key == self._root_key or self._key not in self._tree:
             return None
 
         par_key = self._tree[self._key].get(
@@ -182,17 +174,8 @@ class FlatTreeNode(collections.abc.MutableMapping):
         return self._tree
 
     def __repr__(self):
-
-        if self._key == FlatTree.LOGICAL_ROOT:
-            return f"{__class__.__name__}(name={FlatTree.LOGICAL_ROOT}, payload={{}}"
-        if self._key not in self._tree:
-            return f"{__class__.__name__}(name={self.name}, payload={self.payload})"
-        if FlatTree.PARENT_KEY in self._tree[self._key]:
-            par = self._tree[self._key][FlatTree.PARENT_KEY]
-        else:
-            par = FlatTree.LOGICAL_ROOT
-
-        child_keys = [child.name for child in self.children]
+        par = None if self._key == self._root_key else self.parent.name
+        child_keys = self._tree.child_keys(self._key)
         return f"{__class__.__name__}(name={self.name}, parent={par}, payload={self.payload}, root={self.root.name}, children={child_keys})"
 
     def __getitem__(self, key) -> Any:

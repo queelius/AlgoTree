@@ -11,10 +11,10 @@ class FlatTree(dict):
     This class represents a tree using a flat dictionary structure where each node
     has a unique key and an optional 'parent' key to reference its parent node.
 
-    If there is a single node without a  'parent' key, it is
+    The first node found that is without a  'parent' key is
     the root node. If there are multiple nodes without a 'parent' key, the
-    tree conceptually has a logical root node that is not represented in the
-    dictionary but is the parent of all nodes without a 'parent' key.
+    structure is technically a forrest. You may get all of the trees
+    with the `forest` method, which returns a list of the root nodes.
 
     The `FlatTree` class is a dictionary whose data represents a tree-like
     structure. It provides methods to manipulate the tree structure and
@@ -28,18 +28,6 @@ class FlatTree(dict):
     We provide a `FlatTreeNode` class which provides an interface to the
     underlying `FlatTree` object centered around nodes. See `flattree_node.py`
     for more details.
-    """
-
-    LOGICAL_ROOT = "__ROOT__"
-    """
-    The key of the logical root node. This node is always the root node of
-    FlatTree objects. the logical root node is a convenience to represent a
-    single tree structure, even when there are multiple nodes without a parent
-    specified. It is not represented in the dictionary but is the parent of all
-    nodes without a parent key (or with a parent key that maps to None). The
-    logical root node is lazily computed when needed. See the `root` property.
-    Note that it returns a FlatTreeNode object, which is a proxy for the
-    nodes in the tree.
     """
 
     PARENT_KEY = "parent"
@@ -69,7 +57,7 @@ class FlatTree(dict):
 
         With the exception of the first, the other examples are equivalent.
         They create a tree with two nodes, 'a' and 'b', where 'b' is a child of 'a'
-        and 'a' is a child of the logical root node.
+        and 'a' is the root node.
 
         :param args: Positional arguments to be passed to the dictionary constructor.
         :param kwargs: Keyword arguments to be passed to the dictionary constructor.
@@ -83,9 +71,8 @@ class FlatTree(dict):
 
         :return: List of unique keys in the tree.
         """
-        keys = [FlatTree.LOGICAL_ROOT, FlatTree.DETACHED_KEY, None]
+        keys = [FlatTree.DETACHED_KEY]
         keys += list(self.keys())
-        # we must exclude None, since it is not a valid key
         keys += [
             v.get(FlatTree.PARENT_KEY)
             for v in self.values()
@@ -104,10 +91,7 @@ class FlatTree(dict):
         if key not in self.unique_keys():
             raise KeyError(f"Key not found: {key!r}")
 
-        if key == FlatTree.LOGICAL_ROOT:
-            return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) is None]
-        else:
-            return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) == key]
+        return [k for k, v in self.items() if v.get(FlatTree.PARENT_KEY) == key]
 
     def detach(self, key: str) -> "FlatTreeNode":
         """
@@ -174,14 +158,21 @@ class FlatTree(dict):
             if par_key is not None and par_key != FlatTree.DETACHED_KEY:
                 _check_cycle(par_key, visited)
 
+        root_count = 0
         for key, value in tree.items():
             if not isinstance(value, dict):
                 raise ValueError(
                     f"Node {key!r} does not have dictionary: {value=}")
 
-            par_key = value.get(FlatTree.PARENT_KEY, None)
+            par_key = value.get(FlatTree.PARENT_KEY)
             if par_key == FlatTree.DETACHED_KEY:
                 continue
+
+            if par_key is None:
+                root_count = root_count + 1
+                if root_count > 1:
+                    raise ValueError(
+                        "Multiple root nodes found in tree: {root_count}")
 
             if par_key is not None and par_key not in tree:
                 raise KeyError(
@@ -211,7 +202,7 @@ class FlatTree(dict):
             raise KeyError(f"Key not found: {name!r}")
 
         return FlatTreeNode.proxy(
-            tree=self, node_key=name, root_key=FlatTree.LOGICAL_ROOT
+            tree=self, node_key=name, root_key=self.root_key
         )
 
     def subtree(self, name: Optional[str] = None) -> "FlatTreeNode":
@@ -228,19 +219,34 @@ class FlatTree(dict):
             raise KeyError(f"Name (unique key) not found: {name!r}")
 
         if name is None:
-            name = FlatTree.LOGICAL_ROOT
+            name = self.root_key
 
         return FlatTreeNode.proxy(tree=self, node_key=name, root_key=name)
 
     @property
     def root(self) -> "FlatTreeNode":
         """
-        Retrive the logical root of the tree. The represents the entire tree
+        Retrive the root of the tree. The represents the entire tree
         structure.
 
-        :return: The logical root node.
+        :return: The root node.
         """
-        return self.subtree(FlatTree.LOGICAL_ROOT)
+        return self.subtree(self.root_key)
+    
+    @property
+    def root_key(self) -> str:
+        """
+        Retrieve the key of the root node.
+
+        :return: The key of the root node.
+        """
+        # find the first node without a parent key or a parent key
+        # that is None
+        for key, value in self.items():
+            if value.get(FlatTree.PARENT_KEY) is None:
+                return key
+            
+        raise ValueError("No root node found in tree")
     
     @property
     def parent(self) -> "FlatTreeNode":
@@ -267,13 +273,13 @@ class FlatTree(dict):
 
         :return: The name of the current node.
         """
-        return self.root.name
+        return self.root_key
 
     @property
     def detached(self) -> "FlatTreeNode":
         """
-        Retrieve the detached tree. (This is detached from the logical root
-        and is rooted at the logical node with the key `FlatTree.DETACHED_KEY`.)
+        Retrieve the detached tree. (This is detached from the "true" root
+        and is rooted at a logical node with the key `FlatTree.DETACHED_KEY`.)
 
         :return: The detached logical root node.
         """

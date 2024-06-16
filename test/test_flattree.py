@@ -24,9 +24,7 @@ class TestFlatTree(unittest.TestCase):
     def test_unique_keys(self):
         unique_keys = self.flat_tree.unique_keys()
         expected_keys = [
-            "__ROOT__",
             "__DETACHED__",
-            None,
             "a",
             "b",
             "c",
@@ -82,7 +80,7 @@ class TestFlatTree(unittest.TestCase):
 
     def test_root(self):
         root_node = self.flat_tree.root
-        self.assertEqual(root_node._key, FlatTree.LOGICAL_ROOT)
+        self.assertEqual(root_node._key, "a")
 
     def test_detached(self):
         detached_node = self.flat_tree.detached

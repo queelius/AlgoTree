@@ -11,12 +11,10 @@ class TestFlatTree(unittest.TestCase):
 
         Here is what the tree looks like::
 
-        __ROOT__
-          │
-          ├── node1
-          │   └── node3
-          │       ├── node4
-          │       └── node5
+          node1
+          └── node3
+          |   ├── node4
+          |   └── node5
           └── node2
 
         """
@@ -25,7 +23,7 @@ class TestFlatTree(unittest.TestCase):
                 "data": "Some data for node1",
                 "more": "Some more data for node1",
             },
-            "node2": {"data": "Some data for node2"},
+            "node2": {"data": "Some data for node2", "parent": "node1"},
             "node3": {
                 "parent": "node1",
                 "data": "Some data for node3",
@@ -56,9 +54,7 @@ class TestFlatTree(unittest.TestCase):
     def test_unique_keys(self):
         unique_keys = self.flat_tree.unique_keys()
         expected_keys = [
-            "__ROOT__",
             "__DETACHED__",
-            None,
             "node1",
             "node2",
             "node3",
@@ -68,7 +64,7 @@ class TestFlatTree(unittest.TestCase):
         self.assertCountEqual(unique_keys, expected_keys)
 
     def test_child_keys(self):
-        self.assertEqual(self.flat_tree.child_keys("node1"), ["node3"])
+        self.assertCountEqual(self.flat_tree.child_keys("node1"), ["node2","node3"])
         self.assertEqual(
             self.flat_tree.child_keys("node3"), ["node4", "node5"]
         )
@@ -103,7 +99,7 @@ class TestFlatTree(unittest.TestCase):
 
     def test_root(self):
         root_node = self.flat_tree.root
-        self.assertEqual(root_node._key, FlatTree.LOGICAL_ROOT)
+        self.assertEqual(root_node._key, "node1")
 
     def test_detached(self):
         detached_node = self.flat_tree.detached
@@ -117,12 +113,10 @@ class TestFlatTreeNode(unittest.TestCase):
 
         Here is what the tree looks like::
 
-        __ROOT__
-          │
-          ├── node1
-          │   └── node3
-          │       ├── node4
-          │       └── node5
+          node1
+          ├── node3
+          │   ├── node4
+          │   └── node5
           └── node2
 
         """
@@ -131,7 +125,7 @@ class TestFlatTreeNode(unittest.TestCase):
                 "data": "Some data for node1",
                 "more": "Some more data for node1",
             },
-            "node2": {"data": "Some data for node2"},
+            "node2": {"data": "Some data for node2", "parent": "node1"},
             "node3": {
                 "parent": "node1",
                 "data": "Some data for node3",
@@ -150,7 +144,7 @@ class TestFlatTreeNode(unittest.TestCase):
 
     def test_children(self):
         children_node1 = [child.name for child in self.node1.children]
-        self.assertCountEqual(children_node1, ["node3"])
+        self.assertCountEqual(children_node1, ["node2", "node3"])
 
         children_node3 = [child.name for child in self.node3.children]
         self.assertCountEqual(children_node3, ["node4", "node5"])
@@ -197,7 +191,6 @@ class TestFlatTreeNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.node3.parent = node6
             FlatTree.check_valid(self.flat_tree)
-
 
 if __name__ == "__main__":
     unittest.main()

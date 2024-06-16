@@ -37,7 +37,6 @@ class TestTreeUtils(unittest.TestCase):
         self.node8 = FlatTreeNode(name="node8", parent=self.node3, data=8)
         self.node9 = FlatTreeNode(name="node9", parent=self.node6, data=9)
         self.nodes = [
-            self.node0.tree.root,
             self.node0, self.node1, self.node2, self.node3, self.node4,
             self.node5, self.node6, self.node7, self.node8, self.node9
         ]
@@ -143,7 +142,7 @@ class TestTreeUtils(unittest.TestCase):
     def test_ancestors(self):
         node9 = self.node0.tree.node("node9")
         anc = [n.name for n in ancestors(node9)]
-        self.assertEqual(anc, ["node6", "node3", "node0", FlatTree.LOGICAL_ROOT])
+        self.assertEqual(anc, ["node6", "node3", "node0"])
 
     def test_subtree(self):
         subtree = self.tree.subtree("node3")
@@ -246,7 +245,7 @@ class TestTreeUtils(unittest.TestCase):
 
     def test_size(self):
         self.assertEqual(size(self.node0), 10)
-        self.assertEqual(size(self.tree.node("node0").root), 11)
+        self.assertEqual(size(self.tree.node("node0").root), 10)
         self.assertEqual(size(self.tree.node("node0")), 10)
         self.assertEqual(size(self.node3), 7)
         self.assertEqual(size(self.node9.root), 10)

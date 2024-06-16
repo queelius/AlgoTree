@@ -18,7 +18,7 @@ class TestFlatTreeNode(unittest.TestCase):
         self.node_a = FlatTreeNode.proxy(self.flat_tree, "a")
         self.node_b = FlatTreeNode.proxy(self.flat_tree, "b")
         self.node_c = FlatTreeNode.proxy(self.flat_tree, "c")
-        self.root = FlatTreeNode.proxy(self.flat_tree, FlatTree.LOGICAL_ROOT)
+        self.root = FlatTreeNode.proxy(self.flat_tree, "a")
 
     def test_initialization(self):
         self.assertEqual(self.node_a.name, "a")

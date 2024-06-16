@@ -541,8 +541,8 @@ def subtree_rooted_at(node: Any, max_lvl: int) -> Any:
     breadth_first(node, _helper, max_lvl)
 
     def _build(n, par):
-        new_node = type(n)(name=n.name, payload=n.payload, parent=par)
-        #new_node = n.clone(par)
+        #new_node = type(n)(name=n.name, payload=n.payload, parent=par)
+        new_node = n.clone(par)
         for c in n.children:
             if c in within_hops:
                 _build(c, new_node)
@@ -565,17 +565,12 @@ def subtree_centered_at(node: Any, max_hops: int) -> Any:
     within_hops = breadth_first_undirected(node, max_hops)
     root = node
     while root.parent is not None:
-        print("Root: ", root.parent)
         if root.parent in within_hops:
-            print(f"Making {root.parent} the root")
             root = root.parent
 
-    print(f"Root: {root.name}")
-    print([n.name for n in within_hops])
-
     def _build(n, par):
-        #new_node = n.clone(par)
-        new_node = type(n)(name=n.name, payload=n.payload, parent=par)
+        new_node = n.clone(par)
+        #new_node = type(n)(name=n.name, payload=n.payload, parent=par)
         for c in n.children:
             if c in within_hops:
                 _build(c, new_node)

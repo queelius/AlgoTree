@@ -39,6 +39,7 @@ class TreeConverter:
         under,
         node_name: Callable = default_node_name,
         extract: Callable = default_extract,
+        max_tries: int = 1
     ):
         """
         Copy the subtree rooted at `node` as a child of `under`, where
@@ -52,20 +53,27 @@ class TreeConverter:
         :return: A subtree extending `under` with the copied nodes.
         """
         node_type = type(under)
-
+        tries: int = 0
         def _build(cur, und):
-            if cur.name != FlatTree.LOGICAL_ROOT:
-                data = deepcopy(extract(cur))
-                node = node_type(name=node_name(cur), parent=und, **data)
-                for child in cur.children:
-                    _build(child, node)
-                return node
-            else:
-                # skip this `cur` node since it is the logical root in a
-                # FlatTree structure.
-                for child in cur.children:
-                    _build(child, und)
-                return und
+            nonlocal tries
+            data = deepcopy(extract(cur))
+            name = node_name(cur)
+            base_name = name
+            while tries <= max_tries:
+                try:
+                    node = node_type(name=name, parent=und, **data)
+                except KeyError:
+                    tries += 1
+                    if tries > max_tries:
+                        break
+                    name = f"{base_name}_{tries}"
+
+            if tries >= max_tries:
+                raise ValueError("Max tries exceeded")
+
+            for child in cur.children:
+                _build(child, node)
+            return node
 
         return _build(node, under)
 
@@ -89,26 +97,15 @@ class TreeConverter:
         if source is None:
             return None
 
-        if source.root.name == FlatTree.LOGICAL_ROOT:
-            new_child = None
-            for child in source.children:
-                new_child = target_type(
-                    name=node_name(child),
-                    parent=None,
-                    **extract(child))
-                for grandchild in child.children:
-                    TreeConverter.copy_under(grandchild, new_child, node_name, extract)
-            return new_child.root if new_child else None
-        else:
-            root = target_type(
-                name=node_name(source.root),
-                parent=None,
-                **extract(source.root))
+        root = target_type(
+            name=node_name(source.root),
+            parent=None,
+            **extract(source.root))
 
-            for child in source.children:
-                TreeConverter.copy_under(child, root, node_name, extract)
+        for child in source.children:
+            TreeConverter.copy_under(child, root, node_name, extract)
 
-            return root
+        return root
         
     @staticmethod
     def to_dict(node,
