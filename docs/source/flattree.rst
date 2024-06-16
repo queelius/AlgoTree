@@ -57,9 +57,14 @@ Tree Terminology
 Proxy Objects and Views
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-In computer science, a proxy object is an object that acts as an intermediary for another object. The proxy can control access to the original object, providing additional functionality such as validation, lazy loading, or caching. This is a common design pattern used to create a level of indirection.
+In computer science, a proxy object is an object that acts as an intermediary
+for another object. The proxy can control access to the original object,
+providing additional functionality such as validation, lazy loading, or caching.
+This is a common design pattern used to create a level of indirection.
 
-A view in this context is an abstraction that provides a different perspective or representation of the underlying data. For example, a view can present a flat dictionary as a hierarchical tree structure.
+A view in this context is an abstraction that provides a different perspective
+or representation of the underlying data. For example, a view can present a flat
+dictionary as a hierarchical tree structure.
 
 `FlatTreeNode` Proxies
 """"""""""""""""""""""
@@ -77,18 +82,17 @@ Key Features:
 - **Abstraction:** Hides the complexity of the flat dictionary structure, presenting a more intuitive tree-like interface.
 - **Flexibility:** Allows you to work with sub-trees and individual nodes seamlessly.
 
-Logical Root Node
-^^^^^^^^^^^^^^^^^
+Root Node
+^^^^^^^^^
 
-In `FlatTree`, the concept of a logical root node simplifies the representation and manipulation of trees.
-The logical root node, denoted as `__ROOT__`, is not a physical node in the tree but a conceptual node that serves as the parent of all nodes without an explicit parent reference.
-This approach ensures that a forest (multiple trees) can be represented as a single tree structure.
+In `FlatTree`, the root node is the first node found that has no parent.
+If there are multiple root nodes, they and their descendants are treated as
+orphans and are not part of the tree structure.
 
-Benefits of a Logical Root Node:
-
-- **Unified Structure:** Converts a forest into a single tree, simplifying operations and visualizations.
-- **Consistency:** Ensures all nodes are part of a single hierarchy, making traversal and manipulation more straightforward.
-- **Flexibility:** Allows easy addition of new nodes without worrying about their initial placement in the hierarchy.
+We provide a method, `forest`, which returns a list of all of the trees in the
+structure. We also provide a `reroot` method to change the root node of the tree,
+and a `merge_under` method to merge all of the trees in the forest under a new
+root node.
 
 `FlatTree` Class
 ----------------
@@ -109,6 +113,7 @@ You can initialize a `FlatTree` with a dictionary representing the tree data.
             "data": "Some data for node1"
         },
         "node2": {
+            "parent": "node1",
             "data": "Some data for node2"
         },
         "node3": {
@@ -137,6 +142,7 @@ Expected Output:
         "data": "Some data for node1"
       },
       "node2": {
+        "parent": "node1",
         "data": "Some data for node2"
       },
       "node3": {
@@ -170,23 +176,11 @@ Expected Output:
 
 .. code-block:: text
 
-    __ROOT__
-    ├── node1
-    │   └── node3
-    │       ├── node4
-    │       └── node5
+    node1
+    ├── node3
+    │   ├── node4
+    │   └── node5
     └── node2
-
-Image Visualization
-"""""""""""""""""""
-
-.. code-block:: python
-
-    TreeViz.image(tree, "./images/tree.png")
-
-Here is the image (`./images/tree.png` from above) of the tree:
-
-.. image:: ./images/tree.png
 
 Manipulating the Tree
 ^^^^^^^^^^^^^^^^^^^^^
@@ -196,14 +190,14 @@ Adding a Child Node
 
 .. code-block:: python
 
-    child = tree.get_root().add_child(name="node36", data="Some data for node36")
+    child = tree.root.add_child(name="node36", data="Some data for node36")
     print(child)
 
 Expected Output:
 
 .. code-block:: text
 
-    FlatTreeNode(name=node36, parent=__ROOT__, payload={'data': 'Some data for node36'})
+    FlatTreeNode(name=node36, parent=node1, payload={'data': 'Some data for node36'})
 
 Viewing Sub-Trees
 ^^^^^^^^^^^^^^^^^
@@ -212,7 +206,7 @@ You can work with sub-trees rooted at any node.
 
 .. code-block:: python
 
-    print(TreeViz.text(tree.node("node3")))
+    print(pretty_tree(tree.node("node3")))
 
 Expected Output:
 
@@ -235,18 +229,6 @@ Detaching and Pruning Nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can detach nodes, which sets their parent to a special key indicating they are detached, and prune detached nodes to remove them from the tree.
-
-Detaching a Node
-""""""""""""""""
-
-.. code-block:: python
-
-    tree.node("node36").detach()
-    TreeViz.image(tree, "./images/full-tree-post-detach-node-36.png")
-
-Here is the tree with the detached node `node36`:
-
-.. image:: ./images/full-tree-post-detach-node-36.png
 
 Pruning Detached Nodes
 """"""""""""""""""""""
@@ -271,7 +253,6 @@ Attempting to create a tree with an invalid parent reference will raise an error
                 "parent": "non_existent_parent",
                 "data": "Some data for node1"
             }})
-        print(TreeViz.text(invalid_tree))
         invalid_tree.check_valid()
     except KeyError as e:
         print(e)
@@ -280,7 +261,6 @@ Expected Output:
 
 .. code-block:: text
 
-    Node('/__ROOT__')
     Parent node non-existent: 'non_existent_parent'
 
 Cycle Detection
@@ -307,18 +287,14 @@ Expected Output:
 
 .. code-block:: text
 
-    Node('/__ROOT__')
-    └── Node('/__ROOT__/node0', data='Some data for node0')
-        └── Node('/__ROOT__/node0/node4', data='Some data for node4')
-
     Cycle detected: {'node2', 'node3', 'node1'}
 
 Tree Conversions
 ----------------
 
-You can convert between different tree representations, such as `FlatTree`, `TreeNode`, and `anytree.Node` objects.
-However, any tree-like that implements the node interface can be converted to any other tree-like that implements the node interface.
-We provide a `TreeConverter` class to facilitate these conversions.
+You can convert between different tree representations, as long as they
+expose an API like `children` property or `parent`. We provide a
+`TreeConverter` class to facilitate these conversions.
 
 Converting to `TreeNode`
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -328,20 +304,12 @@ Converting to `TreeNode`
     import AlgoTree.tree_converter as tc
     new_tree = tc.TreeConverter.convert(tree, target_type=AlgoTree.TreeNode)
     print(type(new_tree))
-    print(TreeViz.text(new_tree))
 
 Expected Output:
 
 .. code-block:: text
 
     <class 'AlgoTree.treenode.TreeNode'>
-
-    __ROOT__
-    ├── node1
-    │   ├── node3
-    │   │   ├── node4
-    │   │   └── node5
-    └── node2
 
 Conclusion
 ----------

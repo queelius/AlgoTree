@@ -13,25 +13,25 @@ Example Structure:
 .. code-block:: json
 
     {
-      "name": "root",
+      "__name__": "root",
       "value": "root_value",
       "children": [
         {
-          "name": "child1",
+          "__name__": "child1",
           "value": "child1_value",
           "children": [
             {
-              "name": "child1_1",
+              "__name__": "child1_1",
               "value": "child1_1_value"
             }
           ]
         },
         {
-          "name": "child2",
+          "__name__": "child2",
           "value": "child2_value",
           "children": [
             {
-              "name": "child2_1",
+              "__name__": "child2_1",
               "value": "child2_1_value"
             }
           ]
@@ -41,9 +41,11 @@ Example Structure:
 
 Where:
 
-- `name` (optional) is the name of the node.
-- `value` (optional) is the payload of the node.
-- `children` is a list of child nodes, each of which is a `TreeNode` object.
+- `__name__` (optional) is a key that maps to the name of the node. If not
+  provided, the name defaults to a hash of the node's value.
+- `children` is a list of child nodes, each of which is a `TreeNode(dict)` object.
+- Other key-value pairs can be stored in the node as needed, which in total
+  form the `payload` of the node, which can be accessed using the `payload` property.
 
 Attributes and Methods
 ----------------------
@@ -87,6 +89,9 @@ Example Usage
     child1_1 = child1.add_child(name='child1_1', value='child1_1_value')
     child2 = root.add_child(name='child2', value='child2_value')
     child2_1 = child2.add_child(name='child2_1', value='child2_1_value')
+
+    other = TreeNode(name="other", value="other_value", parent=child1_1)
+    TreeNode(name="other2", value="other2_value", parent=other)
 
     print(root.node('child1').value)  # Output: 'child1_value'
     print(child1_1.root.name)         # Output: 'root'

@@ -1,7 +1,7 @@
-AlgoTree.tree_viz module
+AlgoTree.pretty_tree module
 ========================
 
-.. automodule:: AlgoTree.tree_viz
+.. automodule:: AlgoTree.pretty_tree
    :members:
    :undoc-members:
    :show-inheritance:
