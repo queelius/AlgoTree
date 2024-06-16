@@ -63,16 +63,18 @@ class TestTreeNode(unittest.TestCase):
         self.assertEqual(root["new_key"], "new_value")
 
     def test_repr(self):
-        root = TreeNode(name="root", value=10)
-        self.assertEqual(
-            repr(root), "TreeNode(name=root, root=root, payload={'value': 10})"
-        )
-        child = TreeNode(name="child", value=1, parent=root)
-        self.assertEqual(
-            repr(child),
-            "TreeNode(name=child, parent=root, root=root, payload={'value': 1})",
-        )
-
+        treenode = TreeNode({
+            "__name__": "A",
+            "value": 1,
+            "children": [
+                {"__name__": "B", "value": 2},
+                {"__name__": "C", "value": 3, "children": [
+                    {"__name__": "D", "value": 4},
+                    {"__name__": "E", "value": 5}
+                ]}
+            ]})
+        recreated_node = eval(repr(treenode))
+        self.assertEqual(treenode, recreated_node)
 
 if __name__ == "__main__":
     unittest.main()

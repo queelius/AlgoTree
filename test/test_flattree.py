@@ -21,6 +21,17 @@ class TestFlatTree(unittest.TestCase):
         self.assertEqual(self.flat_tree["b"]["parent"], "a")
         self.assertEqual(self.flat_tree["c"]["parent"], "a")
 
+    def test_repr(self):
+        flattree = FlatTree({
+            "A": {"parent": None, "value": 1},
+            "B": {"parent": "A", "value": 2},
+            "C": {"parent": "A", "value": 3},
+            "D": {"parent": "B", "value": 4},
+            "E": {"parent": "D", "value": 5},
+            })
+        recreated_tree = eval(repr(flattree))
+        self.assertEqual(flattree, recreated_tree)
+
     def test_unique_keys(self):
         unique_keys = self.flat_tree.unique_keys()
         expected_keys = [

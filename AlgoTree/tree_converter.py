@@ -39,7 +39,7 @@ class TreeConverter:
         under,
         node_name: Callable = default_node_name,
         extract: Callable = default_extract,
-        max_tries: int = 1
+        max_tries: int = 100000
     ):
         """
         Copy the subtree rooted at `node` as a child of `under`, where
@@ -52,6 +52,10 @@ class TreeConverter:
         :param extract: A callable to extract relevant data from a node.
         :return: A subtree extending `under` with the copied nodes.
         """
+
+        if not hasattr(node, "children"):
+            raise ValueError("Node must have a children attribute")
+
         node_type = type(under)
         tries: int = 0
         def _build(cur, und):
@@ -62,14 +66,13 @@ class TreeConverter:
             while tries <= max_tries:
                 try:
                     node = node_type(name=name, parent=und, **data)
-                except KeyError:
-                    tries += 1
-                    if tries > max_tries:
-                        break
+                    break
+                except Exception as e:
                     name = f"{base_name}_{tries}"
 
-            if tries >= max_tries:
-                raise ValueError("Max tries exceeded")
+                tries += 1
+                if tries >= max_tries:
+                    raise ValueError("Max tries exceeded")
 
             for child in cur.children:
                 _build(child, node)
@@ -83,6 +86,7 @@ class TreeConverter:
         target_type: Type[Any],
         node_name: Callable = default_node_name,
         extract: Callable = default_extract,
+        **kwargs
     ):
         """
         Convert a tree rooted at `node` to a target tree type representation.
@@ -100,7 +104,7 @@ class TreeConverter:
         root = target_type(
             name=node_name(source.root),
             parent=None,
-            **extract(source.root))
+            **extract(source.root, **kwargs))
 
         for child in source.children:
             TreeConverter.copy_under(child, root, node_name, extract)
@@ -110,7 +114,7 @@ class TreeConverter:
     @staticmethod
     def to_dict(node,
                 node_name: Callable = default_node_name,
-                extract = default_extract,
+                extract: Callable  = default_extract,
                 **kwargs) -> Dict:
         """
         Convert the subtree rooted at `node` to a dictionary.

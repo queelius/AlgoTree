@@ -83,6 +83,40 @@ class TestTreeConverter(unittest.TestCase):
         self.assertEqual(child2_2["payload"], { "value" : "child2_2_value"})
         self.assertEqual(len(child2_2["children"]), 0)
 
+    def verify_tree_structure_flattree_renamed(self, root):
+        self.assertEqual(root["name"], "root")
+        self.assertEqual(root["payload"], { "value" : "root_value"})
+        self.assertEqual(len(root["children"]), 2)
+        child1 = root["children"][0]
+        child2 = root["children"][1]
+        self.assertEqual(child1["name"], "child1")
+        self.assertEqual(child1["payload"], { "value" : "child1_value"})
+        self.assertEqual(child2["name"], "child2")
+        self.assertEqual(child2["payload"], { "value" : "child2_value"})
+
+        self.assertEqual(len(child1["children"]), 1)
+        child1_1 = child1["children"][0]
+        self.assertEqual(child1_1["name"], "child1_1")
+        self.assertEqual(child1_1["payload"], { "value" : "child1_1_value"})
+
+        self.assertEqual(len(child1_1["children"]), 1)
+        child1_1_1 = child1_1["children"][0]
+        self.assertTrue(child1_1_1["name"] == "child2_1" or child1_1_1["name"] == "child2_1_0")
+        self.assertEqual(child1_1_1["payload"], { "value" : "child1_1_1_value"})
+        self.assertEqual(len(child1_1_1["children"]), 0)
+
+        self.assertEqual(len(child2["children"]), 2)
+        child2_1 = child2["children"][0]
+        child2_2 = child2["children"][1]
+        self.assertTrue(child2_1["name"] == "child2_1_0" or child2_1["name"] == "child2_1")
+        self.assertEqual(child2_1["payload"], { "value" : "child2_1_value"})
+        self.assertEqual(len(child2_1["children"]), 0)
+
+        self.assertEqual(child2_2["name"], "child2_2")
+        self.assertEqual(child2_2["payload"], { "value" : "child2_2_value"})
+        self.assertEqual(len(child2_2["children"]), 0)
+
+
     def test_to_dict(self):
         """
             root
@@ -103,12 +137,10 @@ class TestTreeConverter(unittest.TestCase):
         # Test copying a subtree under another node
         new_root = TreeNode(name="new_root", value="new_root_value")
         TreeConverter.copy_under(self.root, new_root)
-        print(new_root)
-        # Verify the structure
         self.assertEqual(len(new_root.children), 1)
-        #root = new_root.children[0]
-        #tree_dict = TreeConverter.to_dict(root)
-        #self.verify_tree_structure(tree_dict)
+        root = new_root.children[0]
+        tree_dict = TreeConverter.to_dict(root)
+        self.verify_tree_structure(tree_dict)
 
     def test_convert_to_treenode(self):
         # Test converting TreeNode to TreeNode (identity transformation)
@@ -123,7 +155,9 @@ class TestTreeConverter(unittest.TestCase):
         # Test converting TreeNode to anytree Node
         new_tree = TreeConverter.convert(self.root, Node)
         self.assertIsInstance(new_tree, Node)
-        tree_dict = TreeConverter.to_dict(new_tree)
+        tree_dict = TreeConverter.to_dict(new_tree, extract=lambda x: { "value": x.value })
+        from pprint import pprint
+        pprint(tree_dict)
         self.verify_tree_structure(tree_dict)
         
     def test_convert_to_flattreenode(self):
@@ -131,21 +165,60 @@ class TestTreeConverter(unittest.TestCase):
         new_tree = TreeConverter.convert(self.root, FlatTreeNode)
         self.assertIsInstance(new_tree, FlatTreeNode)
         tree_dict = TreeConverter.to_dict(new_tree)
-        self.verify_tree_structure(tree_dict)
+        self.assertIsInstance(tree_dict, dict)
+        self.verify_tree_structure_flattree_renamed(tree_dict)
 
-
-    def test_convert_to_flattreenode_to_anynode_to_treenode(self):
-        # Test converting TreeNode to FlatTreeNode
-        new_tree = TreeConverter.convert(self.root, FlatTreeNode)
-        self.assertIsInstance(new_tree, FlatTreeNode)
-        self.assertEqual(new_tree.name, "root")
-        self.assertEqual(new_tree["value"], "root_value")
-
-        # Verify the structure
-        self.assertEqual(len(new_tree.children), 2)
-        self.assertEqual(new_tree.children[0].name, "child1")
-        self.assertEqual(new_tree.children[1].name, "child2")
-
+    def test_clone_treenode(self):
+        root = TreeNode(name="root", value="root value")
+        A = TreeNode(name="A", value=1, parent=root)
+        B = TreeNode(name="B", value=2, parent=root)
+        C = TreeNode(name="C", value=3, parent=root)
+        D = TreeNode(name="D", value=4, parent=B)
+        E = TreeNode(name="E", value=5, parent=D)
+        new_root = root.clone()
+        new_root.add_child(name="F", value=6)
+        self.assertEqual(len(new_root.children), 4)
+        self.assertEqual(len(root.children), 3)
+        self.assertEqual(new_root.name, "root")
+        self.assertEqual(new_root.payload['value'], "root value")
+        self.assertEqual(new_root.children[0].name, "A")
+        self.assertEqual(new_root.children[0].payload["value"], 1)
+        self.assertEqual(new_root.children[1].name, "B")
+        self.assertEqual(new_root.children[1].payload["value"], 2)
+        self.assertEqual(new_root.children[2].name, "C")
+        self.assertEqual(new_root.children[2].payload["value"], 3)
+        self.assertEqual(new_root.children[3].name, "F")
+        self.assertEqual(new_root.children[3].payload["value"], 6)
+        self.assertEqual(new_root.children[1].children[0].name, "D")
+        self.assertEqual(new_root.children[1].children[0].payload["value"], 4)
+        self.assertEqual(new_root.children[1].children[0].children[0].name, "E")
+        self.assertEqual(new_root.children[1].children[0].children[0].payload["value"], 5)
+        
+    def test_clone_flattree(self):
+        root = FlatTreeNode(name="root", value="root value")
+        A = FlatTreeNode(name="A", value=1, parent=root)
+        B = FlatTreeNode(name="B", value=2, parent=root)
+        C = FlatTreeNode(name="C", value=3, parent=root)
+        D = FlatTreeNode(name="D", value=4, parent=B)
+        E = FlatTreeNode(name="E", value=5, parent=D)
+        new_root = root.clone(clone_children=True)
+        new_root.add_child(name="F", value=6)
+        self.assertEqual(len(new_root.children), 4)
+        self.assertEqual(len(root.children), 3)
+        self.assertEqual(new_root.name, "root")
+        self.assertEqual(new_root.payload['value'], "root value")
+        self.assertEqual(new_root.children[0].name, "A")
+        self.assertEqual(new_root.children[0].payload["value"], 1)
+        self.assertEqual(new_root.children[1].name, "B")
+        self.assertEqual(new_root.children[1].payload["value"], 2)
+        self.assertEqual(new_root.children[2].name, "C")
+        self.assertEqual(new_root.children[2].payload["value"], 3)
+        self.assertEqual(new_root.children[3].name, "F")
+        self.assertEqual(new_root.children[3].payload["value"], 6)
+        self.assertEqual(new_root.children[1].children[0].name, "D")
+        self.assertEqual(new_root.children[1].children[0].payload["value"], 4)
+        self.assertEqual(new_root.children[1].children[0].children[0].name, "E")
+        self.assertEqual(new_root.children[1].children[0].children[0].payload["value"], 5)
 
 if __name__ == "__main__":
     unittest.main()

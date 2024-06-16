@@ -47,7 +47,6 @@ class TreeNode(dict):
 
         _check_cycle(node, set())
 
-
     def clone(self, parent=None) -> "TreeNode":
         """
         Clone the current node and all its children.
@@ -55,7 +54,8 @@ class TreeNode(dict):
         :param parent: The parent of the new node.
         :return: A new TreeNode object with the same data as the current node.
         """
-        new_node = copy.deepcopy(self)
+        dict_node = copy.deepcopy(dict(self))
+        new_node = TreeNode(dict_node)
         new_node.parent = parent
         return new_node
 
@@ -275,9 +275,29 @@ class TreeNode(dict):
         return TreeNode(*args, parent=self, name=name, **kwargs)
 
     def __repr__(self) -> str:
+        return f"TreeNode({self.to_dict()})"
+
+    def __str__(self) -> str:
         result = f"TreeNode(name={self.name}"
         if self._parent is not None:
             result += f", parent={self.parent.name}"
         result += f", root={self.root.name}"
-        result += f", payload={self.payload})"
+        result += f", payload={self.payload}"
+        result += f", num_children={len(self.children)})"
         return result
+    
+    def to_dict(self):
+        """
+        It is already a dict, so we just want to recast it as a dict,
+        recursively. It's a no-op in a sense, since it does not change
+        the data, only the type associated with it.
+
+        :return: A dictionary representation of the subtree.
+        """
+        def _recast(node):
+            node_dict = dict(node)
+            if TreeNode.CHILDREN_KEY in node_dict:
+                node_dict[TreeNode.CHILDREN_KEY] = [_recast(child) for child in node_dict[TreeNode.CHILDREN_KEY]]
+            return node_dict
+
+        return _recast(self)

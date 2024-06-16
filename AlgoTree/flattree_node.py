@@ -10,7 +10,9 @@ class FlatTreeNode(collections.abc.MutableMapping):
 
     def __deepcopy__(self, memo):
         """
-        Deepcopy the node and its subtree.
+        Deepcopy the entire tree that the node is a part of and return a new
+        node with the copied tree. This is a deep copy of the tree, not just
+        the node. If you want to copy just the node, see the `clone()` method.
 
         :param memo: The memo dictionary.
         :return: A new node with a deep copy of the tree (and its subtree)
@@ -22,23 +24,30 @@ class FlatTreeNode(collections.abc.MutableMapping):
         new_node._root_key = self._root_key
         return new_node
       
-    def clone(self, parent=None) -> "FlatTreeNode":
+    def clone(self, parent=None, clone_children=False) -> "FlatTreeNode":
         """
-        Clone the node without its relationships to other nodes. If you want to
-        clone the entire tree, use `deepcopy(tree)` instead. We do allow
+        Clone the node and, optionally, its children. If you want to
+        clone the entire tree, use `deepcopy(tree)` instead. We allow
         the parent to be set to a new parent node to facilitate flexible
         cloning of nodes into new tree structures.
 
-        :return: A new node with the same data but no relationships.
+        :return: A new node (or subtree rooted at the node if `clone_children`
+                 is True)
         """
         new_node = FlatTreeNode.__new__(FlatTreeNode)
         if parent is None:
             new_node._tree = FlatTree({ self._key: deepcopy(self._tree[self._key]) })
             new_node._root_key = self._key
         else:
+            if self._key in parent._tree:
+                raise ValueError(f"Node {self} already exists in the tree")
             new_node._tree = parent._tree
             new_node._tree[self._key] = deepcopy(self._tree[self._key])
             new_node._root_key = parent._root_key
+
+        if clone_children:
+            for child in self.children:
+                child.clone(parent=new_node, clone_children=True)
         new_node._key = self._key
         return new_node
 

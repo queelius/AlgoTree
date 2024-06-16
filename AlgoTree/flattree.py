@@ -294,3 +294,22 @@ class FlatTree(dict):
         :return: List of children nodes.
         """
         return self.root.children
+
+    def __repr__(self) -> str:
+        return f"FlatTree({dict(self)})"
+
+    def to_dict(self) -> dict:
+        """
+        Convert the tree to a dictionary. This is already a dictionary, so
+        we just return the tree itself recasted as a dictionary.
+
+        :return: The tree as a dictionary.
+        """
+        return dict(self)
+    
+    def __str__(self) -> str:
+        if self.parent is None:
+            return f"FlatTree(name={self.name}, payload={self.payload}, num_children={len(self.children)})"
+        else:
+            return f"FlatTree(name={self.name}, payload={self.payload}), parent={self.parent.name}, num_children={len(self.children)})"
+        
