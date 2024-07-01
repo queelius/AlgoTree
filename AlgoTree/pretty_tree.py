@@ -45,7 +45,7 @@ class PrettyTree:
         self.indent = indent
 
     @staticmethod
-    def node_mark(name: str, markers: List[str]) -> str:
+    def mark(name: str, markers: List[str]) -> str:
         """
         Get the marker for a node based on the hash of the node name.
 
@@ -95,7 +95,7 @@ class PrettyTree:
                 s += str(node_details(cur))
             if cur.name in marked_nodes:
                 s += style["spacer"]
-                s += PrettyTree.node_mark(str(node_name(cur)), markers)
+                s += PrettyTree.mark(str(node_name(cur)), markers)
             s += "\n"
 
             for i, child in enumerate(cur.children):

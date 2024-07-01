@@ -1,5 +1,5 @@
 import unittest
-from AlgoTree.tree_print import PrettyTree, pretty_tree
+from AlgoTree.pretty_tree import PrettyTree, pretty_tree
 
 class TestTreePrettyPrinter(unittest.TestCase):
     

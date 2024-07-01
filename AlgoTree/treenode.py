@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any, Callable
 import copy
 from AlgoTree.utils import find_node
-
+from AlgoTree.node_hash import NodeHash
 
 class TreeNode(dict):
     """
@@ -64,7 +64,8 @@ class TreeNode(dict):
         *args,
         parent: Optional["TreeNode"] = None,
         name: Optional[str] = None,
-        **kwargs,
+        hash_fn: Callable[["TreeNode"], int] = None,
+        **kwargs
     ):
         """
         Initialize a TreeNode.
@@ -79,6 +80,14 @@ class TreeNode(dict):
 
         if name is not None:
             self[TreeNode.NAME_KEY] = name
+
+        if hash_fn is None:
+            hash_fn = NodeHash.node_hash
+        
+        if not callable(hash_fn):
+            raise ValueError("hash_fn must be callable")
+        
+        self._hash_fn = hash_fn
 
         children = self.pop(TreeNode.CHILDREN_KEY, None)
         # Initialize children if present
@@ -213,14 +222,22 @@ class TreeNode(dict):
         return self.__hash__()  
 
     def __hash__(self) -> int:
-        path_index = ()
-        node = self
-        while node.parent:
-            path_index = (node.parent.children.index(node),) + path_index
-            node = node.parent
-        return hash(path_index)
+        """
+        Get the hash of the node. The hash is based on the hash of the name
+        of the node.
+
+        :return: The hash of the node.
+        """
+        return self._hash_fn(self)
 
     def __deepcopy__(self, memo):
+        """
+        Deep copy the (sub)tree rooted at current node. This method is called
+        by the `copy` module when a deep copy is requested.
+
+        :param memo: A dictionary to keep track of the copied nodes.
+        :return: A new TreeNode object with the same data as the current node.
+        """
         # Create a new instance of TreeNode with a copy of the current node's data
         new_node = TreeNode(copy.deepcopy(dict(self), memo))
         # Deep copy the children
@@ -230,16 +247,13 @@ class TreeNode(dict):
         return new_node
     
     @name.setter
-    def name(self, name: Optional[str]) -> None:
+    def name(self, name: str) -> None:
         """
         Set the name of the node.
 
         :param name: The name of the node.
         """
-        if name is None:
-            self.pop(TreeNode.NAME_KEY, None)
-        else:
-            self[TreeNode.NAME_KEY] = name
+        self[TreeNode.NAME_KEY] = name
 
     @property
     def children(self) -> List["TreeNode"]:
@@ -283,7 +297,7 @@ class TreeNode(dict):
             result += f", parent={self.parent.name}"
         result += f", root={self.root.name}"
         result += f", payload={self.payload}"
-        result += f", num_children={len(self.children)})"
+        result += f", len(children)={len(self.children)})"
         return result
     
     def to_dict(self):

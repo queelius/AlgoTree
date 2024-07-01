@@ -622,37 +622,95 @@ def node_stats(node,
 
 def paths_to_tree(paths: List,
                   type: Type,
-                  payload_func: Callable = None,
-                  max_rename_tries: int = 10000):
+                  node_name: Callable = None,
+                  payload: Callable = None,
+                  max_tries: int = float("inf")) -> type:
+    """
+    Convert a list of paths to a tree structure. Each path is a list of nodes
+    from the root to a leaf node. (A tree can be uniquely identified by
+    this list of paths.) It doesn't have to be a list of nodes per se; it
+    could be a list of any objects. We use the `node_name` and `payload`
+    functions to extract the name and payload of the node from the object.
+    We default to using the `name` and `payload` properties if the object
+    has them, otherwise we use the string representation of the object as
+    the name and an empty dictionary as the payload.
+
+    Example: Suppose we have the following list of paths::
+
+        paths = [ ["A", "B", "D"], ["A", "B", "E"], ["A", "C", "F"] ]
+
+    We can convert this list of paths to a tree structure using the following
+    code::
+
+        tree = paths_to_tree(paths, TreeNode)
+
+    This will create the following tree structure::
+
+        A
+        ├── B
+        │   ├── D
+        │   └── E
+        └── C
+            └── F
+
+    :param paths: The list of paths.
+    :param type: The type of the tree node.
+    """
     nodes = { }
+    if node_name is None:
+        node_name = lambda n: n.name if hasattr(n, "name") else str(n)
+    if payload is None:
+        payload = lambda n: n.payload if hasattr(n, "payload") else {}
+
     for p in paths:
         parent = None
         path = []
         for n in p:
             path.append(n)
             path_tuple = tuple(path)
-            name = n.name if hasattr(n, "name") else str(n)
-            if payload_func is None:
-                payload = n.payload if hasattr(n, "payload") else {}
-            else:
-                payload = payload_func(n)
+            name = node_name(n)
+            data = payload(n)
+            if not isinstance(data, dict):
+                data = { "payload": data }
 
             if path_tuple not in nodes:
-                tries = 0
-                base_name = name
-                retry = True
-                while retry and tries < max_rename_tries:
+                for tries in range(max_tries):
                     try:
-                        new_node = type(name=name, parent=parent, **payload)
-                        retry = False
+                        new_node = type(name=f"{name}_{tries}", parent=parent, **data)
+                        break
                     except KeyError as e:
-                        name = f"{base_name}_{tries}"
-                    tries += 1
+                        pass
 
-                if tries == max_rename_tries:
-                    raise ValueError(f"Failed to create node with name {base_name} after {max_rename_tries} suffixe tries")
-
+                if tries == max_tries:
+                    raise ValueError(f"Failed to create node with prefix {name}.")
                 nodes[path_tuple] = new_node
-
             parent = nodes[path_tuple]
     return parent.root
+
+def is_isomorphic(node1, node2):
+    """
+    Check if two (sub)trees are isomorphic. To check if two trees are isomorphic,
+    just pass in the root nodes of the trees.
+
+    This is another kind of equivalence: two nodes are equivalent if they have
+    the same substructure (extensic relations), but the names and payloads of
+    the nodes (intrinsic relations) can be different.
+    
+    We ignore the parents of the nodes in this comparison. If we also included
+    the parents, this would be the  same as calling `is_isomorphic` on the
+    root nodes of the trees.
+
+    :param node1: The root node of the first tree.
+    :param node2: The root node of the second tree.
+    :return: True if the trees are isomorphic, False otherwise.
+    """
+
+    if not hasattr(node1, "children") or not hasattr(node2, "children"):
+        raise ValueError("Nodes must have 'children' property")
+
+    if len(node1.children) != len(node2.children):
+        return False
+    for child1 in node1.children:
+        if not any(is_isomorphic(child1, child2) for child2 in node2.children):
+            return False
+    return True
