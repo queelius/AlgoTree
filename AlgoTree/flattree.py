@@ -13,7 +13,7 @@ class FlatTree(dict):
 
     The first node found that is without a  'parent' key is
     the root node. If there are multiple nodes without a 'parent' key, the
-    structure is technically a forrest. You may get all of the trees
+    structure is technically a forest. You may get all of the trees
     with the `forest` method, which returns a list of the root nodes.
 
     The `FlatTree` class is a dictionary whose data represents a tree-like
@@ -44,6 +44,54 @@ class FlatTree(dict):
     detached.
     """
 
+    @staticmethod
+    def spec() -> dict:
+        """
+        Get the JSON specification of the FlatTree data structure.
+        
+        This method returns a dictionary representing the structure of the
+        FlatTree. The structure represents a tree (or forest) where each node
+        has a unique key and optionally contains a 'parent' key, which has a
+        value that is either a node key (the key of the parent node) or None
+        (indicating a root node). If it has multiple roots, it is technically
+        a forest, but the first node found without a 'parent' key is considered
+        the root node and the rest are considered separate trees in the forest.
+        The roots of these trees are returned by the `forest` method.
+        Additional key-value pairs are the payload associated with each node.
+
+        :return: A dict pattern representing the structure of the FlatTree.
+        """
+
+        return {
+            "<node_key>": {
+                "parent | None": "<parent_key> | None",
+                "<any_key>": "<any_value>",
+                "...": "...",
+                "<any_key>": "<any_value>"
+            },
+            "...": "...",
+            "<node_key>": {
+                "parent | None": "<parent_key> | None",
+                "<any_key>": "<any_value>",
+                "...": "...",
+                "<any_key>": "<any_value>"
+            }
+        }
+    
+    @staticmethod
+    def is_flattree(data: dict) -> bool:
+        """
+        Check if the given data is a valid FlatTree.
+
+        :param data: The data to check.
+        :return: True if the data is a valid FlatTree, False otherwise.
+        """
+        try:
+            FlatTree.check_valid(data)
+            return True
+        except ValueError:
+            return False
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
         Initialize a FlatTree.
@@ -63,6 +111,14 @@ class FlatTree(dict):
         :param kwargs: Keyword arguments to be passed to the dictionary constructor.
         """
         super().__init__(*args, **kwargs)
+
+    def forest(self) -> List["FlatTreeNode"]:
+        """
+        Get the forest of the tree. This returns a list of root nodes in the tree.
+
+        :return: List of root nodes in the tree.
+        """
+        return [self.node(k) for k in self.keys() if self[k].get(FlatTree.PARENT_KEY) is None]
 
     def unique_keys(self) -> List[str]:
         """

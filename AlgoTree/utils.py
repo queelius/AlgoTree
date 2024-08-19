@@ -136,8 +136,8 @@ def siblings(node) -> List:
     """
     Get the siblings of a node.
 
-    :param node: The root node.
-    :return: List of sibling nodes.d
+    :param node: The node.
+    :return: List of sibling nodes.
     """
     return [] if is_root(node) else [
         c for c in node.parent.children if c != node
@@ -430,7 +430,6 @@ def node_to_leaf_paths(node: Any) -> List:
 
     _find_paths(node, [])
     return paths
-
 
 def find_path(source: Any, dest: Any) -> Any:
     """

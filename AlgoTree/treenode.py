@@ -28,6 +28,42 @@ class TreeNode(dict):
     """
 
     @classmethod
+    def spec(cls) -> dict:
+        """
+        Get the JSON specification of the TreeNode data structure.
+        
+        This method returns a dictionary representing the structure of the
+        TreeNode. The structure represents a tree recurseively where each node
+        has a children property that is a list of nodes.
+
+        A TreeNode has recursive structure:
+
+        {
+            # Any key-value pairs represent the payload of this node
+            <any_key>: <any_value>,
+            ...
+            <any_key>: <any_value>,
+            
+            # The children of this node
+            "children": [ <child1:node>, <child2:node>, ... ]
+        }
+
+        :return: The specification of the TreeNode.
+        """
+        return {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {"$ref": "#"}
+                },
+            },
+            # Allow any additional properties in the node as part of the payload
+            "additionalProperties": True
+        }
+
+
+    @classmethod
     def check_valid(cls, node: "TreeNode") -> None:
         """
         Check if the node is a valid tree.

@@ -2,9 +2,6 @@ import uuid
 from copy import deepcopy
 from typing import Any, Callable, Type, Dict
 
-from AlgoTree.flattree import FlatTree
-
-
 class TreeConverter:
     """
     Utility class for converting between tree representations.

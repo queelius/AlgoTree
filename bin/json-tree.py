@@ -2,92 +2,71 @@
 
 import argparse
 import json
-import logging
 import sys
 import textwrap
-
-from AlgoTree.dicttree import DictTree
-
-
-def show_json_spec():
-    print(
-        textwrap.dedent(
-            """
-        The JSON data should have the following structure:
-
-            {
-                # Meta-data (optional key-value pairs)
-                ...
-
-                'mapping': {
-                    'node_key': {
-                        'parent': 'parent_node_key',
-                        # Additional payload data
-                        ...
-                    },
-
-                    # More nodes
-                    ...
-                }
-            }
-        """
-        )
-    )
-
+from AlgoTree.flattree import FlatTree
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Query or render a tree from JSON data",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        description="Query a FlatTree tree represented in JSON format",
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(
-        "--flatten",
-        action="store_true",
-        help="Flatten the tree into a list of paths and print as JSON",
-    )
-    parser.add_argument(
         "file",
+        nargs="?",
         type=argparse.FileType("r"),
         default=sys.stdin,
         help="Path to JSON file (reads from stdin if not provided)",
     )
     parser.add_argument(
-        "--log",
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Set the logging level",
-    )
-    parser.add_argument("--output", help="Output file name to save the tree")
-    parser.add_argument(
         "--node-name",
-        default="lambda node: node.name",
         type=str,
+        nargs=1,
         metavar="LAMBA_EXPRESSION",
         help="Lambda expression to generate node names from a node, defaults to `lambda node: node.name`",
     )
     parser.add_argument(
-        "--fallback-node-name",
-        type=str,
-        metavar="LAMBA_EXPRESSION",
-        help="Fallback lambda expression to generate node names if the node-name LAMBA_EXPRESSION fails",
-    )
-    parser.add_argument(
-        "--json-spec",
+        "--spec",
         action="store_true",
-        help="Print the specification of the JSON data structure",
+        help="Print the specification of the FlatTree JSON data structure",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
     parser.add_argument(
-        "--mapping-key",
-        default="mapping",
+        "--lca",
+        metavar=("NODE_KEY1", "NODE_KEY2"),
+        help="Get the lowest common ancestor of two nodes",
+        type=str,
+        nargs=2,
+    )
+    parser.add_argument(
+        "--depth",
+        metavar="NODE_KEY",
+        help="Get the depth of a given node",
         type=str,
         nargs=1,
-        metavar="KEY",
-        help="The key in the JSON that maps to the structure of the tree",
     )
     parser.add_argument(
-        "--size", action="store_true", help="Print the size of the tree"
+        "--mark-nodes",
+        metavar="NODE_KEY",
+        help="Mark nodes in the tree",
+        type=str,
+        nargs="+",
+    )
+    parser.add_argument(
+        "--distance",
+        metavar=("NODE_KEY1", "NODE_KEY2"),
+        help="Get the distance between two nodes",
+        type=str,
+        nargs=2,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s 1.0"
+    )
+    parser.add_argument(
+        "--size",
+        action="store_true",
+        help="Print the size of the tree"
     )
     parser.add_argument(
         "--siblings",
@@ -132,75 +111,65 @@ def main():
         nargs=1,
     )
     parser.add_argument(
-        "--get-node",
+        "--subtree",
+        metavar="NODE_KEY",
+        help="Get the subtree rooted at a given node",
+        type=str,
+        nargs=1,
+    )
+    parser.add_argument(
+        "--node",
         metavar="NODE_KEY",
         help="Get node by key",
         type=str,
         nargs=1,
     )
     parser.add_argument(
-        "--get-root", action="store_true", help="Get the root node"
+        "--root",
+        action="store_true",
+        help="Get the root node"
     )
     parser.add_argument(
-        "--get-leaves", action="store_true", help="Get the leaf nodes"
+        "--root-to-leaves",
+        action="store_true",
+        help="Get a list of paths from the root to the leaves")
+    parser.add_argument(
+        "--leaves",
+        action="store_true",
+        help="Get the leaf nodes"
     )
     parser.add_argument(
-        "--get-level",
-        metavar="LEVEL",
-        help="Get nodes at a given level",
-        type=int,
-        nargs=1,
+        "--height",
+        action="store_true",
+        help="Get the height of the tree"
     )
     parser.add_argument(
-        "--get-height", action="store_true", help="Get the height of the tree"
+        "--pretty",
+        action="store_true",
+        help="Print the tree in a pretty format",
     )
     parser.add_argument(
-        "--is-ancesor",
-        metavar=("NODE_FROM", "NODE_TO"),
-        help="Check if two nodes are connected",
-        nargs=2,
+        "--prune",
+        metavar="LAMBDA_EXPRESSION",
+        help="Prune the tree by predicate function",
         type=str,
-    )
+        nargs=1)
     parser.add_argument(
-        "--get-ancestors",
-        metavar=("START_NODE", "END_NODE"),
-        help="Get the path from the start node to the end node",
-        nargs=2,
-        type=str,
-    )
-    parser.add_argument(
-        "--add-node",
-        metavar=("PARENT_NODE", "NODE_KEY", "NODE_DATA"),
-        help="Add a new node to the tree",
-        nargs=3,
-        type=str,
-    )
-    parser.add_argument(
-        "--remove-node",
+        "--subtree-rooted-at",
         metavar="NODE_KEY",
-        help="Remove a node from the tree. We connect the children of the node to its parent",
+        help="Get the subtree rooted at a given node",
         type=str,
+        nargs=1)
+    parser.add_argument(
+        "--find-nodes",
         nargs=1,
-    )
-    parser.add_argument(
-        "--update-node",
-        metavar=("NODE_KEY", "NODE_DATA"),
-        help="Update the data of a node",
-        nargs=2,
         type=str,
-    )
-    parser.add_argument(
-        "--move-node",
-        metavar=("NODE_KEY", "NEW_PARENT"),
-        help="Move a node to a new parent. If the root node is moved, the tree is re-rooted",
-        nargs=2,
-        type=str,
-    )
+        metavar="LAMBDA_EXPRESSION",
+        help="Find nodes by predicate function")
 
     parser.epilog = textwrap.dedent(
         """
             Example usage:
-                {prog} ./example.json --flatten  # Flatten the tree and print
                 # Check if a node exists
                 {prog} ./example.json --has-node nodeName
                 # Get specific node details
@@ -215,60 +184,133 @@ def main():
     args = parser.parse_args()
 
     try:
-        if args.json_spec:
-            show_json_spec()
-            sys.exit(0)
-
-        # Caution: eval can be risky with untrusted input
-        NODE_KEY = eval(args.NODE_KEY)
-        fallback_NODE_KEY = (
-            eval(args.fallback_NODE_KEY) if args.fallback_NODE_KEY else None
-        )
-
         if args.file == sys.stdin and sys.stdin.isatty():
-            logging.error(
-                "No JSON data provided, please provide a file or pipe data"
-            )
+            print("No JSON data provided, please provide a file or pipe data")
             parser.print_usage()
             sys.exit(1)
 
-        tree = DictTree(
-            data=json.load(args.file), mapping_key=args.mapping_key
-        )
-        tree.verify_integrity()
+        if args.spec:
+            print(FlatTree.spec.__doc__)
+
+        node_name = lambda node: node.name
+        if args.node_name:
+            node_name = eval(args.node_name[0])
+
+        tree = FlatTree(json.load(args.file))
+
+        result = {}
+        if args.prune:
+            from AlgoTree.utils import prune
+            prune(tree.root, eval(args.prune[0]))
+
+        if args.find_nodes:
+            from AlgoTree.utils import find_nodes
+            nodes = find_nodes(tree, eval(args.find_nodes[0]))
+            print([node_name(n) for n in nodes])
+
+        if args.root:
+            print(node_name(tree.root))
 
         if args.size:
-            print(len(tree))
-            sys.exit(0)
+            from AlgoTree.utils import size
+            print(size(tree))
 
-        if args.flatten:
-            print(
-                json.dumps(
-                    tree.flatten(
-                        NODE_KEY=NODE_KEY, fallback_NODE_KEY=fallback_NODE_KEY
-                    ),
-                    indent=2,
-                )
-            )
-            sys.exit(1)
+        if args.siblings:
+            from AlgoTree.utils import siblings
+            sibs = siblings(tree.node(args.siblings[0]))
+            print([node_name(s) for s in sibs])
 
-        if args.output:
-            tree.save(
-                outfile=args.output,
-                NODE_KEY=NODE_KEY,
-                fallback_NODE_KEY=fallback_NODE_KEY,
-            )
-        else:
-            print(
-                tree.to_string(
-                    NODE_KEY=NODE_KEY, fallback_NODE_KEY=fallback_NODE_KEY
-                )
-            )
+        if args.children:
+            children = tree.node(args.children[0]).children
+            print([node_name(c) for c in children])
+
+        if args.parent:
+            node = tree.node(args.parent[0])
+            print(node_name(node.parent) if node.parent else None)
+
+        if args.ancestors:
+            from AlgoTree.utils import ancestors
+            anc = ancestors(tree.node(args.ancestors[0]))
+            print([node_name(a) for a in anc])
+
+        if args.descendants:
+            from AlgoTree.utils import descendants
+            desc = descendants(tree.node(args.descendants[0]))
+            print([node_name(d) for d in desc])
+
+        if args.has_node:
+            print(tree.node(args.has_node[0]) is not None)
+
+        if args.height:
+            from AlgoTree.utils import height
+            print(height(tree))
+
+        if args.leaves:
+            from AlgoTree.utils import leaves
+            print([node_name(l) for l in leaves(tree)])
+
+        if args.node:
+            node = tree.node(args.node[0])
+            print(node)
+            
+        if args.subtree:
+            from AlgoTree.tree_converter import TreeConverter
+            from AlgoTree.flattree_node import FlatTreeNode
+            sub = TreeConverter.convert(tree.subtree(args.subtree[0]), FlatTreeNode)
+            print(json.dumps(sub.tree, indent=4))
+
+        if args.depth:
+            from AlgoTree.utils import depth
+            print(depth(tree.node(args.depth[0])))
+
+        if args.distance:
+            from AlgoTree.utils import distance
+            n1, n2 = args.distance
+            print(distance(tree.node(n1), tree.node(n2)))
+
+        if args.lca:
+            from AlgoTree.utils import lca
+            n1, n2 = args.lca
+            print(node_name(lca(tree.node(n1), tree.node(n2))))
+
+        if args.root_to_leaves:
+            from AlgoTree.utils import node_to_leaf_paths
+            paths = [p for p in node_to_leaf_paths(tree)]
+            for p in paths:
+                print([node_name(n) for n in p])
+
+        if args.subtree_rooted_at:
+            # this does not work, look more closely at this
+            from AlgoTree.utils import subtree_rooted_at
+            from AlgoTree.pretty_tree import pretty_tree
+            node = tree.node(args.subtree_rooted_at[0])
+            sub = subtree_rooted_at(node, 1)
+            print(sub.tree)
+
+        if args.pretty:
+            from AlgoTree.pretty_tree import pretty_tree
+            print(pretty_tree(tree.root, node_name=node_name, mark=args.mark_nodes or []))
 
     except Exception as e:
-        logging.error(e)
+        print(e)
         sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
+
+
+
+        # return {
+        #     "type": "object",
+        #     "patternProperties": {
+        #         ".*": {
+        #             "type": "object",
+        #             "properties": {
+        #                 "parent": {"type": ["string", "null"]},
+        #             },
+        #             "additionalProperties": True,
+        #         }
+        #     },
+        #     "additionalProperties": False
+        # }

@@ -6,9 +6,11 @@ setup(
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="A algorithmic tookit for working with trees in Python",
-    long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",
+    long_description=open("README.rst").read(),
+    #long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     packages=find_packages(),
+    url='https://github.com/queelius/AlgoTree',
     install_requires=["anytree>=2.8.0", "graphviz>=0.16"],
     python_requires=">=3.6",
     extras_require={

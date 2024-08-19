@@ -24,15 +24,12 @@
   is specialized for visualization. But, no compelling reason to do this
   yet, so I'll leave it as a TODO.
 
-- `TreeConverter`: This should use the `clone` method. Right now, I can't
-  do something like copy a part of the tree to another part of the same
-  tree, but that's a feature I want to have. I can do this with `clone`
-  most likely, efficiently.
+- `json-tree.py` command line tool. I call it `json-tree` because it works over
+  JSON representations of trees, either `FlatTree` or `TreeNode` (autodetect).
+  It is based mostly on piping and redirection. For any operation that modifies
+  the tree, it will output the modified tree as a JSON string. This also allows
+  it to be used with other tools, like `jq` for filtering and selecting.
 
-- `json-tree-x` command line tools need to be reimplemented. I call them
-  json trees because they'll take JSON trees and output JSON trees, or
-  statistics on trees, or pretty-printed trees, etc. I envision a robust
-  feature complete toolset that can be used to manipulate trees in JSON
   on the command line via piping and redirection. Since it also has a nice
   looking unicode tree output, it can be used to visualize trees in the
   terminal as well. I have something like this in mind:
