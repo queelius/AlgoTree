@@ -51,7 +51,7 @@ class TreeConverter:
         """
 
         if not hasattr(node, "children"):
-            raise ValueError("Node must have a children attribute")
+            raise ValueError("Node must have a children attribute or property")
 
         node_type = type(under)
         tries: int = 0
@@ -97,12 +97,12 @@ class TreeConverter:
 
         if source is None:
             return None
-
+        
         root = target_type(
             name=node_name(source.root),
             parent=None,
             **extract(source.root, **kwargs))
-
+        
         for child in source.children:
             TreeConverter.copy_under(child, root, node_name, extract)
 

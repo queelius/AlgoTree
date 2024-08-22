@@ -19,7 +19,6 @@
       ]
     },
     {
-      "name": "node3",
       "data": "Some data for node3",
       "children": []
     }

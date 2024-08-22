@@ -98,7 +98,11 @@ class FlatTreeNode(collections.abc.MutableMapping):
         :param args: Positional arguments for the node.
         :param kwargs: Additional attributes for the node.
         """
-        self._key = str(uuid.uuid4()) if name is None else name
+
+        if name is None:
+            self._key = str(uuid.uuid4())
+        else:
+            self._key = str(name)
         if parent is not None:
             if children is not None:
                 raise ValueError("Cannot specify both parent and children.")
@@ -270,6 +274,25 @@ class FlatTreeNode(collections.abc.MutableMapping):
                  contains the parent.
         """
         return FlatTreeNode(name=name, parent=self, *args, **kwargs)
+    
+    def to_dict(self) -> Dict:
+        """
+        Convert the subtree rooted at the node to a dictionary.
+
+        :return: A dictionary representation of the subtree.
+        """
+        return self.tree.to_dict()
+
+    def nodes(self) -> List["FlatTreeNode"]:
+        """
+        Get a list of all nodes in the subtree rooted at the current node.
+
+        :return: A list of all nodes in the subtree.
+        """
+        return [
+            FlatTreeNode.proxy(tree=self._tree, node_key=key, root_key=self._root_key)
+            for key in self._tree.nodes(self._key)
+        ]
 
     @property
     def children(self) -> List["FlatTreeNode"]:
@@ -335,3 +358,12 @@ class FlatTreeNode(collections.abc.MutableMapping):
         if name is None:
             name = self.name
         return FlatTreeNode.proxy(tree=self._tree, node_key=name, root_key=name)
+    
+    def __contains__(self, key) -> bool:
+        """
+        Check if the node's payload contains the given key.
+
+        :param key: The key to check.
+        :return: True if the key is present, False otherwise.
+        """
+        return key in self.payload

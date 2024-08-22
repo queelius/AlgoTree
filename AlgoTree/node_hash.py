@@ -149,7 +149,14 @@ class NodeHash:
         """
         if node is None:
             raise ValueError("Node cannot be None")
-        return hash(str([n.name for n in utils.path(node)]))
+        p = utils.path(node)
+        print("\n\nOKAY TEST::::")
+        print(node)
+        print(p)
+        path = [n.name for n in p]
+        print(str(path))
+        print("OKAY TEST END::::")
+        return hash(str(path))
 
     @staticmethod
     def tree_hash(node: Any) -> int:
@@ -167,4 +174,4 @@ class NodeHash:
         """
         if node is None:
             raise ValueError("Node cannot be None")
-        return hash((TreeConverter.to_dict(node.root), utils.path(node)))
+        return hash(str(TreeConverter.to_dict(node)))

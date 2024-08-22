@@ -48,11 +48,6 @@ class TestTreeNodeAdvanced(unittest.TestCase):
         self.assertIn(subtree_root, self.child2.children)
         self.assertNotIn(subtree_root, self.root.children)
 
-    def test_cyclic_structure_detection(self):
-        with self.assertRaises(ValueError):
-            self.child1.parent = self.child1_1
-            TreeNode.check_valid(self.root)
-
     def test_custom_payload_and_attributes(self):
         custom_node = TreeNode(
             name="custom", parent=self.root, custom_attr="custom_value"

@@ -79,7 +79,7 @@ class FlatTree(dict):
         }
     
     @staticmethod
-    def is_flattree(data: dict) -> bool:
+    def is_valid(data) -> bool:
         """
         Check if the given data is a valid FlatTree.
 
@@ -119,6 +119,14 @@ class FlatTree(dict):
         :return: List of root nodes in the tree.
         """
         return [self.node(k) for k in self.keys() if self[k].get(FlatTree.PARENT_KEY) is None]
+    
+    def nodes(self) -> List["FlatTreeNode"]:
+        """
+        Get all the nodes in the tree.
+
+        :return: List of all nodes in the tree.
+        """
+        return [self.node(k) for k in self.keys()]
 
     def unique_keys(self) -> List[str]:
         """
@@ -188,7 +196,7 @@ class FlatTree(dict):
         return pruned
 
     @staticmethod
-    def check_valid(tree) -> None:
+    def check_valid(data) -> None:
         """
         Validate the tree structure to ensure the structural integrity of the tree.
 
@@ -206,16 +214,19 @@ class FlatTree(dict):
         Raises a ValueError if the tree structure is invalid.
         """
 
+        if not isinstance(data, dict):
+            raise ValueError(f"Data is not a dictionary: {data=}")
+        
         def _check_cycle(key, visited):
             if key in visited:
                 raise ValueError(f"Cycle detected: {visited}")
             visited.add(key)
-            par_key = tree[key].get(FlatTree.PARENT_KEY, None)
+            par_key = data[key].get(FlatTree.PARENT_KEY, None)
             if par_key is not None and par_key != FlatTree.DETACHED_KEY:
                 _check_cycle(par_key, visited)
 
         root_count = 0
-        for key, value in tree.items():
+        for key, value in data.items():
             if not isinstance(value, dict):
                 raise ValueError(
                     f"Node {key!r} does not have dictionary: {value=}")
@@ -230,7 +241,7 @@ class FlatTree(dict):
                     raise ValueError(
                         "Multiple root nodes found in tree: {root_count}")
 
-            if par_key is not None and par_key not in tree:
+            if par_key is not None and par_key not in data:
                 raise KeyError(
                     f"Parent {par_key!r} not in tree for node {key!r}")
 
@@ -241,7 +252,7 @@ class FlatTree(dict):
         Reposition the current node in the to the node with name `name`. The
         tree is not changed, only the current node pointer.
 
-        Note: This behaves differenyly than you might expect. We return a
+        Note: This behaves differently than you might expect. We return a
         proxy of a node in the tree, not the actual node. In particular, this
         returns a `FlatTreeNode` object which represents the entire `FlatTree`
         as the sub-tree with the current node set to the node with key `name`.

@@ -52,6 +52,13 @@ class TestTreeNodeUtils(unittest.TestCase):
         self.node9 = TreeNode(name="node9", parent=self.node6, value=9)
 
     def test_visit_pre_order(self):
+        from AlgoTree.pretty_tree import pretty_tree
+        from AlgoTree.treenode import TreeNode
+        import json
+        print("\npre-order\n")
+        print(pretty_tree(self.node0))
+        print("\n\n")
+        print(json.dumps(self.node0.to_dict(), indent=4))
         result = []
         visit(self.node0, lambda n: result.append(n.name) or False, order="pre")
         self.assertEqual(

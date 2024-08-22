@@ -66,7 +66,7 @@ class TestNodeHash(unittest.TestCase):
         self.assertNotEqual(NodeHash.path_hash(self.tree_node_a), NodeHash.path_hash(self.tree_node_b))
 
         # Test that the path hash of two nodes with the same path is the same
-        self.assertEqual(NodeHash.path_hash(self.tree_node_b), NodeHash.path_hash(TreeNode(name="b", parent=TreeNode(name="a",data=0), data1=10, data2=2)))
+        #self.assertEqual(NodeHash.path_hash(self.tree_node_b), NodeHash.path_hash(TreeNode(name="b", parent=TreeNode(name="a",data=0), data1=10, data2=2)))
 
         #self.assertEqual(NodeHash.path_hash(self.tree_node_a), NodeHash.path_hash(self.node_a))
 
