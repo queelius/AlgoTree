@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.node_hash &#8212; AlgoTree 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.node_hash</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Node Hash Functions</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">This module provides hash functions for tree-like structures that implement the</span>
+<span class="sd">node-centric API defined in this project.</span>
+
+<span class="sd">The hash functions in this module are designed to handle different aspects of</span>
+<span class="sd">tree node comparison, such as node equality or position equality within the tree. </span>
+<span class="sd">They can be used to answer questions like &quot;are these two nodes the same?&quot;, </span>
+<span class="sd">and &quot;is this node in the same position in these two trees?&quot;.</span>
+
+<span class="sd">Note: Hash functions provide an approximation of equality, with a potential for</span>
+<span class="sd">false positives due to hash collisions. Always consider this when using these</span>
+<span class="sd">functions for node or tree comparison.</span>
+
+<span class="sd">Philosophical Perspective - The Ship of Theseus</span>
+<span class="sd">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">The Ship of Theseus is a thought experiment that raises questions about the</span>
+<span class="sd">nature of identity and whether an object that has had all of its components</span>
+<span class="sd">replaced remains fundamentally the same object.</span>
+
+<span class="sd">In the context of tree nodes, this experiment highlights that identity is</span>
+<span class="sd">often a convention and can depend on the context.</span>
+
+<span class="sd">For instance, a node may be considered the &quot;same&quot; if it has the same name and</span>
+<span class="sd">payload (intrinsic properties), even if its position in the tree changes</span>
+<span class="sd">(extrinsic properties). Conversely, a node&#39;s identity might be tied to its</span>
+<span class="sd">position within a specific tree structure, reflecting a different aspect of equality.</span>
+
+<span class="sd">Identity vs. Equality:</span>
+<span class="sd">1. Identity:</span>
+<span class="sd">   - Two nodes are considered identical if they are the same instance in memory.</span>
+<span class="sd">   - Use Case: Checking if two variables point to the exact same node object.</span>
+<span class="sd">   - Since an object can chage its state, it does not make for a</span>
+<span class="sd">     good hash function. It is better to use the `id` function directly.</span>
+
+<span class="sd">   Example</span>
+<span class="sd">   ^^^^^^^</span>
+<span class="sd">   node1 is node2</span>
+
+<span class="sd">2. Equality:</span>
+<span class="sd">   - Equality can be defined in various ways depending on the context.</span>
+<span class="sd">   - Name Equality: Two nodes are equal if they have the same name.</span>
+<span class="sd">   - Payload Equality: Two nodes are equal if they have the same payload.</span>
+<span class="sd">   - Structural Equality: Two nodes are equal if they have the same structure, name, and payload.</span>
+<span class="sd">   - Positional Equality: Two nodes are equal if they occupy the same position in</span>
+<span class="sd">     isomorphic trees (node labels and payloads are irrelevant).</span>
+<span class="sd">   - Tree Equality: Two trees are equal if they have the same structure and the</span>
+<span class="sd">     same data at each node.</span>
+
+<span class="sd">   Examples</span>
+<span class="sd">   ^^^^^^^^</span>
+
+<span class="sd">   name_hash(node1) == name_hash(node2)</span>
+<span class="sd">   payload_hash(node1) == payload_hash(node2)</span>
+<span class="sd">   node_hash(node1) == node_hash(node2)</span>
+<span class="sd">   path_hash(node1) == path_hash(node2)</span>
+<span class="sd">   tree_hash(node1) == tree_hash(node2)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">AlgoTree.utils</span> <span class="k">as</span> <span class="nn">utils</span>
+<span class="kn">from</span> <span class="nn">AlgoTree.tree_converter</span> <span class="kn">import</span> <span class="n">TreeConverter</span>
+
+<div class="viewcode-block" id="NodeHash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash">[docs]</a>
+<span class="k">class</span> <span class="nc">NodeHash</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class providing various hash functions for tree nodes and tree structures.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NodeHash.name_hash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash.name_hash">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">name_hash</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute a hash based on the name of the node.</span>
+
+<span class="sd">        :param node: The node for which to compute the hash.</span>
+<span class="sd">        :return: The hash value for the node&#39;s name.</span>
+
+<span class="sd">        Use Case:</span>
+<span class="sd">        - Useful when you want to compare nodes solely based on their names, ignoring their position and other attributes.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        - Checking if two nodes represent the same entity based on their name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node must have a &#39;name&#39; attribute&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NodeHash.payload_hash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash.payload_hash">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">payload_hash</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute a hash based on the payload of the node.</span>
+
+<span class="sd">        :param node: The node for which to compute the hash.</span>
+<span class="sd">        :return: The hash value for the node&#39;s payload.</span>
+
+<span class="sd">        Use Case:</span>
+<span class="sd">        - Useful when comparing nodes based on their payload, ignoring their name and position in the tree.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        - Identifying nodes that carry the same data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;payload&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node must have a &#39;payload&#39; attribute&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">))</span></div>
+
+    
+
+<div class="viewcode-block" id="NodeHash.node_hash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash.node_hash">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">node_hash</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute a hash based on the name and payload of the node.</span>
+
+<span class="sd">        :param node: The node for which to compute the hash.</span>
+<span class="sd">        :return: The hash value for the node&#39;s name and payload.</span>
+
+<span class="sd">        Use Case:</span>
+<span class="sd">        - This is the most common notion of node equality, focusing on the node&#39;s intrinsic properties and ignoring its position in the tree.</span>
+<span class="sd">        - Useful when you want to compare nodes by both name and payload, but not their position in the tree.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        - Checking if two nodes are equivalent in terms of both their name and the data they carry, without considering their location in the tree structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s1">&#39;payload&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node must have &#39;name&#39; and &#39;payload&#39; attributes&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">((</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="NodeHash.path_hash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash.path_hash">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">path_hash</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute a hash based on the path of the node in the tree.</span>
+
+<span class="sd">        :param node: The node for which to compute the hash.</span>
+<span class="sd">        :return: The hash value for the node&#39;s path in the tree.</span>
+
+<span class="sd">        Use Case:</span>
+<span class="sd">        - Useful when the position of the node in the tree is more important than its name or payload.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        - Determining if two nodes occupy the same position in different trees.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node cannot be None&quot;</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">OKAY TEST::::&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">p</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;OKAY TEST END::::&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="NodeHash.tree_hash">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.node_hash.NodeHash.tree_hash">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">tree_hash</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute a hash based on the entire tree structure rooted at the node.</span>
+
+<span class="sd">        :param node: The node for which to compute the hash.</span>
+<span class="sd">        :return: The hash value for the entire tree structure.</span>
+
+<span class="sd">        Use Case:</span>
+<span class="sd">        - Useful when you need to compare entire tree structures, considering both node attributes and their positions.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        - Verifying if two trees are structurally identical and contain the same data in corresponding positions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node cannot be None&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">TreeConverter</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

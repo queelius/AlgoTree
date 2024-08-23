@@ -1,0 +1,3677 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>&lt;no title&gt; &#8212; AlgoTree 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="expr_trees_nb.html" />
+    <link rel="prev" title="AlgoTree: Comprehensive Tutorial" href="../tutorial.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <dl>
+<dt>{</dt><dd><dl>
+<dt>“cells”: [</dt><dd><dl>
+<dt>{</dt><dd><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“# <cite>FlatForest Notebook</cite>n”,
+“n”,
+“In this notebook, we explore the <cite>FlatForest</cite> data structure, which is a forestn”,
+“structure with a flat (non-nested) data structure. It is a <cite>dict</cite> with specialn”,
+“methods to access the root nodes and other tree-like operations.n”,
+“n”,
+“The main implementation detail is the proxy class <cite>FlatForestNode</cite>, which allowsn”,
+“us to access the <cite>dict</cite> with a node-centric abstraction. This allows us ton”,
+“implement tree-like operations in a flat data structure. As a proxy, it alson”,
+“modifies the <cite>dict</cite> in place, so it is a mutable data structure.”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s load the required libraries and create a <cite>FlatForest</cite> data structuren”,
+“using the node interface.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 118,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“1 {‘data’: 1} Nonen”,
+“n”,
+“2 {‘data’: 2} 1n”,
+“n”,
+“3 {‘data’: 3} 1n”,
+“n”,
+“4 {‘data’: 4} 3n”,
+“n”,
+“5 {‘data’: 5} 3n”,
+“n”,
+“A {‘data’: ‘Data for A’} Nonen”,
+“n”,
+“B {‘data’: ‘Data for B’} An”,
+“n”,
+“C {‘data’: ‘Data for C’} An”,
+“n”,
+“D {‘data’: ‘Data for D’} Cn”,
+“n”,
+“E {‘data’: ‘Data for E’} Cn”,
+“n”,
+“F {‘data’: ‘Data for F’} En”,
+“n”,
+“G {‘data’: ‘Data for G’} En”,
+“n”,
+“H {‘data’: ‘Data for H’} Bn”,
+“n”,
+“I {‘data’: ‘Data for I’} An”,
+“n”,
+“J {‘data’: ‘Data for J’} In”,
+“n”,
+“K {‘data’: ‘Data for K’} Gn”,
+“n”,
+“L {‘data’: ‘Data for L’} Gn”,
+“n”,
+“M {‘data’: ‘Data for M’} Cn”,
+“n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from AlgoTree.flat_forest_node import FlatForestNoden”,
+“from AlgoTree.flat_forest import FlatForestn”,
+“from AlgoTree.tree_converter import TreeConvertern”,
+“from IPython.display import display, Markdownn”,
+“from AlgoTree.pretty_tree import pretty_treen”,
+“import jsonn”,
+“#from AlgoTree.treenode import TreeNoden”,
+“from copy import deepcopyn”,
+“n”,
+“n”,
+“def monotext(txt):n”,
+“    display(Markdown(f&quot;&lt;pre&gt;{txt}&lt;/pre&gt;&quot;))n”,
+“n”,
+“data = {n”,
+“    &quot;1&quot;: { &quot;data&quot;: 1, &quot;parent&quot;: None},n”,
+“    &quot;2&quot;: { &quot;parent&quot;: &quot;1&quot;, &quot;data&quot;: 2},n”,
+“    &quot;3&quot;: { &quot;parent&quot;: &quot;1&quot;, &quot;data&quot;: 3},n”,
+“    &quot;4&quot;: { &quot;parent&quot;: &quot;3&quot;, &quot;data&quot;: 4},n”,
+“    &quot;5&quot;: { &quot;parent&quot;: &quot;3&quot;, &quot;data&quot;: 5},n”,
+“    &quot;A&quot;: { &quot;data&quot;: &quot;Data for A&quot;, &quot;parent&quot;: None },n”,
+“    &quot;B&quot;: { &quot;parent&quot;: &quot;A&quot;, &quot;data&quot;: &quot;Data for B&quot; },n”,
+“    &quot;C&quot;: { &quot;parent&quot;: &quot;A&quot;, &quot;data&quot;: &quot;Data for C&quot; },n”,
+“    &quot;D&quot;: { &quot;parent&quot;: &quot;C&quot;, &quot;data&quot;: &quot;Data for D&quot; },n”,
+“    &quot;E&quot;: { &quot;parent&quot;: &quot;C&quot;, &quot;data&quot;: &quot;Data for E&quot; },n”,
+“    &quot;F&quot;: { &quot;parent&quot;: &quot;E&quot;, &quot;data&quot;: &quot;Data for F&quot; },n”,
+“    &quot;G&quot;: { &quot;parent&quot;: &quot;E&quot;, &quot;data&quot;: &quot;Data for G&quot; },n”,
+“    &quot;H&quot;: { &quot;parent&quot;: &quot;B&quot;, &quot;data&quot;: &quot;Data for H&quot; },n”,
+“    &quot;I&quot;: { &quot;parent&quot;: &quot;A&quot;, &quot;data&quot;: &quot;Data for I&quot; },n”,
+“    &quot;J&quot;: { &quot;parent&quot;: &quot;I&quot;, &quot;data&quot;: &quot;Data for J&quot; },n”,
+“    &quot;K&quot;: { &quot;parent&quot;: &quot;G&quot;, &quot;data&quot;: &quot;Data for K&quot; },n”,
+“    &quot;L&quot;: { &quot;parent&quot;: &quot;G&quot;, &quot;data&quot;: &quot;Data for L&quot; },n”,
+“    &quot;M&quot;: { &quot;parent&quot;: &quot;C&quot;, &quot;data&quot;: &quot;Data for M&quot; },n”,
+“}n”,
+“n”,
+“forest = FlatForest()n”,
+“nodes = []n”,
+“for key, value in data.items():n”,
+“    par_key = value.pop(&quot;parent&quot;, None)n”,
+“    nodes.append(FlatForestNode(name=key, parent=par_key, forest=forest, data=value[&quot;data&quot;]))n”,
+“n”,
+“for node in nodes:n”,
+“    try:n”,
+“        print(node.name, node.payload, node.parent.name if node.parent is not None else None)n”,
+“    except ValueError as e:n”,
+“        print(f&quot;ValueError: {e}&quot;)n”,
+“    except KeyError as e:n”,
+“        print(f&quot;KeyError: {e}&quot;)n”,
+“    print()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“It’s easy to regenerate any JSON files that may have been usedn”,
+“to generate the <cite>FlatForest</cite> object. So, JSON is a good format for storing andn”,
+“transmitting trees. And, of course, <cite>FlatForest</cite> <em>is</em> a dictionary. Of course,n”,
+“if we store an object that has no serializable representation, it cannot ben”,
+“stored in JSON.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s do something similar, but using the <cite>FlatForest</cite>’s <cite>dict</cite> or <cite>json</cite>n”,
+“constructor. This is more direct and makes it explicit what data the treen”,
+“is providing a <em>view</em> of. After all, the <cite>FlatForest</cite> is itself just a <cite>dict</cite>n”,
+“of a particular shape.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 119,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Falsen”,
+“Falsen”,
+“Truen”,
+“Falsen”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“# load a forest from datan”,
+“forest2 = FlatForest(deepcopy(data))n”,
+“# load a forest from a forestn”,
+“forest3 = FlatForest(forest)n”,
+“n”,
+“print(forest == forest2)n”,
+“n”,
+“print(json.dumps(dict(forest), indent=2, sort_keys=True) == json.dumps(dict(forest2), indent=2, sort_keys=True))n”,
+“print(json.dumps(dict(forest), indent=2, sort_keys=True) == json.dumps(dict(forest3), indent=2, sort_keys=True))n”,
+“print(json.dumps(dict(forest2), indent=2, sort_keys=True) == json.dumps(dict(forest3), indent=2, sort_keys=True))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 120,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“[None, None, ‘__DETACHED__’]”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 120,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.logical_root_names()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 121,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(name=__DETACHED__, parent=None, payload={}, root=__DETACHED__, children=[])n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“print(forest.detached)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 122,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“FlatForestNode(name=1, parent=None, payload={‘data’: 1}, root=1, children=[‘2’, ‘3’])”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 122,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from copy import deepcopyn”,
+“new_forest = deepcopy(forest)n”,
+“new_forest.detach(&quot;1&quot;)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“If we try to detach a node that was already detached, we get a <cite>KeyError</cite>. Noten”,
+“that this can happen in two ways:n”,
+“n”,
+“1. The node was detached and then we try to detach it again.n”,
+“2. The node was detached and then we try to detach a child of it.n”,
+“n”,
+“Any child of a detached node is also detached, so we can’t detach a child of an”,
+“detached node.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 123,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    new_forest.detach(&quot;2&quot;)n”,
+“except KeyError as e:n”,
+“    print(f&quot;KeyError: {e}&quot;)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 124,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“FlatForestNode(name=__ROOT__, parent=None, payload={}, root=__ROOT__, children=[‘1’, ‘A’])”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 124,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.as_tree()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 125,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“1n”,
+“├───── 2n”,
+“└───── 3n”,
+“       ├───── 4n”,
+“       └───── 5n”,
+“n”,
+“An”,
+“├───── Bn”,
+“│      └───── Hn”,
+“├───── Cn”,
+“│      ├───── Dn”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“└───── In”,
+“       └───── Jn”,
+“n”,
+“Cn”,
+“├───── Dn”,
+“├───── En”,
+“│      ├───── Fn”,
+“│      └───── Gn”,
+“│             ├───── Kn”,
+“│             └───── Ln”,
+“└───── Mn”,
+“n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.preferred_root = &quot;1&quot;n”,
+“print(pretty_tree(forest.subtree()))n”,
+“forest.preferred_root = &quot;A&quot;n”,
+“print(pretty_tree(forest.subtree()))n”,
+“print(pretty_tree(forest.subtree(&quot;C&quot;)))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“For visualizing trees, we can use the <cite>PrettyTree</cite> class and the <cite>pretty_tree</cite>n”,
+“function. The <cite>PrettyTree</cite> class is a simple tree data structure that can ben”,
+“used to visualize trees in pretty text format, optionally with the abilityn”,
+“to mark nodes for highlighting.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 126,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;A ◄ Data for A 🔵n”,
+“├───── B ◄ Data for Bn”,
+“│      └───── H ◄ Data for Hn”,
+“├───── C ◄ Data for Cn”,
+“│      ├───── D ◄ Data for Dn”,
+“│      ├───── E ◄ Data for En”,
+“│      │      ├───── F ◄ Data for Fn”,
+“│      │      └───── G ◄ Data for G 🟣n”,
+“│      │             ├───── K ◄ Data for Kn”,
+“│      │             └───── L ◄ Data for Ln”,
+“│      └───── M ◄ Data for Mn”,
+“└───── I ◄ Data for In”,
+“       └───── J ◄ Data for Jn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“monotext(pretty_tree(forest.subtree(&quot;A&quot;), mark=[&quot;A&quot;, &quot;G&quot;], node_details=lambda node: node.payload[‘data’]))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 127,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      └───── H 🟡n”,
+“├───── Cn”,
+“│      ├───── D ⭕n”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“└───── In”,
+“       └───── Jn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“monotext(pretty_tree(forest.subtree(&quot;A&quot;), mark=[&quot;H&quot;, &quot;D&quot;]))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 128,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{‘node_info’: {‘ancestors’: [],n”,
+“               ‘children’: [‘D’, ‘E’, ‘M’],n”,
+“               ‘depth’: 0,n”,
+“               ‘descendants’: [‘D’, ‘E’, ‘F’, ‘G’, ‘K’, ‘L’, ‘M’],n”,
+“               ‘is_internal’: True,n”,
+“               ‘is_leaf’: False,n”,
+“               ‘is_root’: True,n”,
+“               ‘leaves_under’: [‘D’, ‘F’, ‘K’, ‘L’, ‘M’],n”,
+“               ‘name’: ‘C’,n”,
+“               ‘parent’: None,n”,
+“               ‘path’: [‘C’],n”,
+“               ‘payload’: {‘data’: ‘Data for C’},n”,
+“               ‘root_distance’: 0,n”,
+“               ‘siblings’: [],n”,
+“               ‘type’: &quot;&lt;class ‘AlgoTree.flat_forest_node.FlatForestNode’&gt;&quot;},n”,
+“ ‘subtree_info’: {‘height’: 3,n”,
+“                  ‘leaves’: [‘D’, ‘F’, ‘K’, ‘L’, ‘M’],n”,
+“                  ‘root’: ‘C’,n”,
+“                  ‘size’: 8}}n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from pprint import pprintn”,
+“from AlgoTree import utilsn”,
+“pprint(utils.node_stats(forest.subtree(&quot;C&quot;)))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“The <cite>FlatForest</cite> class provides a <strong>view</strong> of a <cite>dict</cite> object as a forest. We do not modifyn”,
+“the <cite>dict</cite> passed into it (and you can create a dict through the <cite>FlatForest</cite> API).n”,
+“Since it’s just a view of a <cite>dict</cite> we have all the normal operations on it thatn”,
+“we would have on a <cite>dict</cite> object.n”,
+“n”,
+“<cite>FlatForest</cite> also implements the concept of a node, which is a view of a particular noden”,
+“in our node-centric API. In order to do this, we specify a preferred root node,n”,
+“which by default is the first root node in the forest. This is the node thatn”,
+“will be used as the root node in the <cite>FlatForestNode</cite> API. If you want to changen”,
+“the root node, you can do so by calling <cite>FlatForest.preferred_root</cite> withn”,
+“the name of the node you want to be the preferred root.n”,
+“n”,
+“We also provide as <cite>as_tree</cite> method that unifies any <cite>dict</cite> object representingn”,
+“a flat forest structure into a flat forest structure with just a single root node,n”,
+“where all the root nodes are children of this root node. This is no longer an”,
+“view, however, as we return a new <cite>dict</cite> object.n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 129,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{‘data’: ‘Data for C’, ‘parent’: ‘A’}n”,
+“FlatForestNode(name=C, parent=None, payload={‘data’: ‘Data for C’}, root=C, children=[‘D’, ‘E’, ‘M’])n”,
+“An”,
+“[FlatForestNode(name=D, parent=C, payload={‘data’: ‘Data for D’}, root=C, children=[]), FlatForestNode(name=E, parent=C, payload={‘data’: ‘Data for E’}, root=C, children=[‘F’, ‘G’]), FlatForestNode(name=M, parent=C, payload={‘data’: ‘Data for M’}, root=C, children=[])]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“print(forest[&quot;C&quot;])n”,
+“C = forest.subtree(&quot;C&quot;)n”,
+“print(C)n”,
+“print(C[&quot;parent&quot;])n”,
+“print(C.children)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 130,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(name=N, parent=A, payload={‘data’: ‘Data for N’}, root=A, children=[])n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      └───── Hn”,
+“├───── Cn”,
+“│      ├───── Dn”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“└───── O 🟡n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“N = forest.root.add_child(name=&quot;N&quot;, data=&quot;Data for N&quot;)n”,
+“print(N)n”,
+“forest.subtree(&quot;A&quot;).add_child(name=&quot;O&quot;, data=&quot;Data for O&quot;)n”,
+“monotext(pretty_tree(forest.root.node(&quot;A&quot;), mark=[&quot;O&quot;]))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“If we try too add a non-unique node key to the tree, we will get a <cite>KeyError</cite>.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 131,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“‘key already exists in the tree: B’n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    forest.subtree(&quot;A&quot;).add_child(name=&quot;B&quot;)n”,
+“except KeyError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s add some more nodes.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 132,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      └───── Hn”,
+“├───── Cn”,
+“│      ├───── Dn”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── N ⭕n”,
+“│      ├───── P 🟤n”,
+“│      │      └───── R 🔵n”,
+“│      │             └───── S 🟤n”,
+“│      └───── Q 🔘n”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(name=A, parent=None, payload={‘data’: ‘Data for A’}, root=A, children=[‘B’, ‘C’, ‘I’, ‘N’, ‘O’])n”,
+“Nonen”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“P = N.add_child(name=&quot;P&quot;, data=&quot;Data for P&quot;)n”,
+“N.add_child(name=&quot;Q&quot;, data=&quot;Data for Q&quot;)n”,
+“P.add_child(name=&quot;R&quot;, data=&quot;Data for R&quot;).add_child(n”,
+“    name=&quot;S&quot;, data=&quot;Data for S&quot;n”,
+“)n”,
+“monotext(pretty_tree(forest.root, mark=[&quot;N&quot;, &quot;P&quot;, &quot;Q&quot;, &quot;R&quot;, &quot;S&quot;]))n”,
+“n”,
+“print(forest.root.node(&quot;A&quot;))n”,
+“print(forest.root.node(&quot;A&quot;).parent)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 133,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[‘F’, ‘E’, ‘G’, ‘C’]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“f_nodes = utils.breadth_first_undirected(forest.node(&quot;F&quot;), 2)n”,
+“print([n.name for n in f_nodes])n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 134,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;C ⭕n”,
+“├───── Dn”,
+“├───── En”,
+“│      ├───── Fn”,
+“│      └───── Gn”,
+“└───── Mn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“n”,
+“monotext(pretty_tree(utils.subtree_rooted_at(forest.node(&quot;C&quot;), 2), mark=[&quot;C&quot;]))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 135,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“├───── C ⭕n”,
+“│      ├───── Dn”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      └───── Mn”,
+“├───── In”,
+“├───── Nn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      └───── Hn”,
+“├───── C ⭕n”,
+“│      ├───── Dn”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“center_C = utils.subtree_centered_at(forest.node(&quot;C&quot;), 2)n”,
+“monotext(pretty_tree(center_C, mark=[&quot;C&quot;]))n”,
+“monotext(pretty_tree(forest.root, mark=[&quot;C&quot;]))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We also support conversions to and from any tree-like structure that supportsn”,
+“the node-centric API, including <cite>FlatForest</cite> and a simple (but far more flexible)n”,
+“<cite>TreeNode</cite> class that we also provide for illustrative purposes.n”,
+“n”,
+“The function is called <cite>TreeConverter.copy_under</cite> which accepts a <cite>source</cite> and <cite>target</cite> object, and copies the <cite>source</cite> object under the <cite>target</cite> object. The source is normallyn”,
+“a node of some kind, and the target is another node, and the result is the treen”,
+“structure under the source node is copied under the target node. The source noden”,
+“is not modified in any way.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 136,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“treenoden”,
+“├───── child1 🟡n”,
+“│      └───── Cn”,
+“│             ├───── Dn”,
+“│             ├───── En”,
+“│             │      ├───── Fn”,
+“│             │      └───── Gn”,
+“│             │             ├───── Kn”,
+“│             │             └───── Ln”,
+“│             └───── Mn”,
+“└───── child2n”,
+“n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from AlgoTree.treenode import TreeNoden”,
+“treeNodeMe = TreeNode(name=&quot;treenode&quot;, payload={&quot;data&quot;: &quot;Data for treenode&quot;})n”,
+“treeNodeMe.add_child(name=&quot;child1&quot;, payload={&quot;data&quot;: &quot;Data for child1&quot;})n”,
+“treeNodeMe.add_child(name=&quot;child2&quot;, payload={&quot;data&quot;: &quot;Data for child2&quot;})n”,
+“tree1 = TreeConverter.copy_under(forest.subtree(&quot;C&quot;), treeNodeMe.children[0])n”,
+“print(pretty_tree(tree1.root, mark=[&quot;child1&quot;]))n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 137,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      └───── Hn”,
+“├───── Cn”,
+“│      ├───── Dn”,
+“│      │      └───── treenode_2n”,
+“│      │             ├───── child1_2n”,
+“│      │             │      └───── C_2n”,
+“│      │             │             ├───── D_2n”,
+“│      │             │             ├───── E_2n”,
+“│      │             │             │      ├───── F_2n”,
+“│      │             │             │      └───── G_2n”,
+“│      │             │             │             ├───── K_2n”,
+“│      │             │             │             └───── L_2n”,
+“│      │             │             └───── M_2n”,
+“│      │             └───── child2_2n”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“tree2 = TreeConverter.copy_under(tree1.root, forest.subtree(&quot;D&quot;), node_name=lambda n: n.name + &quot;_2&quot;)n”,
+“monotext(pretty_tree(tree2.forest.root))n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We can iterate over the items of the child and we can modify/delete its data.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 138,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“data &lt;– Data for Nn”,
+“parent &lt;– An”,
+“FlatForestNode(name=N, parent=A, payload={‘data’: ‘Data for N’, ‘new_data’: ‘Some new data for G’}, root=A, children=[‘P’, ‘Q’])n”,
+“FlatForestNode(name=N, parent=A, payload={‘data’: ‘Data for N’, ‘other_new_data’: ‘Some other data for G’}, root=A, children=[‘P’, ‘Q’])n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“for k, v in forest.subtree(&quot;N&quot;).items():n”,
+“    print(k, &quot;&lt;–&quot;, v)n”,
+“n”,
+“N[&quot;new_data&quot;] = &quot;Some new data for G&quot;n”,
+“print(N)n”,
+“n”,
+“del N[&quot;new_data&quot;]n”,
+“N[&quot;other_new_data&quot;] = &quot;Some other data for G&quot;n”,
+“print(N)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s create a tree from a dictionary that refers to a non-existent parent.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 139,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“&quot;Parent ‘non_existent_parent’ not in forest for node ‘A’&quot;n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    non_existent_parent_tree = FlatForest(n”,
+“        {n”,
+“            &quot;A&quot;: {n”,
+“                &quot;parent&quot;: &quot;non_existent_parent&quot;,n”,
+“                &quot;data&quot;: &quot;Data for A&quot;,n”,
+“            }n”,
+“        }n”,
+“    )n”,
+“    FlatForest.check_valid(non_existent_parent_tree)n”,
+“except KeyError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We see that the node is disconnected from the logical root, since it refersn”,
+“to a non-existent parent.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 140,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;xn”,
+“└───── Dn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Cycle detected: {‘C’, ‘A’, ‘B’}n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    cycle_tree = FlatForest(n”,
+“        {n”,
+“            &quot;x&quot;: {&quot;parent&quot;: None, &quot;data&quot;: &quot;Data for x&quot;},n”,
+“            &quot;A&quot;: {&quot;parent&quot;: &quot;C&quot;, &quot;data&quot;: &quot;Data for A&quot;},n”,
+“            &quot;B&quot;: {&quot;parent&quot;: &quot;A&quot;, &quot;data&quot;: &quot;Data for B&quot;},n”,
+“            &quot;C&quot;: {&quot;parent&quot;: &quot;B&quot;, &quot;data&quot;: &quot;Data for C&quot;},n”,
+“            &quot;D&quot;: {&quot;parent&quot;: &quot;x&quot;, &quot;data&quot;: &quot;Data for D&quot;},n”,
+“        }n”,
+“    )n”,
+“n”,
+“    monotext(pretty_tree(cycle_tree.root))n”,
+“    FlatForest.check_valid(cycle_tree)n”,
+“except ValueError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We see that the tree was in an invalid state. In particular, nodes 1, 2, and 3n”,
+“are from any root and in a cycle. We can fix this byn”,
+“breaking the cycle and setting the parent of node 3 to, for instance, to <cite>x</cite>.n”,
+“However, we can also fix it by setting the parent to <cite>None</cite>, so that it is an”,
+“seperate tree in the forest.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 141,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;C ⭕n”,
+“└───── An”,
+“       └───── Bn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[‘x’, ‘C’, None, None, ‘__DETACHED__’]n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“cycle_tree[&quot;C&quot;][&quot;parent&quot;] = Nonen”,
+“FlatForest.check_valid(cycle_tree)n”,
+“monotext(pretty_tree(cycle_tree.subtree(&quot;C&quot;), mark=[&quot;C&quot;]))n”,
+“print(cycle_tree.root_names)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s look at the tree again, and see about creating a cycle.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We will make node 1 the parent of node 5, to create a cycle:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 142,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Data is not a dictionary: data=FlatForestNode(name=A, parent=None, payload={‘data’: ‘Data for A’}, root=A, children=[‘B’, ‘C’, ‘I’, ‘N’, ‘O’])n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    new_tree = deepcopy(forest.root)n”,
+“    new_tree.node(&quot;A&quot;)[&quot;parent&quot;] = &quot;E&quot;n”,
+“    FlatForest.check_valid(new_tree)n”,
+“except ValueError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Notice that we use <cite>deepcopy</cite> to avoid modifying the original tree with thesen”,
+“invalid operations. We chose to do it this way so as to not incur the overheadn”,
+“of reverting the tree to a valid state after an invalid operation. This way,n”,
+“we can keep the tree in an invalid state for as long as we want, and onlyn”,
+“revert it to a valid state when we want to.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Each node is a key-value pair in the <cite>FlatForest</cite>. We have the <cite>FlatForestNode</cite>n”,
+“so that we can have an API focused on the nodes and not the underlying dictionary.n”,
+“However, we stiill permit access to the underlying dictionary. When you modifyn”,
+“the tree in this way, we still maintain the integrity of the tree.n”,
+“n”,
+“Since the <cite>FlatForest</cite> represents nodes as key-value pairs, and the value mayn”,
+“have a parent key, along with any other arbitrary data, each value for a noden”,
+“must be a dictionary.n”,
+“n”,
+“Below, we see that trying to add a <cite>test</cite> node with a non-dictionary valuen”,
+“generates an error.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 143,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Node ‘test’ does not have a payload dictionary: ‘Some test data’n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    error_tree = deepcopy(forest)n”,
+“    # this will raise a ValueError because the node with key <cite>test</cite> maps ton”,
+“    # string instead of a dict.n”,
+“    error_tree[&quot;test&quot;] = &quot;Some test data&quot;n”,
+“    FlatForest.check_valid(error_tree)n”,
+“except ValueError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s manipulate the tree a bit more using the <cite>dict</cite> API. We’re just going ton”,
+“add a <cite>new_node</cite> with some data.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 144,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(name=T, parent=B, payload={‘data’: ‘Data for T’}, root=A, children=[])n”,
+“Bn”,
+“├───── Hn”,
+“└───── T 🔵n”,
+“n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest[&quot;T&quot;] = {n”,
+“    &quot;parent&quot;: &quot;B&quot;,n”,
+“    &quot;data&quot;: &quot;Data for T&quot;n”,
+“}n”,
+“n”,
+“print(forest.node(&quot;T&quot;))n”,
+“print(pretty_tree(forest.subtree(&quot;B&quot;), mark=[&quot;T&quot;]))n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Logical roots are not a part of the underlying dictionary, so we can’tn”,
+“access it through the <cite>dict</cite> API. It’s non-children data are also immutablen”,
+“through the <cite>FlatForestNode</cite> API. Right now, we use <cite>FlatForest.DETACHED_KEY</cite>n”,
+“as a logical root for detached nodes.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 145,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(name=__DETACHED__, parent=None, payload={}, root=__DETACHED__, children=[])n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“print(forest.detached)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We see that there are no detached nodes in the forest right now.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 146,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“__DETACHED__ is an immutable logical rootn”,
+“__DETACHED__ is an immutable logical rootn”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“try:n”,
+“    forest.detached[&quot;data&quot;] = &quot;Some new data for root node&quot;n”,
+“except TypeError as e:n”,
+“    print(e)n”,
+“n”,
+“try:n”,
+“    forest.detached[&quot;parent&quot;] = Nonen”,
+“except TypeError as e:n”,
+“    print(e)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We can <em>detach</em> nodes. Let’s first view the full tree, pre-detachment.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 147,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      └───── Tn”,
+“├───── Cn”,
+“│      ├───── Dn”,
+“│      │      └───── treenode_2n”,
+“│      │             ├───── child1_2n”,
+“│      │             │      └───── C_2n”,
+“│      │             │             ├───── D_2n”,
+“│      │             │             ├───── E_2n”,
+“│      │             │             │      ├───── F_2n”,
+“│      │             │             │      └───── G_2n”,
+“│      │             │             │             ├───── K_2n”,
+“│      │             │             │             └───── L_2n”,
+“│      │             │             └───── M_2n”,
+“│      │             └───── child2_2n”,
+“│      ├───── En”,
+“│      │      ├───── Fn”,
+“│      │      └───── Gn”,
+“│      │             ├───── Kn”,
+“│      │             └───── Ln”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“monotext(pretty_tree(forest.root))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 148,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      └───── Tn”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.node(&quot;D&quot;).detach()n”,
+“forest.detach(&quot;G&quot;)n”,
+“monotext(pretty_tree(forest.root))n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s view the detached tree.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 149,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;__DETACHED__n”,
+“├───── Dn”,
+“│      └───── treenode_2n”,
+“│             ├───── child1_2n”,
+“│             │      └───── C_2n”,
+“│             │             ├───── D_2n”,
+“│             │             ├───── E_2n”,
+“│             │             │      ├───── F_2n”,
+“│             │             │      └───── G_2n”,
+“│             │             │             ├───── K_2n”,
+“│             │             │             └───── L_2n”,
+“│             │             └───── M_2n”,
+“│             └───── child2_2n”,
+“└───── Gn”,
+“       ├───── Kn”,
+“       └───── Ln”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“monotext(pretty_tree(forest.detached, mark=[&quot;B&quot;, &quot;C&quot;]))n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We can purge detached nodes (and their descendants) from the tree with then”,
+“<cite>purge</cite> method. Let’s purge the detached nodes. Note that when we do this,n”,
+“through the node-centric API, nothing will seem different (unless we look atn”,
+“the tree rooted at the detached logical root). However, if we look at then”,
+“underlying dictionary, we will see that the detached nodes are gone.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 150,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{n”,
+“  &quot;1&quot;: {n”,
+“    &quot;data&quot;: 1,n”,
+“    &quot;parent&quot;: nulln”,
+“  },n”,
+“  &quot;2&quot;: {n”,
+“    &quot;data&quot;: 2,n”,
+“    &quot;parent&quot;: &quot;1&quot;n”,
+“  },n”,
+“  &quot;3&quot;: {n”,
+“    &quot;data&quot;: 3,n”,
+“    &quot;parent&quot;: &quot;1&quot;n”,
+“  },n”,
+“  &quot;4&quot;: {n”,
+“    &quot;data&quot;: 4,n”,
+“    &quot;parent&quot;: &quot;3&quot;n”,
+“  },n”,
+“  &quot;5&quot;: {n”,
+“    &quot;data&quot;: 5,n”,
+“    &quot;parent&quot;: &quot;3&quot;n”,
+“  },n”,
+“  &quot;A&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for A&quot;,n”,
+“    &quot;parent&quot;: nulln”,
+“  },n”,
+“  &quot;B&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for B&quot;,n”,
+“    &quot;parent&quot;: &quot;A&quot;n”,
+“  },n”,
+“  &quot;C&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for C&quot;,n”,
+“    &quot;parent&quot;: &quot;A&quot;n”,
+“  },n”,
+“  &quot;E&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for E&quot;,n”,
+“    &quot;parent&quot;: &quot;C&quot;n”,
+“  },n”,
+“  &quot;F&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for F&quot;,n”,
+“    &quot;parent&quot;: &quot;E&quot;n”,
+“  },n”,
+“  &quot;H&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for H&quot;,n”,
+“    &quot;parent&quot;: &quot;B&quot;n”,
+“  },n”,
+“  &quot;I&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for I&quot;,n”,
+“    &quot;parent&quot;: &quot;A&quot;n”,
+“  },n”,
+“  &quot;J&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for J&quot;,n”,
+“    &quot;parent&quot;: &quot;I&quot;n”,
+“  },n”,
+“  &quot;M&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for M&quot;,n”,
+“    &quot;parent&quot;: &quot;C&quot;n”,
+“  },n”,
+“  &quot;N&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for N&quot;,n”,
+“    &quot;parent&quot;: &quot;A&quot;,n”,
+“    &quot;other_new_data&quot;: &quot;Some other data for G&quot;n”,
+“  },n”,
+“  &quot;O&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for O&quot;,n”,
+“    &quot;parent&quot;: &quot;A&quot;n”,
+“  },n”,
+“  &quot;P&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for P&quot;,n”,
+“    &quot;parent&quot;: &quot;N&quot;n”,
+“  },n”,
+“  &quot;Q&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for Q&quot;,n”,
+“    &quot;parent&quot;: &quot;N&quot;n”,
+“  },n”,
+“  &quot;R&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for R&quot;,n”,
+“    &quot;parent&quot;: &quot;P&quot;n”,
+“  },n”,
+“  &quot;S&quot;: {n”,
+“    &quot;data&quot;: &quot;Data for S&quot;,n”,
+“    &quot;parent&quot;: &quot;R&quot;n”,
+“  },n”,
+“  &quot;T&quot;: {n”,
+“    &quot;parent&quot;: &quot;B&quot;,n”,
+“    &quot;data&quot;: &quot;Data for T&quot;n”,
+“  }n”,
+“}n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.purge()n”,
+“print(json.dumps(forest, indent=2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“n”,
+“We have a fairly complete API for manipulating the forest. Let’s explore somen”,
+“additional methods. Let’s first create a node itrator to node A, and then accessn”,
+“or modify the payload data for node A. Since payload data is mutable, and itn”,
+“must be a dictionary, we can access or modify it using the dict API.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 151,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{‘new_data’: ‘Some new data for A’, ‘other_new_data’: ‘Some other data for A’}n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.node(&quot;A&quot;).clear()n”,
+“forest.node(&quot;A&quot;)[&quot;new_data&quot;] = &quot;Some new data for A&quot;n”,
+“forest.node(&quot;A&quot;)[&quot;other_new_data&quot;] = &quot;Some other data for A&quot;n”,
+“print(forest[&quot;A&quot;])”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“This is fairly self-expalanatory.n”,
+“n”,
+“Let’s add some more nodes without specifyingn”,
+“a key name for them, since often we don’t care about the key name and it’sn”,
+“only for bookkeeping purposes.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 152,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“FlatForestNode(name=779cc759-36a9-4dae-a1c9-e021d65aa1d4, parent=U, payload={‘whatever’: 5}, root=A, children=[])”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 152,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.root.add_child(whatever=3).add_child(n”,
+“    name=&quot;U&quot;, whatever=4).add_child(whatever=5)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 153,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“FlatForestNode(name=W, parent=A, payload={‘whatever’: 200}, root=A, children=[])”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 153,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“FlatForestNode(whatever=1000, parent=forest.root.children[0])n”,
+“FlatForestNode(name=&quot;V&quot;, whatever=2000, parent=forest.root.children[0].children[1])n”,
+“FlatForestNode(whatever=3000, more_data=&quot;yes&quot;, parent=forest.node(&quot;V&quot;))n”,
+“FlatForestNode(name=&quot;W&quot;, parent=forest.root, whatever=200)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 154,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;A ◄ {‘new_data’: ‘Some new data for A’, ‘other_new_data’: ‘Some other data for A’}n”,
+“├───── B ◄ {‘data’: ‘Data for B’}n”,
+“│      ├───── H ◄ {‘data’: ‘Data for H’}n”,
+“│      ├───── T ◄ {‘data’: ‘Data for T’}n”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978 ◄ {‘whatever’: 1000}n”,
+“├───── C ◄ {‘data’: ‘Data for C’}n”,
+“│      ├───── E ◄ {‘data’: ‘Data for E’}n”,
+“│      │      └───── F ◄ {‘data’: ‘Data for F’}n”,
+“│      └───── M ◄ {‘data’: ‘Data for M’}n”,
+“├───── I ◄ {‘data’: ‘Data for I’}n”,
+“│      └───── J ◄ {‘data’: ‘Data for J’}n”,
+“├───── N ◄ {‘data’: ‘Data for N’, ‘other_new_data’: ‘Some other data for G’}n”,
+“│      ├───── P ◄ {‘data’: ‘Data for P’}n”,
+“│      │      └───── R ◄ {‘data’: ‘Data for R’}n”,
+“│      │             └───── S ◄ {‘data’: ‘Data for S’}n”,
+“│      └───── Q ◄ {‘data’: ‘Data for Q’}n”,
+“├───── O ◄ {‘data’: ‘Data for O’}n”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1e ◄ {‘whatever’: 3}n”,
+“│      └───── U ◄ {‘whatever’: 4} 🔴n”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4 ◄ {‘whatever’: 5}n”,
+“└───── W ◄ {‘whatever’: 200} ⚫n”,
+“       └───── V ◄ {‘whatever’: 2000} 🔘n”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8 ◄ {‘whatever’: 3000, ‘more_data’: ‘yes’}n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“forest.node(&quot;V&quot;).parent = forest.node(&quot;W&quot;)n”,
+“monotext(pretty_tree(forest.root, mark=[&quot;U&quot;, &quot;V&quot;, &quot;W&quot;], node_details=lambda n: n.payload))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Let’s look at some tree conversions. We can convert between different treen”,
+“representations and data structures.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 155,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;A ◄ {‘new_data’: ‘Some new data for A’, ‘other_new_data’: ‘Some other data for A’}n”,
+“├───── B ◄ Nonen”,
+“│      ├───── H ◄ Nonen”,
+“│      ├───── T ◄ Nonen”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978 ◄ Nonen”,
+“├───── C ◄ Nonen”,
+“│      ├───── E ◄ Nonen”,
+“│      │      └───── F ◄ Nonen”,
+“│      └───── M ◄ Nonen”,
+“├───── I ◄ Nonen”,
+“│      └───── J ◄ Nonen”,
+“├───── N ◄ Nonen”,
+“│      ├───── P ◄ Nonen”,
+“│      │      └───── R ◄ Nonen”,
+“│      │             └───── S ◄ Nonen”,
+“│      └───── Q ◄ Nonen”,
+“├───── O ◄ Nonen”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1e ◄ Nonen”,
+“│      └───── U ◄ Nonen”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4 ◄ Nonen”,
+“└───── W ◄ Nonen”,
+“       └───── V ◄ Nonen”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8 ◄ Nonen”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“new_tree = TreeConverter.convert(forest.root, TreeNode)n”,
+“monotext(pretty_tree(new_tree, node_details=lambda n: n.payload))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We see that it’s a different type of tree, a <cite>TreeNode</cite>, which is a recursiven”,
+“data structure. It models the same tree data, but in a different way. This onen”,
+“is also more flexible, so that it doesn’t require unique names or the payloadn”,
+“data to be a dictionary - it can be any object or value. This simplicity comesn”,
+“at the cost of not being a dictionary (or view of a dictionary), as FlatForestn”,
+“does.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We see that it has a very different structure. However, when we pretty-printn”,
+“it using <cite>TreeViz</cite>, we see that it’s the same tree.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 156,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“├───── On”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1en”,
+“│      └───── Un”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4n”,
+“└───── Wn”,
+“       └───── Vn”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“├───── On”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1en”,
+“│      └───── Un”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4n”,
+“└───── Wn”,
+“       └───── Vn”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“monotext(pretty_tree(forest.root))n”,
+“monotext(pretty_tree(new_tree))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 157,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“├───── On”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1en”,
+“│      └───── Un”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4n”,
+“└───── Wn”,
+“       └───── Vn”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“├───── On”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1en”,
+“│      └───── Un”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4n”,
+“└───── Wn”,
+“       └───── Vn”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“result = TreeConverter.copy_under(new_tree, FlatForestNode(name=&quot;new_root&quot;))n”,
+“monotext(pretty_tree(result))n”,
+“result2 = TreeConverter.copy_under(result, new_tree)n”,
+“monotext(pretty_tree(result2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“The <cite>TreeNode</cite> is a bit more useful for operations that require recursion, butn”,
+“any tree can support the sae operations. The <cite>TreeNode</cite> is a bit more specializedn”,
+“for this purpose, and the <cite>FlatTree</cite> is a bit more specialized for more generaln”,
+“storage and manipulation of data that is tree-like, such as configuration datan”,
+“or log data. See <cite>TreeNode.md</cite> for more information on the <cite>TreeNode</cite> class.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 158,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[TreeNode(name=A, parent=root, root=root, payload={‘value’: 1}, len(children)=0)]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“root = TreeNode(name=&quot;root&quot;, payload= {&quot;value&quot;:0}, parent=None)n”,
+“A = TreeNode(name=&quot;A&quot;, payload={&quot;value&quot;:1}, parent=root)n”,
+“print(root.children)n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 159,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;root ◄ 0n”,
+“├───── A ◄ 1n”,
+“├───── B ◄ 2n”,
+“└───── C ◄ 3n”,
+“       ├───── D ◄ 4n”,
+“       ├───── E ◄ 5n”,
+“       ├───── F ◄ testn”,
+“       │      └───── I ◄ 9n”,
+“       ├───── G ◄ 7n”,
+“       └───── H ◄ ({1: 2}, [3, 4])n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“root2 = TreeNode(name=&quot;root&quot;, payload=0)n”,
+“A2 = TreeNode(name=&quot;A&quot;, parent=root2, payload=1)n”,
+“B2 = TreeNode(name=&quot;B&quot;, parent=root2, payload=2)n”,
+“C2 = TreeNode(name=&quot;C&quot;, parent=root2, payload=3)n”,
+“D2 = TreeNode(name=&quot;D&quot;, parent=C2, payload=4)n”,
+“E2 = TreeNode(name=&quot;E&quot;, parent=C2, payload=5)n”,
+“F2 = TreeNode(name=&quot;F&quot;, parent=C2, payload=&quot;test&quot;)n”,
+“G2 = TreeNode(name=&quot;G&quot;, parent=C2, payload=7)n”,
+“H2 = TreeNode(name=&quot;H&quot;, parent=C2, payload=({1: 2}, [3, 4]))n”,
+“I2 = TreeNode(name=&quot;I&quot;, parent=F2, payload=9)n”,
+“monotext(pretty_tree(root2, node_details=lambda n: n.payload))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Algorithm Examplesn”,
+“——————n”,
+“n”,
+“Using utility algorithms with <cite>FlatTree</cite> and <cite>FlatTreeNode</cite>:n”,
+“n”,
+“Finding descendants of a node:n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 160,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[FlatForestNode(name=E, parent=C, payload={‘data’: ‘Data for E’}, root=C, children=[‘F’]),n”,
+“ FlatForestNode(name=F, parent=E, payload={‘data’: ‘Data for F’}, root=C, children=[]),n”,
+“ FlatForestNode(name=M, parent=C, payload={‘data’: ‘Data for M’}, root=C, children=[])]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from AlgoTree.utils import <a href="#id1"><span class="problematic" id="id2">*</span></a>n”,
+“from pprint import pprintn”,
+“pprint(descendants(C))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding ancestors of a node:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 161,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[TreeNode(name=F, parent=C, root=root, payload=test, len(children)=1),n”,
+“ TreeNode(name=C, parent=root, root=root, payload=3, len(children)=5),n”,
+“ TreeNode(name=root, root=root, payload=0, len(children)=3)]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“pprint(ancestors(I2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding siblings of a node:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 162,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“pprint(siblings(E2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding leaves of a node:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 163,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[TreeNode(name=A, parent=root, root=root, payload=1, len(children)=0),n”,
+“ TreeNode(name=B, parent=root, root=root, payload=2, len(children)=0),n”,
+“ TreeNode(name=D, parent=C, root=root, payload=4, len(children)=0),n”,
+“ TreeNode(name=E, parent=C, root=root, payload=5, len(children)=0),n”,
+“ TreeNode(name=I, parent=F, root=root, payload=9, len(children)=0),n”,
+“ TreeNode(name=G, parent=C, root=root, payload=7, len(children)=0),n”,
+“ TreeNode(name=H, parent=C, root=root, payload=({1: 2}, [3, 4]), len(children)=0)]n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“pprint(leaves(root2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding the height of a tree:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 164,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“3n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“pprint(height(root2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding the depth of a node:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 165,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“2n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“pprint(depth(F2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Breadth-first traversal:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 166,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Level 0: rootn”,
+“Level 1: An”,
+“Level 1: Bn”,
+“Level 1: Cn”,
+“Level 2: Dn”,
+“Level 2: En”,
+“Level 2: Fn”,
+“Level 2: Gn”,
+“Level 2: Hn”,
+“Level 3: In”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/plain”: [</dt><dd><p>“False”</p>
+</dd>
+</dl>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“execution_count”: 166,
+“metadata”: {},
+“output_type”: “execute_result”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“def print_node(node, level):n”,
+“    print(f&quot;Level {level}: {node.name}&quot;)n”,
+“    return Falsen”,
+“n”,
+“breadth_first(root2, print_node)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 167,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{n”,
+“  &quot;node_info&quot;: {n”,
+“    &quot;type&quot;: &quot;&lt;class ‘AlgoTree.flat_forest_node.FlatForestNode’&gt;&quot;,n”,
+“    &quot;name&quot;: &quot;N&quot;,n”,
+“    &quot;payload&quot;: {n”,
+“      &quot;data&quot;: &quot;Data for N&quot;,n”,
+“      &quot;other_new_data&quot;: &quot;Some other data for G&quot;n”,
+“    },n”,
+“    &quot;children&quot;: [n”,
+“      &quot;P&quot;,n”,
+“      &quot;Q&quot;n”,
+“    ],n”,
+“    &quot;parent&quot;: &quot;A&quot;,n”,
+“    &quot;depth&quot;: 1,n”,
+“    &quot;is_root&quot;: false,n”,
+“    &quot;is_leaf&quot;: false,n”,
+“    &quot;is_internal&quot;: true,n”,
+“    &quot;ancestors&quot;: [n”,
+“      &quot;A&quot;n”,
+“    ],n”,
+“    &quot;siblings&quot;: [n”,
+“      &quot;B&quot;,n”,
+“      &quot;C&quot;,n”,
+“      &quot;I&quot;,n”,
+“      &quot;O&quot;,n”,
+“      &quot;945ef525-fece-45f0-a499-b5449d28ef1e&quot;,n”,
+“      &quot;W&quot;n”,
+“    ],n”,
+“    &quot;descendants&quot;: [n”,
+“      &quot;P&quot;,n”,
+“      &quot;R&quot;,n”,
+“      &quot;S&quot;,n”,
+“      &quot;Q&quot;n”,
+“    ],n”,
+“    &quot;path&quot;: [n”,
+“      &quot;A&quot;,n”,
+“      &quot;N&quot;n”,
+“    ],n”,
+“    &quot;root_distance&quot;: 1,n”,
+“    &quot;leaves_under&quot;: [n”,
+“      &quot;S&quot;,n”,
+“      &quot;Q&quot;n”,
+“    ]n”,
+“  },n”,
+“  &quot;subtree_info&quot;: {n”,
+“    &quot;leaves&quot;: [n”,
+“      &quot;H&quot;,n”,
+“      &quot;T&quot;,n”,
+“      &quot;d433395a-27bc-457d-b6d9-c7034d020978&quot;,n”,
+“      &quot;F&quot;,n”,
+“      &quot;M&quot;,n”,
+“      &quot;J&quot;,n”,
+“      &quot;S&quot;,n”,
+“      &quot;Q&quot;,n”,
+“      &quot;O&quot;,n”,
+“      &quot;779cc759-36a9-4dae-a1c9-e021d65aa1d4&quot;,n”,
+“      &quot;14e057df-8004-47c3-9415-b7c7235ea4d8&quot;n”,
+“    ],n”,
+“    &quot;height&quot;: 3,n”,
+“    &quot;root&quot;: &quot;A&quot;,n”,
+“    &quot;size&quot;: 5n”,
+“  }n”,
+“}n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“print(json.dumps(utils.node_stats(forest.node(&quot;N&quot;)), indent=2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Mapping a function over the nodes:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 168,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“└───── On”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“│      ├───── Hn”,
+“│      ├───── Tn”,
+“│      └───── d433395a-27bc-457d-b6d9-c7034d020978n”,
+“├───── Cn”,
+“│      ├───── En”,
+“│      │      └───── Fn”,
+“│      └───── Mn”,
+“├───── In”,
+“│      └───── Jn”,
+“├───── Nn”,
+“│      ├───── Pn”,
+“│      │      └───── Rn”,
+“│      │             └───── Sn”,
+“│      └───── Qn”,
+“├───── On”,
+“├───── 945ef525-fece-45f0-a499-b5449d28ef1en”,
+“│      └───── Un”,
+“│             └───── 779cc759-36a9-4dae-a1c9-e021d65aa1d4n”,
+“└───── Wn”,
+“       └───── Vn”,
+“              └───── 14e057df-8004-47c3-9415-b7c7235ea4d8n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“def add_prefix(node):n”,
+“    if node is None:n”,
+“        return Nonen”,
+“    elif node.name == &quot;D&quot;:n”,
+“        # add Q and R as children of Dn”,
+“        node.add_child(name=&quot;Q&quot;, value=41)n”,
+“        node.add_child(name=&quot;R&quot;, value=42)n”,
+“    elif node.name == &quot;I&quot; or node.name == &quot;W&quot;:n”,
+“        # delete I by returning None (i.e. don’t add it to the new tree)n”,
+“        return Nonen”,
+“    elif &quot;U&quot; in [child.name for child in node.children]:n”,
+“        return Nonen”,
+“    return noden”,
+“n”,
+“root_mapped = map(deepcopy(forest.root), add_prefix)n”,
+“n”,
+“monotext(pretty_tree(root_mapped))n”,
+“n”,
+“monotext(pretty_tree(forest.root))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Pruning nodes based on a predicate:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 169,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;rootn”,
+“├───── An”,
+“├───── Bn”,
+“└───── Cn”,
+“       ├───── Dn”,
+“       ├───── En”,
+“       ├───── Fn”,
+“       │      └───── In”,
+“       ├───── Gn”,
+“       └───── Hn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;rootn”,
+“├───── Bn”,
+“└───── Cn”,
+“       ├───── Dn”,
+“       ├───── En”,
+“       ├───── Fn”,
+“       │      └───── In”,
+“       ├───── Gn”,
+“       └───── Hn”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“n”,
+“def should_prune(node):n”,
+“    return node.name == &quot;A&quot;n”,
+“n”,
+“monotext(pretty_tree(root2))n”,
+“pruned_tree = prune(root2, should_prune)n”,
+“monotext(pretty_tree(pruned_tree))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Finding root-to-leaf paths:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 170,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“[TreeNode(name=root, root=root, payload={‘value’: 0}, len(children)=1),n”,
+“ TreeNode(name=A, parent=root, root=root, payload={‘value’: 1}, len(children)=0)]n”,
+“Truen”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from pprint import pprintn”,
+“paths = node_to_leaf_paths(root)n”,
+“# print max path length from root to leafn”,
+“pprint(max(paths, key=len))n”,
+“print(utils.height(root) == len(max(paths, key=len)) - 1)n”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Converting paths to a tree:”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 171,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;an”,
+“├───── bn”,
+“│      ├───── cn”,
+“│      └───── dn”,
+“├───── en”,
+“│      ├───── d_0n”,
+“│      ├───── gn”,
+“│      └───── hn”,
+“├───── fn”,
+“│      └───── d_1n”,
+“└───── in”,
+“       └───── jn”,
+“              ├───── b_0n”,
+“              │      └───── mn”,
+“              └───── ln”,
+“                     └───── b_1n”,
+“                            └───── b_2n”,
+“                                   └───── b_3n”,
+“                                          └───── b_4n”,
+“                                                 └───── b_5n”,
+“                                                        └───── b_6n”,
+“                                                               └───── tn”,
+“                                                                      └───── un”,
+“                                                                             └───── vn”,
+“                                                                                    └───── wn”,
+“                                                                                           └───── xn”,
+“                                                                                                  └───── yn”,
+“                                                                                                         └───── b_7n”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“rooter = paths_to_tree([[&quot;a&quot;, &quot;b&quot;, &quot;c&quot;], [&quot;a&quot;, &quot;b&quot;, &quot;d&quot;], [&quot;a&quot;, &quot;e&quot;, &quot;d&quot;],n”,
+“                        [&quot;a&quot;, &quot;f&quot;, &quot;d&quot;], [&quot;a&quot;, &quot;e&quot;, &quot;g&quot; ], [&quot;a&quot;, &quot;e&quot;, &quot;h&quot;],n”,
+“                        [&quot;a&quot;, &quot;i&quot;, &quot;j&quot;, &quot;b&quot;], [&quot;a&quot;, &quot;i&quot;, &quot;j&quot;, &quot;b&quot;, &quot;m&quot;],n”,
+“                        [&quot;a&quot;, &quot;i&quot;, &quot;j&quot;, &quot;l&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;b&quot;, &quot;t&quot;, &quot;u&quot;, &quot;v&quot;, &quot;w&quot;, &quot;x&quot;, &quot;y&quot;, &quot;b&quot;]],n”,
+“                        FlatForestNode)n”,
+“monotext(pretty_tree(rooter))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 172,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“2n”,
+“[‘a’, ‘i’, ‘j’, ‘b_0’]n”,
+“[‘j’, ‘i’, ‘a’]n”,
+“[]n”,
+“Falsen”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“from AlgoTree.utils import depth, path, ancestors, siblings, is_rootn”,
+“A = rooter.node(&quot;i&quot;)n”,
+“pretty_tree(A)n”,
+“print(depth(A.children[0]))n”,
+“print([n.name for n in path(A.children[0].children[0])])n”,
+“print([n.name for n in ancestors(A.children[0].children[0])])n”,
+“print(siblings(A.children[0]))n”,
+“print(is_root(A))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 173,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“└───── Cn”,
+“       ├───── Dn”,
+“       └───── En”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“treenode = TreeNode(name=&quot;A&quot;)n”,
+“TreeNode(name=&quot;B&quot;, parent=treenode)n”,
+“C = TreeNode(name=&quot;C&quot;, parent=treenode)n”,
+“TreeNode(name=&quot;D&quot;, parent=C)n”,
+“TreeNode(name=&quot;E&quot;, parent=C)n”,
+“n”,
+“monotext(pretty_tree(treenode))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 174,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“{n”,
+“  &quot;name&quot;: &quot;A&quot;,n”,
+“  &quot;value&quot;: 1,n”,
+“  &quot;children&quot;: [n”,
+“    {n”,
+“      &quot;name&quot;: &quot;B&quot;n”,
+“    },n”,
+“    {n”,
+“      &quot;name&quot;: &quot;C&quot;,n”,
+“      &quot;children&quot;: [n”,
+“        {n”,
+“          &quot;name&quot;: &quot;D&quot;n”,
+“        },n”,
+“        {n”,
+“          &quot;name&quot;: &quot;E&quot;n”,
+“        }n”,
+“      ]n”,
+“    }n”,
+“  ]n”,
+“}n”,
+“{n”,
+“  &quot;name&quot;: &quot;A&quot;,n”,
+“  &quot;payload&quot;: null,n”,
+“  &quot;children&quot;: [n”,
+“    {n”,
+“      &quot;name&quot;: &quot;B&quot;,n”,
+“      &quot;payload&quot;: null,n”,
+“      &quot;children&quot;: []n”,
+“    },n”,
+“    {n”,
+“      &quot;name&quot;: &quot;C&quot;,n”,
+“      &quot;payload&quot;: null,n”,
+“      &quot;children&quot;: [n”,
+“        {n”,
+“          &quot;name&quot;: &quot;D&quot;,n”,
+“          &quot;payload&quot;: null,n”,
+“          &quot;children&quot;: []n”,
+“        },n”,
+“        {n”,
+“          &quot;name&quot;: &quot;E&quot;,n”,
+“          &quot;payload&quot;: null,n”,
+“          &quot;children&quot;: []n”,
+“        }n”,
+“      ]n”,
+“    }n”,
+“  ]n”,
+“}n”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“treenode_dict = {n”,
+“    &quot;name&quot;: &quot;A&quot;,n”,
+“    &quot;value&quot;: 1,n”,
+“    &quot;children&quot;: [n”,
+“        {&quot;name&quot;: &quot;B&quot;},n”,
+“        {&quot;name&quot;: &quot;C&quot;, &quot;children&quot;: [n”,
+“            {&quot;name&quot;: &quot;D&quot;},n”,
+“            {&quot;name&quot;: &quot;E&quot;}n”,
+“        ]}n”,
+“    ]}n”,
+“n”,
+“print(json.dumps(treenode_dict, indent=2))n”,
+“print(json.dumps(treenode.to_dict(), indent=2))”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: 175,
+“metadata”: {},
+“outputs”: [</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><dl>
+<dt>“data”: {</dt><dd><dl class="simple">
+<dt>“text/markdown”: [</dt><dd><p>“&lt;pre&gt;An”,
+“├───── Bn”,
+“└───── Cn”,
+“       ├───── Dn”,
+“       └───── En”,
+“&lt;/pre&gt;”</p>
+</dd>
+</dl>
+<p>],
+“text/plain”: [</p>
+<blockquote>
+<div><p>“&lt;IPython.core.display.Markdown object&gt;”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+“metadata”: {},
+“output_type”: “display_data”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “stdout”,
+“output_type”: “stream”,
+“text”: [</p>
+<blockquote>
+<div><p>“Truen”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>],
+“source”: [</p>
+<blockquote>
+<div><p>“treenode_from_dict = TreeNode.from_dict(treenode_dict)n”,
+“monotext(pretty_tree(treenode_from_dict))n”,
+“print(treenode_from_dict == treenode)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“n”,
+“Conclusionn”,
+“———-n”,
+“n”,
+“The <cite>FlatForest</cite> class provides a powerful and flexible way to work with tree-liken”,
+“and forest-like data structures using a flat dictionary structure. It supports an”,
+“wide range of operations, including node manipulation, tree traversal, detachment, pruning, and conversion between different tree representations.n”,
+“n”,
+“Explore the <cite>AlgoTree</cite> package further to discover more features and utilities for working with trees in Python.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>],
+“metadata”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“kernelspec”: {</dt><dd><p>“display_name”: “env”,
+“language”: “python”,
+“name”: “python3”</p>
+</dd>
+</dl>
+<p>},
+“language_info”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“codemirror_mode”: {</dt><dd><p>“name”: “ipython”,
+“version”: 3</p>
+</dd>
+</dl>
+<p>},
+“file_extension”: “.py”,
+“mimetype”: “text/x-python”,
+“name”: “python”,
+“nbconvert_exporter”: “python”,
+“pygments_lexer”: “ipython3”,
+“version”: “3.12.3”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>},
+“nbformat”: 4,
+“nbformat_minor”: 2</p>
+</dd>
+</dl>
+<p>}</p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../tutorial.html" title="previous chapter">AlgoTree: Comprehensive Tutorial</a></li>
+      <li>Next: <a href="expr_trees_nb.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="../_sources/notebooks/flat_forest_nb.ipynb.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

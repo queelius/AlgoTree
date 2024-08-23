@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.tree_converter &#8212; AlgoTree 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.tree_converter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span>
+
+<div class="viewcode-block" id="TreeConverter">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter">[docs]</a>
+<span class="k">class</span> <span class="nc">TreeConverter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility class for converting between tree representations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TreeConverter.default_extract">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter.default_extract">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_extract</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Default extractor of relevant payload from a node.</span>
+
+<span class="sd">        :param node: The node to extract payload data from.</span>
+<span class="sd">        :return: The extracted data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;payload&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TreeConverter.default_node_name">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter.default_node_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">default_node_name</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Default function to map nodes to unique keys. If the node has a</span>
+<span class="sd">        `name` attribute, then it is used as the unique key. Otherwise,</span>
+<span class="sd">        a random UUID is generated.</span>
+
+<span class="sd">        :param node: The node to map to a unique key.</span>
+<span class="sd">        :return: The unique key for the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="TreeConverter.copy_under">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter.copy_under">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">copy_under</span><span class="p">(</span>
+        <span class="n">node</span><span class="p">,</span>
+        <span class="n">under</span><span class="p">,</span>
+        <span class="n">node_name</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_node_name</span><span class="p">,</span>
+        <span class="n">extract</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_extract</span><span class="p">,</span>
+        <span class="n">max_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Copy the subtree rooted at `node` as a child of `under`, where</span>
+<span class="sd">        the copy takes on the node type of `under`. It returns the subtree</span>
+<span class="sd">        that contains `under` with current node at `under`.</span>
+
+<span class="sd">        :param node: The subtree rooted at `node` to copy.</span>
+<span class="sd">        :param under: The node to copy the subtree under.</span>
+<span class="sd">        :param node_name: The function to map nodes to names.</span>
+<span class="sd">        :param extract: A callable to extract relevant payload from a node.</span>
+<span class="sd">        :param max_tries: The maximum number of tries to generate a unique name</span>
+<span class="sd">                          if a name conflict occurs.</span>
+<span class="sd">        :return: A subtree extending `under` with the copied nodes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;children&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node must have a children attribute or property&quot;</span><span class="p">)</span>
+
+        <span class="n">node_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">under</span><span class="p">)</span>
+        <span class="n">tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">und</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">tries</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">extract</span><span class="p">(</span><span class="n">cur</span><span class="p">))</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">node_name</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
+            <span class="n">base_name</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="k">while</span> <span class="n">tries</span> <span class="o">&lt;=</span> <span class="n">max_tries</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">node</span> <span class="o">=</span> <span class="n">node_type</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">und</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tries</span><span class="si">}</span><span class="s2">&quot;</span>
+
+                <span class="n">tries</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">tries</span> <span class="o">&gt;=</span> <span class="n">max_tries</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Max tries exceeded&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="n">build</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">node</span>
+
+        <span class="k">return</span> <span class="n">build</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">under</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TreeConverter.convert">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter.convert">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span>
+        <span class="n">source</span><span class="p">,</span>
+        <span class="n">target_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span>
+        <span class="n">node_name</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_node_name</span><span class="p">,</span>
+        <span class="n">extract</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_extract</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a tree rooted at `node` to a target tree type representation.</span>
+
+<span class="sd">        :param src_node: The root node of the tree to convert.</span>
+<span class="sd">        :param target_type: The target tree type to convert to.</span>
+<span class="sd">        :param node_name: The function to map nodes to unique keys.</span>
+<span class="sd">        :param extract: A callable to extract relevant data from a node.</span>
+<span class="sd">        :return: The converted tree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">root</span> <span class="o">=</span> <span class="n">target_type</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">node_name</span><span class="p">(</span><span class="n">source</span><span class="p">),</span>
+            <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">payload</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">extract</span><span class="p">(</span><span class="n">source</span><span class="p">)))</span>
+        
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">TreeConverter</span><span class="o">.</span><span class="n">copy_under</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">child</span><span class="p">,</span>
+                                     <span class="n">under</span><span class="o">=</span><span class="n">root</span><span class="p">,</span>
+                                     <span class="n">node_name</span><span class="o">=</span><span class="n">node_name</span><span class="p">,</span>    
+                                     <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">root</span></div>
+
+        
+<div class="viewcode-block" id="TreeConverter.to_dict">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.tree_converter.TreeConverter.to_dict">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span>
+                <span class="n">node_name</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_node_name</span><span class="p">,</span>
+                <span class="n">extract</span><span class="p">:</span> <span class="n">Callable</span>  <span class="o">=</span> <span class="n">default_extract</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the subtree rooted at `node` to a dictionary.</span>
+
+<span class="sd">        :param node: The root node of the subtree to convert.</span>
+<span class="sd">        :param node_name: The function to map nodes to unique keys.</span>
+<span class="sd">        :param extract: A callable to extract relevant data from a node.</span>
+<span class="sd">        :return: A dictionary representation of the subtree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">(</span><span class="n">node</span><span class="p">),</span>
+                <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="n">extract</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_build</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+            <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="n">_build</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+</div>
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -26,6 +26,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
+    'nbsphinx',
+    'sphinx.ext.mathjax'
 ]
 
 templates_path = ['_templates']
@@ -33,4 +35,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = 'alabaster'
 html_static_path = ['_static', 'images']
+
+source_suffix = ['.rst', '.ipynb']
+
 

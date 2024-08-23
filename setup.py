@@ -23,7 +23,7 @@ setup(
     test_suite="tests",
     entry_points={
         'console_scripts': [
-            'jsontree=bin.jsontree:main',
+            'jt=bin.jt:main',
         ],
     },
     include_package_data=True,

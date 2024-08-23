@@ -5,16 +5,10 @@ Welcome to the documentation for the `AlgoTree` package. This package provides a
 suite of utilities for working with tree-like data structures in Python. It
 supports various tree representations, including:
 
-- `FlatForest` and `FlatForestTreeNode` for working with flat forest and tree structures
+- `FlatForest` and `FlatForestNode` for working with flat tree structures
 - `TreeNode` for recursive tree structures
 - Conversion utilities to convert between different tree representations
 - Utility functions for common tree operations
-
-It also comes with a command-line tool `jt` that exposes most of the functionality:
-
-- Can be used to create, manipulate, query, and visualize trees
-- It's like `jq` but for trees
-- Uses piping and redirection to make it easy to compose commands
 
 Getting Started
 ---------------
@@ -31,14 +25,14 @@ provided by the package. Here is a quick example to get you started:
 .. code-block:: python
 
    from AlgoTree.flat_forest_node import FlatForestNode
-   from AlgoTree.pretty_tree import pretty_tree
+   from AlgoTree.print_tree import print_tree
    root = FlatForestNode(name="root", data=0)
    node1 = FlatForestNode(name="node1", parent=root, data=1)
    node2 = FlatForestNode(name="node2", parent=root, data=2)
    node3 = FlatForestNode(name="node3", parent=node2, data=3)
    node4 = FlatForestNode(name="node4", parent=node3, data=4)
 
-   pretty_tree(root)
+   print_tree(root)
 
 This produces the output::
 
@@ -69,17 +63,19 @@ Node-Centric API
 
 We implement two tree data structures:
 
-- `FlatForest` for working with flat tree structures with
+- `FlatForest` for working with flat tree and forest structures with
       "pointers" to parent nodes. It uses a proxy object `FlatForestNode` to
       provide a node-centric API.
 - `TreeNode` for recursive tree structures, in which each node is a dictionary
       with an optional list of child nodes.
 
 Each representation has its own strengths and weaknesses. The key design point
-for `FlatForest` and `TreeNode` is that they are both also `dict` objects, i.e.,
-they provide a *view* of dictionaries as tree-like structures, as long as the
+for `FlatForest` is that it is a flat forest structure that is also a `dict`, i.e.,
+it provides a view of dictionaries as forest-like structures, as long as the
 dictionaries are structured in a certain way. We document that structure
-elsewhere.
+elsewhere. The `TreeNode` structure is a recursive tree structure that is in
+most ways more flexible than the `FlatForest` structure, but it is not provide
+a view of dictionaries as trees.
 
 Each tree data structure models the *concept* of a tree node so that the
 underlying implementations can be decoupled from any algorithms
@@ -229,7 +225,10 @@ The tree node concept is defined as follows:
       and nor is it necessarily even a meaningful identifier, e.g., a random
       UUID.
       
-      In `TreeNode`, for instance, if the name is not set, a UUID is generated.
+      In `TreeNode`, for instance, if the name is not set, it is a hash of the
+      tree structure and the current node. Assuming hash collisions are
+      negligible, two nodes with the same name are the same node in the same
+      tree.
 
 .. [1] Modifying this property may change the **parent** property of other nodes.
 
