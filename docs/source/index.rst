@@ -16,7 +16,7 @@ Welcome to AlgoTree's documentation!
    tutorial
 
    notebooks/flat_forest_nb.html
-   notebooks/expr_tree_nb.html
+   notebooks/expr_trees_nb.html
 
    modules
 
