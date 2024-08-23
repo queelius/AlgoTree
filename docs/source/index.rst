@@ -15,8 +15,8 @@ Welcome to AlgoTree's documentation!
    treenode
    tutorial
 
-   notebooks/flat_forest_nb
-   notebooks/expr_trees_nb
+   notebooks/flat_forest_nb.html
+   notebooks/expr_tree_nb.html
 
    modules
 
