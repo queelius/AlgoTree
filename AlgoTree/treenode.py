@@ -13,9 +13,7 @@ class TreeNode(dict):
     """
 
     @staticmethod
-    def from_dict(data: Dict,
-                  
-                  hash_fn: Callable = NodeHash.node_hash) -> "TreeNode":
+    def from_dict(data: Dict, hash_fn: Callable = NodeHash.node_hash) -> "TreeNode":
         """
         Create a TreeNode from a dictionary.
 
@@ -36,42 +34,7 @@ class TreeNode(dict):
                     node.payload[k] = v
             return node
         
-        return _from_dict(data, None)
-        
-    
-    @staticmethod
-    def is_valid(data) -> bool:
-        """
-        Check if the data is a valid tree.
-
-        :param data: The data to check for validity.
-        :return: True if the data is a valid TreeNode, False otherwise.
-        """
-        try:
-            TreeNode.check_valid(data)
-            return True
-        except ValueError:
-            return False
-
-    @staticmethod
-    def check_valid(data) -> None:
-        """
-        Check if the data is a valid tree.
-
-        Raises an appropriate exception if the tree is invalid in any way.
-
-        :param data: The data to check for validity.
-        :raises ValueError: If the data is not a valid TreeNode.
-        """
-
-        if not isinstance(data, dict):
-            raise ValueError("Data must be a dictionary")
-
-        if "children" in data:
-            if not isinstance(data["children"], list):
-                raise ValueError("Children must be a list")
-            for child in data["children"]:
-                TreeNode.check_valid(child)
+        return _from_dict(copy.deepcopy(data), None)
 
     def clone(self) -> "TreeNode":
         """
@@ -92,16 +55,22 @@ class TreeNode(dict):
     def __init__(
         self,
         parent: Optional["TreeNode"] = None,
-        payload: Optional[Dict] = None,
         name: Optional[str] = None,
-        hash_fn: Optional[Callable[["TreeNode"], int]] = None):
+        hash_fn: Optional[Callable[["TreeNode"], int]] = None,
+        payload: Optional[Any] = None,
+        *args, **kwargs):
         """
-        Initialize a TreeNode.
+        Initialize a TreeNode. The parent of the node is set to the given parent
+        node. If the parent is None, the node is the root of the tree. The name
+        of the node is set to the given name. If the name is None, a random name
+        is generated. The hash function is set to the given hash function. If the
+        hash function is None, the default hash function is used. The payload of
+        the node is any additional arguments passed to the constructor.
 
         :param parent: The parent node of the current node. Default is None.
         :param name: The name of the node. Default is None, in which case a random name is generated.
+        :param payload: The payload of the node. Default is None.
         :param hash_fn: The hash function to use for the node. Default is NodeHash.node_hash.
-        :param payload: The payload of the node. Default is an empty dictionary.
         """
         if name is None:
             name = str(uuid.uuid4())
@@ -115,13 +84,14 @@ class TreeNode(dict):
         
         if parent is not None and not isinstance(parent, TreeNode):
             raise ValueError("Parent must be a TreeNode object")
-        self._parent = parent
+        self.children = []
+        self.parent = parent
 
-        if payload is None:
-            payload = {}
-        if not isinstance(payload, dict):
-            raise ValueError("Payload must be a dictionary")
-        self._payload = payload
+        if payload is not None:
+            self.payload = payload
+        else:
+            self.payload = dict(*args, **kwargs)
+
 
     @property
     def parent(self) -> Optional["TreeNode"]:
@@ -143,6 +113,10 @@ class TreeNode(dict):
             raise ValueError("Parent must be a TreeNode object")
         self._parent = parent
 
+        # update parent's children
+        if parent is not None:
+            parent.children.append(self)
+
     @property
     def root(self) -> "TreeNode":
         """
@@ -151,31 +125,10 @@ class TreeNode(dict):
         :return: The root node of the tree.
         """
         node = self
-        while node.parent:
+        while node.parent is not None:
             node = node.parent
         return node
     
-    @property
-    def payload(self) -> Dict:
-        """
-        Get the payload stored in the tree.
-
-        :return: The data stored in the tree.
-        """
-        return self._payload
-
-    @payload.setter
-    def payload(self, data: Dict) -> None:
-        """
-        Set the payload stored in the tree.
-
-        :param data: The data to store in the tree.
-        """
-        if not isinstance(data, dict):
-            raise ValueError("Payload must be a dictionary")
-            
-        self._payload = data
-
     def nodes(self) -> List["TreeNode"]:
         """
         Get all the nodes in the current sub-tree.
@@ -188,7 +141,7 @@ class TreeNode(dict):
         nodes.append(self)
         return nodes
     
-    def node(self, name: str) -> "TreeNode":
+    def node(self, name: str, partial: bool = False) -> "TreeNode":
         """
         Get the node with the given name in the current sub-tree. The sub-tree
         remains the same, we just change the current node position. If the name
@@ -197,7 +150,11 @@ class TreeNode(dict):
         :param name: The name of the node.
         :return: The node with the given name.
         """
-        node = find_node(self, lambda n, **_: n.name == name)
+        node = None
+        if partial:
+            node = find_node(self, lambda n, **_: name in n.name)
+        else:
+            node = find_node(self, lambda n, **_: n.name == name)
         if node is None:
             raise KeyError(f"Node not found: {name}")
         return node
@@ -211,20 +168,7 @@ class TreeNode(dict):
         """
         return self._hash_fn(self)
 
-    @property
-    def children(self) -> List["TreeNode"]:
-        """
-        Get the children of a node. Note that we only store parent references
-        and not child references, so we need to traverse the tree to get the
-        children.
-
-        :return: List of child nodes (TreeNode objects).
-        """
-
-    
-        
-
-    def add_child(self, name: Optional[str] = None, payload: Optional[Dict] = None) -> "TreeNode":
+    def add_child(self, name: Optional[str] = None, payload: Optional[Any] = None) -> "TreeNode":
         """
         Add a child node to the tree. Just invokes `__init__`. See `__init__` for
         details.

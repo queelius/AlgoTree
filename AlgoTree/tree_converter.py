@@ -15,7 +15,7 @@ class TreeConverter:
         :param node: The node to extract payload data from.
         :return: The extracted data.
         """
-        return node.payload if hasattr(node, "payload") else {}
+        return node.payload if hasattr(node, "payload") else None
 
     @staticmethod
     def default_node_name(node):
@@ -36,7 +36,7 @@ class TreeConverter:
         under,
         node_name: Callable = default_node_name,
         extract: Callable = default_extract,
-        max_tries: int = 100000
+        max_tries: int = 1
     ):
         """
         Copy the subtree rooted at `node` as a child of `under`, where
@@ -46,7 +46,9 @@ class TreeConverter:
         :param node: The subtree rooted at `node` to copy.
         :param under: The node to copy the subtree under.
         :param node_name: The function to map nodes to names.
-        :param extract: A callable to extract relevant data from a node.
+        :param extract: A callable to extract relevant payload from a node.
+        :param max_tries: The maximum number of tries to generate a unique name
+                          if a name conflict occurs.
         :return: A subtree extending `under` with the copied nodes.
         """
 
@@ -62,9 +64,10 @@ class TreeConverter:
             base_name = name
             while tries <= max_tries:
                 try:
-                    node = node_type(name=name, parent=und, **data)
+                    node = node_type(name=name, parent=und, payload=data)
                     break
                 except Exception as e:
+                    print(e)
                     name = f"{base_name}_{tries}"
 
                 tries += 1
@@ -80,11 +83,9 @@ class TreeConverter:
     @staticmethod
     def convert(
         source,
-        target_type: Type[Any],
+        target_type: Type,
         node_name: Callable = default_node_name,
-        extract: Callable = default_extract,
-        **kwargs
-    ):
+        extract: Callable = default_extract) -> Any:
         """
         Convert a tree rooted at `node` to a target tree type representation.
 
@@ -99,13 +100,15 @@ class TreeConverter:
             return None
         
         root = target_type(
-            name=node_name(source.root),
+            name=node_name(source),
             parent=None,
-            **extract(source.root, **kwargs))
+            **extract(deepcopy(source)))
         
         for child in source.children:
-            TreeConverter.copy_under(child, root, node_name, extract)
-
+            TreeConverter.copy_under(node=child,
+                                     under=root,
+                                     node_name=node_name,    
+                                     extract=extract)
         return root
         
     @staticmethod

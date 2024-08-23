@@ -5,7 +5,7 @@ Welcome to the documentation for the `AlgoTree` package. This package provides a
 suite of utilities for working with tree-like data structures in Python. It
 supports various tree representations, including:
 
-- `FlatTree` and `FlatTreeNode` for working with flat tree structures
+- `FlatForest` and `FlatForestTreeNode` for working with flat forest and tree structures
 - `TreeNode` for recursive tree structures
 - Conversion utilities to convert between different tree representations
 - Utility functions for common tree operations
@@ -24,15 +24,15 @@ provided by the package. Here is a quick example to get you started:
 
 .. code-block:: python
 
-   from AlgoTree.flattree_node import FlatTreeNode
-   from AlgoTree.print_tree import print_tree
-   root = FlatTreeNode(name="root", data=0)
-   node1 = FlatTreeNode(name="node1", parent=root, data=1)
-   node2 = FlatTreeNode(name="node2", parent=root, data=2)
-   node3 = FlatTreeNode(name="node3", parent=node2, data=3)
-   node4 = FlatTreeNode(name="node4", parent=node3, data=4)
+   from AlgoTree.flat_forest_node import FlatForestNode
+   from AlgoTree.pretty_tree import pretty_tree
+   root = FlatForestNode(name="root", data=0)
+   node1 = FlatForestNode(name="node1", parent=root, data=1)
+   node2 = FlatForestNode(name="node2", parent=root, data=2)
+   node3 = FlatForestNode(name="node3", parent=node2, data=3)
+   node4 = FlatForestNode(name="node4", parent=node3, data=4)
 
-   print_tree(root)
+   pretty_tree(root)
 
 This produces the output::
 
@@ -52,7 +52,7 @@ documentation to learn more about the available features and how to use them.
 Features
 --------
 
-- Flexible tree structures with `FlatTree`, `FlatTreeNode`, and `TreeNode`
+- Flexible tree structures with `FlatForest`, `FlatForestNode`, and `TreeNode`
 - Utility functions for common tree operations such as traversal, searching, and manipulation
 - Conversion utilities to easily convert between different tree representations
 - Integration with visualization tools to visualize tree structures
@@ -63,14 +63,14 @@ Node-Centric API
 
 We implement two tree data structures:
 
-- `FlatTree` for working with flat tree structures with
-      "pointers" to parent nodes. It uses a proxy object `FlatTreeNode` to
+- `FlatForest` for working with flat tree structures with
+      "pointers" to parent nodes. It uses a proxy object `FlatForestNode` to
       provide a node-centric API.
 - `TreeNode` for recursive tree structures, in which each node is a dictionary
       with an optional list of child nodes.
 
 Each representation has its own strengths and weaknesses. The key design point
-for `FlatTree` and `TreeNode` is that they are both also `dict` objects, i.e.,
+for `FlatForest` and `TreeNode` is that they are both also `dict` objects, i.e.,
 they provide a *view* of dictionaries as tree-like structures, as long as the
 dictionaries are structured in a certain way. We document that structure
 elsewhere.
@@ -159,7 +159,7 @@ The tree node concept is defined as follows:
 - **subtree(name: Optional[str] = None) -> NodeType** method.
 
       This is an optional method that may not be implemented by all tree
-      structures. `FlatTreeNode` implements this method, but `TreeNode` does
+      structures. `FlatForestNode` implements this method, but `TreeNode` does
       not.
 
       Returns a view of another sub-tree rooted at `node` where `node` is
@@ -223,10 +223,7 @@ The tree node concept is defined as follows:
       and nor is it necessarily even a meaningful identifier, e.g., a random
       UUID.
       
-      In `TreeNode`, for instance, if the name is not set, it is a hash of the
-      tree structure and the current node. Assuming hash collisions are
-      negligible, two nodes with the same name are the same node in the same
-      tree.
+      In `TreeNode`, for instance, if the name is not set, a UUID is generated.
 
 .. [1] Modifying this property may change the **parent** property of other nodes.
 

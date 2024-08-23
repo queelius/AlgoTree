@@ -1,12 +1,17 @@
-FlatTree
-========
+FlatForest
+==========
 
-The `FlatTree` class represents a tree using a flat dictionary structure where each node has a unique key and an optional 'parent' key to reference its parent node. This class provides a view adapter for dict/JSON data of a particular format.
+The `FlatForest` class represents a forest (set of tree-like objects) using a
+flat dictionary structure where each node has a unique key and an optional
+'parent' key to reference its parent node. This class provides a view adapter
+for dict/JSON data of a particular format.
 
 Tree Data Format
 ----------------
 
-A `FlatTree` is represented using a dictionary, where each key is a unique node identifier, and the value is another dictionary containing node data and an optional 'parent' key indicating the parent node.
+A `FlatForest` is represented using a dictionary, where each key is a unique
+node identifier, and the value is another dictionary containing node data and
+an optional 'parent' key indicating the parent node.
 
 .. code-block:: json
 
@@ -18,7 +23,7 @@ A `FlatTree` is represented using a dictionary, where each key is a unique node 
       // ... more node key-value pairs
     }
 
-Example Tree Data:
+Example Forest Data:
 
 .. code-block:: json
 
@@ -46,7 +51,10 @@ Example Tree Data:
 Theoretical Background
 ----------------------
 
-Trees are hierarchical data structures consisting of nodes, where each node has a parent and potentially many children. Trees are used in various domains such as databases, file systems, and network routing. They are particularly useful for representing data with a nested or hierarchical nature.
+Trees are hierarchical data structures consisting of nodes, where
+each node has a parent and potentially many children. Trees are used in various
+domains such as databases, file systems, and network routing. They are
+particularly useful for representing data with a nested or hierarchical nature.
 
 Tree Terminology
 
@@ -66,15 +74,15 @@ A view in this context is an abstraction that provides a different perspective
 or representation of the underlying data. For example, a view can present a flat
 dictionary as a hierarchical tree structure.
 
-`FlatTreeNode` Proxies
-""""""""""""""""""""""
+`FlatForestNode` Proxies
+""""""""""""""""""""""""
 
-The `FlatTreeNode` is a proxy class for providing a node-centric view of `FlatTree`
+The `FlatForestNode` is a proxy class for providing a node-centric view of `FlatForest`
 objects. It allows you to treat nodes as first-class objects while maintaining
 the underlying flat dictionary structure. You do not even need to be aware
-of `FlatTree` objects, since you can create and manipulate nodes directly,
-but these operations are reflected in the underlying `FlatTree`, which may
-be accessed if needed using the `tree` attribute.
+of `FlatForest` objects, since you can create and manipulate nodes directly,
+but these operations are reflected in the underlying `FlatForest`, which may
+be accessed if needed using the `forest` attribute.
 
 Key Features:
 
@@ -85,24 +93,28 @@ Key Features:
 Root Node
 ^^^^^^^^^
 
-In `FlatTree`, the root node is the first node found that has no parent.
-If there are multiple root nodes, they and their descendants are treated as
-orphans and are not part of the tree structure.
+In `FlatForest`, there can be multiple roots (multiple trees). These roots are
+the nodes that have no parent. They can be accessed with the `roots` and
+`root_names` attributes.
 
-We provide a method, `forest`, which returns a list of all of the trees in the
-structure. We also provide a `reroot` method to change the root node of the tree,
-and a `merge_under` method to merge all of the trees in the forest under a new
-root node.
+`FlatForest` also exposes itself as a tree-like structure, where the
+default behavior is to treat the first root node found as the tree. This may
+be overridden by changing the `preferred_root` attribute.
+ 
+We also provide an `as_tree` method to merge all of the trees in the forest
+under a new root node, which can be useful if a tree-like structure is needed
+for all nodes in the forest.
 
-`FlatTree` Class
+`FlatForest` Class
 ----------------
 
-The `FlatTree` class provides a flexible way to work with tree structures using a flat dictionary format. It offers various methods for manipulating and visualizing trees.
+The `FlatForest` class provides a flexible way to work with tree structures
+using a flat dictionary format. It offers various methods for manipulating and visualizing trees.
 
 Initializing a FlatTree
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-You can initialize a `FlatTree` with a dictionary representing the tree data.
+You can initialize a `FlatForest` with a dictionary representing the tree data.
 
 .. code-block:: python
 
@@ -130,7 +142,7 @@ You can initialize a `FlatTree` with a dictionary representing the tree data.
         }
     }
 
-    tree = AlgoTree.FlatTree(tree_data)
+    tree = AlgoTree.FlatForest(tree_data)
     print(json.dumps(tree, indent=2))
 
 Expected Output:
@@ -162,15 +174,15 @@ Expected Output:
 Visualizing the Tree
 ^^^^^^^^^^^^^^^^^^^^
 
-You can visualize the tree using the `TreeViz` class.
+You can visualize the tree using the `PrettyTree` class.
 
 Text Visualization
 """"""""""""""""""
 
 .. code-block:: python
 
-    from AlgoTree.tree_viz import TreeViz
-    print(TreeViz.text(tree))
+    from AlgoTree.pretty_print import pretty_print
+    print(pretty_print(tree))
 
 Expected Output:
 
@@ -197,7 +209,7 @@ Expected Output:
 
 .. code-block:: text
 
-    FlatTreeNode(name=node36, parent=node1, payload={'data': 'Some data for node36'})
+    FlatForestNode(name=node36, parent=node1, data="Some data for node36"})
 
 Viewing Sub-Trees
 ^^^^^^^^^^^^^^^^^
@@ -225,17 +237,19 @@ Ensures that all keys are unique and that parent references are valid.
 
     tree.check_valid()
 
-Detaching and Pruning Nodes
+Detaching and Purging Nodes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can detach nodes, which sets their parent to a special key indicating they are detached, and prune detached nodes to remove them from the tree.
+You can detach nodes, which sets their parent to a special key indicating they
+are detached, and purge detached nodes to remove them from the underlying
+dictionary.
 
-Pruning Detached Nodes
+Purging Detached Nodes
 """"""""""""""""""""""
 
 .. code-block:: python
 
-    tree.prune(tree.node("node36"))
+    tree.purge()
 
 Handling Errors
 ^^^^^^^^^^^^^^^
@@ -248,7 +262,7 @@ Attempting to create a tree with an invalid parent reference will raise an error
 .. code-block:: python
 
     try:
-        invalid_tree = AlgoTree.FlatTree({
+        invalid_tree = AlgoTree.FlatForest({
             "node1": {
                 "parent": "non_existent_parent",
                 "data": "Some data for node1"
@@ -266,7 +280,7 @@ Expected Output:
 Cycle Detection
 """""""""""""""
 
-The `FlatTree` class checks for cycles in the tree and raises an error if a cycle is detected.
+The `FlatForest` class checks for cycles in the forest and raises an error if a cycle is detected.
 
 .. code-block:: python
 
@@ -278,7 +292,7 @@ The `FlatTree` class checks for cycles in the tree and raises an error if a cycl
             "node3": {"parent": "node1", "data": "Some data for node3"},
             "node4": {"parent": "node0", "data": "Some data for node4"}
         }
-        cycle_tree = AlgoTree.FlatTree(cycle_tree_data)
+        cycle_tree = AlgoTree.FlatForest(cycle_tree_data)
         cycle_tree.check_valid()
     except ValueError as e:
         print(e)
@@ -314,6 +328,11 @@ Expected Output:
 Conclusion
 ----------
 
-The `FlatTree` class provides a flexible and powerful way to represent and manipulate tree structures using a flat dictionary format. With methods for adding, detaching, pruning, and visualizing nodes, `FlatTree` can handle various tree-related tasks efficiently. This tutorial has covered the basic and advanced usage of the class, demonstrating its capabilities and versatility.
+The `FlatForest` class provides a flexible and powerful way to represent and
+manipulate tree structures using a flat dictionary format. With methods for
+adding, detaching, pruning, and visualizing nodes, `FlatForest` can handle
+various tree-related tasks efficiently. This tutorial has covered the basic and
+advanced usage of the class, demonstrating its capabilities and versatility.
 
-For more detailed information and code implementation, refer to the [GitHub repository](https://github.com/queelius/AlgoTree).
+For more detailed information and code implementation, refer to the
+[GitHub repository](https://github.com/queelius/AlgoTree).

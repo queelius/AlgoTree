@@ -11,7 +11,6 @@ setup(
     long_description_content_type="text/x-rst",
     packages=find_packages(),
     url='https://github.com/queelius/AlgoTree',
-    install_requires=["anytree>=2.8.0", "graphviz>=0.16"],
     python_requires=">=3.6",
     extras_require={
          'dev': [
@@ -22,11 +21,11 @@ setup(
         ],
     },
     test_suite="tests",
-    #    entry_points={
-    #        'console_scripts': [
-    #            'jsontree=bin.jsontree:main',
-    #        ],
-    #    },
+    entry_points={
+        'console_scripts': [
+            'jsontree=bin.jsontree:main',
+        ],
+    },
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",

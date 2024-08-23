@@ -135,9 +135,14 @@ class TreeNodeApi:
         an identifier for the node within the tree. It is not necessarily unique,
         and nor is it necessarily even a meaningful identifier, e.g., a random
         UUID.
+
+    - **contains(name) -> bool** method.
+
+        Returns `True` if the sub-tree contains a node with the given name,
+        otherwise `False`.
     """
 
-    properties = ["name", "root", "children", "parent", "node", "subtree", "payload"]
+    properties = ["name", "root", "children", "parent", "node", "subtree", "payload", "contains"]
 
     @staticmethod
     def missing(node, require_props = properties):

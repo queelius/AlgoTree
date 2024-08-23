@@ -81,6 +81,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         name: Optional[str] = None,
         parent: Optional[Union["FlatForestNode",str]] = None,
         forest: Optional[FlatForest] = None,
+        payload: Optional[Dict] = None,
         *args,
         **kwargs,
     ):
@@ -96,6 +97,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         :param parent: The parent node. If None, new tree created.
         :param name: The unique name (key) for the node. If None, UUID generated.
         :param forest: The forest in which the node is created.
+        :param payload: The payload data for the node.
         :param args: Positional arguments for the node.
         :param kwargs: Additional attributes for the node.
         """
@@ -121,6 +123,8 @@ class FlatForestNode(collections.abc.MutableMapping):
             self._root_key = self._key
             kwargs[FlatForest.PARENT_KEY] = None
 
+        # add payload to kwargs too
+        kwargs.update(payload or {})
         self._forest[self._key] = dict(*args, **kwargs)
 
     @property
@@ -235,7 +239,7 @@ class FlatForestNode(collections.abc.MutableMapping):
 
         :return: Dictionary representing the data of the node.
         """
-        if self._key not in self._forest:
+        if self._key not in self._forest.keys():
             return dict()  # logical node
 
         data = self._forest[self._key].copy()
@@ -277,30 +281,30 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
         return FlatForestNode(name=name, parent=self, *args, **kwargs)
     
-    @property
-    def ancestors(self) -> List["FlatForestNode"]:
-        """
-        Get a list of all ancestors of the node.
+    # @property
+    # def ancestors(self) -> List["FlatForestNode"]:
+    #     """
+    #     Get a list of all ancestors of the node.
 
-        :return: A list of all ancestors of the node.
-        """
-        def build(node, nodes):
-            build(node.parent, nodes)
-            nodes.append(node)
-        return build(self, [])
+    #     :return: A list of all ancestors of the node.
+    #     """
+    #     def build(node, nodes):
+    #         build(node.parent, nodes)
+    #         nodes.append(node)
+    #     return build(self, [])
     
-    @property
-    def descendents(self) -> List["FlatForestNode"]:
-        """
-        Get a list of all nodes in the subtree rooted at the current node.
+    # @property
+    # def descendents(self) -> List["FlatForestNode"]:
+    #     """
+    #     Get a list of all nodes in the subtree rooted at the current node.
 
-        :return: A list of all nodes in the subtree.
-        """
-        def build(node, nodes):
-            nodes.append(node)
-            for child in node.children:
-                nodes.extend(build(child))
-        return build(self, [])
+    #     :return: A list of all nodes in the subtree.
+    #     """
+    #     def build(node, nodes):
+    #         nodes.append(node)
+    #         for child in node.children:
+    #             nodes.extend(build(child))
+    #     return build(self, [])
 
     @property
     def children(self) -> List["FlatForestNode"]:
@@ -339,15 +343,18 @@ class FlatForestNode(collections.abc.MutableMapping):
     def __eq__(self, other):
         if not isinstance(other, FlatForestNode):
             return False
-        return (self._key == other._key and
-                self._root_key == other._root_key and
-                self._forest == other._forest)
-
+        
+        # we do not care if they the same node but rooted at different places
+        # so we only compare the key and the forest
+        # this is a pretty complicated question, equality and identity, and
+        # there are many ways to define it, e.g., we could not care if they
+        # are the same node in different forests and so on. your use case
+        # will determine what equality means, but here is a reasonable default
+        return self._key == other._key and self._forest == other._forest
+    
     def node(self, name: str) -> "FlatForestNode":
         """
-        Get an ancestor node with the given name. The tree being represented
-        is not changed, only the perspective of the node within the tree. We
-        may think of this as an iterator to the node within the tree.
+        Get an ancestor node with the given name.
 
         :param name: The name of the node.
         :return: The node.
@@ -368,11 +375,23 @@ class FlatForestNode(collections.abc.MutableMapping):
 
         return FlatForestNode.proxy(forest=self._forest, node_key=name, root_key=name)
     
+    def contains(self, name) -> bool:
+        """
+        Check if the the subtree rooted at the node contains any children
+        with the given name
+
+        :param key: The key to check.
+        :return: True if the child node is present, False otherwise.
+        """
+
+        from .utils import is_ancestor
+        return is_ancestor(self, self.node(name))
+        
     def __contains__(self, key) -> bool:
         """
         Check if the node's payload contains the given key.
 
-        :param key: The key to check.
-        :return: True if the key is present, False otherwise.
+        :param key: The key to check for.
+        :return: True if the key is present in the payload, False otherwise.
         """
         return key in self.payload

@@ -11,10 +11,9 @@ Welcome to AlgoTree's documentation!
    :caption: Contents:
 
    introduction
-   flattree
+   flat_forest
    treenode
-   flattree_notebook
-   expression_tree_notebook
+   tutorial
    modules
 
 Indices and tables

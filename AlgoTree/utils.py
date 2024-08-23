@@ -222,7 +222,7 @@ def is_ancestor(node, other) -> bool:
     :param other: The other node.
     :return: True if the node is an ancestor of the other node, False otherwise.
     """
-    return other in descendants(node)
+    return ancestors(other).count(node) > 0
 
 
 def is_descendant(node, other) -> bool:
@@ -524,10 +524,9 @@ def distance(node1: Any, node2: Any) -> int:
 
 def subtree_rooted_at(node: Any, max_lvl: int) -> Any:
     """
-    Get the subtree centered at a node within a certain number of hops
-    from the node. We return a subtree rooted at some ancestor of the node,
-    or the node itself, that contains all nodes within `max_hops` hops
-    from the node.
+    Get the subtree rooted at a node whose descendents are within a certain
+    number of hops it. We return a subtree rooted the node itself, that contains
+    all nodes within `max_hops` hops from the node.
 
     :param node: The node.
     :return: The subtree centered at the node.
@@ -621,18 +620,11 @@ def node_stats(node,
 
 def paths_to_tree(paths: List,
                   type: Type,
-                  node_name: Callable = None,
-                  payload: Callable = None,
-                  max_tries: int = float("inf")) -> type:
+                  max_tries: int = 1000) -> type:
     """
     Convert a list of paths to a tree structure. Each path is a list of nodes
     from the root to a leaf node. (A tree can be uniquely identified by
-    this list of paths.) It doesn't have to be a list of nodes per se; it
-    could be a list of any objects. We use the `node_name` and `payload`
-    functions to extract the name and payload of the node from the object.
-    We default to using the `name` and `payload` properties if the object
-    has them, otherwise we use the string representation of the object as
-    the name and an empty dictionary as the payload.
+    this list of paths.)
 
     Example: Suppose we have the following list of paths::
 
@@ -652,36 +644,35 @@ def paths_to_tree(paths: List,
         └── C
             └── F
 
+    For some tree-like data structures, it may be the case that the names of
+    nodes must be unique. We can use the `max_tries` parameter to try to create
+    a node with a unique name like the one provided by suffixing the name with
+    an integer.
+
     :param paths: The list of paths.
     :param type: The type of the tree node.
+    :param max_tries: The maximum number of tries to create a node with a
+                      unique name.
     """
     nodes = { }
-    if node_name is None:
-        node_name = lambda n: n.name if hasattr(n, "name") else str(n)
-    if payload is None:
-        payload = lambda n: n.payload if hasattr(n, "payload") else {}
-
     for p in paths:
         parent = None
         path = []
         for n in p:
             path.append(n)
             path_tuple = tuple(path)
-            name = node_name(n)
-            data = payload(n)
-            if not isinstance(data, dict):
-                data = { "payload": data }
-
+            name = n
             if path_tuple not in nodes:
                 for tries in range(max_tries):
                     try:
-                        new_node = type(name=f"{name}_{tries}", parent=parent, **data)
+                        new_node = type(name=name, parent=parent)
                         break
                     except KeyError as e:
                         pass
+                    name = f"{n}_{tries}"
 
                 if tries == max_tries:
-                    raise ValueError(f"Failed to create node with prefix {name}.")
+                    raise ValueError(f"Failed to create node with prefix {n}.")
                 nodes[path_tuple] = new_node
             parent = nodes[path_tuple]
     return parent.root

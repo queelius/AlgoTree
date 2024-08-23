@@ -117,7 +117,7 @@ class FlatForest(dict):
         These examples are equivalent. They create a forest with 3 nodes,
         'a', 'b', and 'c', where 'a' and 'b' are root nodes and 'c' is a child
         of 'a'. The second example is the most common way to create a FlatForest,
-        where we pass a dictionary to the constructor. Since the FlatForest is
+        where we pass a dictionary to the constructor. Since the `FlatForest` is
         a subclass of the dictionary class, we can use all the methods of the
         dictionary class on the FlatForest. The FlatForest class provides
         additional methods to manipulate the tree structure. The FlatForest
@@ -131,21 +131,35 @@ class FlatForest(dict):
         super().__init__(*args, **kwargs)
         self._preferred_root = None
 
-    def unique_names(self) -> List[str]:
+    def logical_root_names(self) -> List[str]:
+        """
+        Get the logical nodes of the forest. These occur when a node has a parent
+        that is not in the forest. A special case for this is the `DETACHED_KEY`
+        which is used for detached nodes, i.e., when we detach a node, we set
+        its parent to `DETACHED_KEY`.
+
+        :return: List of logical root names.
+        """
+        parents = [v[FlatForest.PARENT_KEY] for k, v in self.items() if FlatForest.PARENT_KEY in v]
+        return [k for k in parents if k not in self.keys()] + [FlatForest.DETACHED_KEY]
+
+    def interior_node_names(self) -> List[str]:
+        """
+        Get interior node names, i.e., nodes that are not root nodes or logical
+        nodes.
+
+        :return: List of interior node names.
+        """
+        return [k for k in self.keys() if self[k][FlatForest.PARENT_KEY] is not None]
+    
+    def node_names(self) -> List[str]:
         """
         Get the unique names in the tree, even if they are not nodes in the tree
         but only parent names without corresponding nodes.
 
         :return: List of unique names in the tree.
         """
-        names = [FlatForest.DETACHED_KEY]
-        names += list(self.keys())
-        names += [
-            v.get(FlatForest.PARENT_KEY)
-            for v in self.values()
-            if v.get(FlatForest.PARENT_KEY) is not None
-        ]
-        return list(set(names))
+        return list(self.keys()) + self.logical_root_names()
 
     def child_names(self, name: str) -> List[str]:
         """
@@ -155,11 +169,11 @@ class FlatForest(dict):
         :return: List of names of the children of the node.
         """
 
-        #if name not in self.unique_names():
-        #    raise KeyError(f"Node name not found: {name!r}")
+        if name not in self.node_names():
+            raise KeyError(f"Node name not found: {name!r}")
 
         return [k for k, v in self.items() if v.get(FlatForest.PARENT_KEY) == name]
-
+    
     def detach(self, name: str) -> "FlatForestNode":
         """
         Detach subtree rooted at node with the given name by setting its parent
@@ -172,6 +186,12 @@ class FlatForest(dict):
         """
         if name not in self:
             raise KeyError(f"Node not found: {name!r}")
+        
+        # let's make sure it's not already detached by being an ancestor of a
+        # detached node
+        if name in self.detached:
+            raise KeyError(f"Node {name!r} is already detached")
+        
         self[name][FlatForest.PARENT_KEY] = FlatForest.DETACHED_KEY
         return self.subtree(name)
 
@@ -234,7 +254,6 @@ class FlatForest(dict):
             if self[key].get(FlatForest.PARENT_KEY) is None:
                 new_dict[key][FlatForest.PARENT_KEY] = root_name
         return FlatForestNode(forest=FlatForest(new_dict), name=root_name)
-        
 
     def root_key(self, name: str) -> str:
         """
@@ -244,31 +263,7 @@ class FlatForest(dict):
         :return: The key of the root node.
         :raises KeyError: If the key is not found in the tree.
         """
-        if key not in self.unique_names():
-            raise KeyError(f"Key not found: {key!r}")
-
-        while self[key].get(FlatForest.PARENT_KEY) is not None:
-            key = self[key][FlatForest.PARENT_KEY]
-        return key
-
-    def subtree(self, name: Optional[str] = None) -> "FlatForestNode":
-        """
-        Get sub-tree rooted at the node with the name `name` with the current
-        node also set to that node. If `name` is None, the preferred root node
-        is used.
-
-        :param name: The unique name of the node.
-        :return: FlatForestNode proxy representing the node.
-        """
-        from .flat_forest_node import FlatForestNode
-
-        if name is None:
-            name = self.preferred_root
-
-        if name not in self.unique_names():
-            raise KeyError(f"Name not found: {name!r}")
-        
-        return FlatForestNode.proxy(forest=self, node_key=name, root_key=name)
+        return self.subtree(name).root.name
 
     @property
     def trees(self) -> List["FlatForestNode"]:
@@ -288,28 +283,19 @@ class FlatForest(dict):
         :return: The names of the root nodes.
         """
         keys = [k for k, v in self.items() if v.get(FlatForest.PARENT_KEY) is None]
-        if any(v.get(FlatForest.PARENT_KEY) == FlatForest.DETACHED_KEY for v in self.values()):
-            keys.append(FlatForest.DETACHED_KEY)
-
-        return keys
+        return keys + self.logical_root_names()
         
-    def purge(self) -> List[str]:
+    def purge(self) -> None:
         """
         Purge detached nodes (tree rooted at `FlatForest.DETACHED_KEY`).
-
-        :return: The keys of the purged nodes.
         """
-        purge_keys = [k for k, v in self.items() if v.get(FlatForest.PARENT_KEY) == FlatForest.DETACHED_KEY]
-        def _purge(key, purge_keys):
-            for child in self.child_names(key):
+        def _purge(node):
+            for child in node.children:
                 _purge(child)
-            purge_keys.append(key)
-            del self[key]
+            del self[node.name]
         
-        for key in purge_keys:
-            _purge(key, purge_keys)
-
-        return purge_keys
+        for child in self.detached.children:
+            _purge(child)
 
     @property
     def detached(self) -> "FlatForestNode":
@@ -384,6 +370,20 @@ class FlatForest(dict):
         """
         self._preferred_root = name
 
+    def __eq__(self, other: Any) -> bool:
+        """
+        Check if the forest is equal to another forest.
+
+        :param other: The other forest to compare to.
+        :return: True if the forests are equal, False otherwise.
+        """
+        return isinstance(other, FlatForest) and dict(self) == dict(other)
+
+    #### node-centric methods which treat the forest as a tree rooted at the
+    #### preferred root node. These methods are consistent with the expected
+    #### behavior of a tree structure, but we provide more flexibility by
+    #### allowing the user to choose the preferred root node.
+
     @property
     def root(self) -> "FlatForestNode":
         """
@@ -434,4 +434,52 @@ class FlatForest(dict):
         self.subtree().name = name
         self.preferred_root = name
     
+    def node(self, name: str) -> "FlatForestNode":
+        """
+        Get an ancestor node with the given name under the preferred root node.
 
+        :param name: The name of the node.
+        :return: The node.
+        """
+        from .flat_forest_node import FlatForestNode
+        return FlatForestNode.proxy(forest=self, node_key=name, root_key=self._preferred_root)
+
+    def subtree(self, name: Optional[str] = None) -> "FlatForestNode":
+        """
+        Get sub-tree rooted at the node with the name `name` with the current
+        node also set to that node. If `name` is None, the preferred root node
+        is used.
+
+        NOTE: This behavior is different from the expected behavior of a tree,
+        since this is a forest. If the forest has multiple trees, this method
+        will return any subtree under any root node. We could instead return
+        the subtree under the preferred root node, which would then replicate
+        the expected behavior and be consistent with the other node-centric
+        methods like `node` and `children`. However, we choose to return the
+        subtree under any root node to provide more flexibility. Once you
+        return a subtree, the `FlatForestNode` class provides a node-centric
+        interface to the tree structure consistent with the expected behavior.
+
+        :param name: The unique name of the node.
+        :return: FlatForestNode proxy representing the node.
+        """
+        from .flat_forest_node import FlatForestNode
+
+        if name is None:
+            name = self.preferred_root
+
+        if name not in self.node_names():
+            raise KeyError(f"Node name not found: {name!r}")
+        
+        return FlatForestNode.proxy(forest=self, node_key=name, root_key=name)
+
+    def contains(self, name: str) -> bool:
+        """
+        Check if the tree rooted at the preferred root node contains a node
+        with the given name.
+
+        :param name: The name of the node.
+        :return: True if the node is in the forest, False otherwise.
+        """
+        return self.subtree().contains(name)
+    
