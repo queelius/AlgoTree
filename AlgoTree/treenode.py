@@ -141,6 +141,23 @@ class TreeNode(dict):
         nodes.append(self)
         return nodes
     
+    def subtree(self, name: str, partial: bool = False) -> "TreeNode":
+        """
+        Get the subtree rooted at the node with the given name. This is not
+        a view, but a new tree rooted at the node with the given name. This
+        is different from the `node` method, which just changes the current
+        node position. It's also different from the `subtree` method in the
+        `FlatForestNode` class, which returns a view of the tree.
+
+        :param name: The name of the node.
+        :param partial: If True, return the first node that partially matches the name.
+        :return: The subtree rooted at the node with the given name.
+        """
+        from copy import deepcopy
+        node = deepcopy(self.node(name, partial))
+        node.parent = None
+        return node
+    
     def node(self, name: str, partial: bool = False) -> "TreeNode":
         """
         Get the node with the given name in the current sub-tree. The sub-tree
@@ -148,6 +165,7 @@ class TreeNode(dict):
         is not found, raise a KeyError.
 
         :param name: The name of the node.
+        :param partial: If True, return the first node that partially matches the name.
         :return: The node with the given name.
         """
         node = None
@@ -186,6 +204,25 @@ class TreeNode(dict):
         result += f", payload={self.payload}"
         result += f", len(children)={len(self.children)})"
         return result
+    
+    @staticmethod
+    def is_valid(data) -> bool:
+        """
+        Check if the given data is a valid TreeNode data.
+
+        :param data: The data to check.
+        :return: True if the data is a valid TreeNode, False otherwise.
+        """
+        if not isinstance(data, dict):
+            return False
+        if "children" in data:
+            if not isinstance(data["children"], list):
+                return False
+            for child in data["children"]:
+                if not TreeNode.is_valid(child):
+                    return False
+        
+        return True
     
     def to_dict(self):
         """

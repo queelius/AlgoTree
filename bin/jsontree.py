@@ -6,13 +6,10 @@ import sys
 import textwrap
 import AlgoTree
 from pprint import pprint
-#from AlgoTree.flattree import FlatTree
-#from AlgoTree.flattree_node import FlatTreeNode
-#from AlgoTree.treenode import TreeNode
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Query a tree represented in JSON format (FlatTree, TreeNode)",
+        description="Query a tree represented in JSON format (FlatForest, TreeNode)",
         formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(
@@ -186,6 +183,29 @@ def main():
         action="store_true",
         help="Print the type of the tree"
     )
+    parser.add_argument(
+        "--merge-forest",
+        nargs=1,
+        type=str,
+        metavar="NODE_KEY",
+        help="Merge a forest into a single tree under a new node named NODE_KEY")
+    parser.add_argument(
+        "--set-root",
+        nargs=1,
+        type=str,
+        metavar="NODE_KEY",
+        help="Set the root node of the tree to the node with the given key"
+    )
+    parser.add_argument(
+        "--epilog",
+        help="Show example usage",
+        action="store_true"
+    )
+    #parser.add_argument(
+    #    "--partial",
+    #    action="store_true",
+    #    help="Depends on the context, but for instance if setting `--partial` with `--set-root stuff` it will match `stuff` as a partial match"
+    #)
 
     parser.epilog = textwrap.dedent(
         """
@@ -207,21 +227,31 @@ def main():
             parser.print_usage()
             sys.exit(1)
 
+        if args.epilog:
+            print(parser.epilog)
+            sys.exit(0)
+
         node_name = lambda node: node.name
         if args.node_name:
             node_name = eval(args.node_name[0])
 
         data = json.load(args.file)
         tree = None
-        if AlgoTree.FlatTree.is_valid(data):
-            tree = AlgoTree.FlatTree(data).root
+        if AlgoTree.FlatForest.is_valid(data):
+            tree = AlgoTree.FlatForest(data)
         elif AlgoTree.TreeNode.is_valid(data):
-            tree = AlgoTree.TreeNode(data)
+            tree = AlgoTree.TreeNode.from_dict(data)
         else:
             print("Unrecognized tree format")
             sys.exit(1)
 
-        result = {}
+        if args.merge_forest:
+            if type(tree) is AlgoTree.FlatForest:
+                tree = tree.as_tree(args.merge_forest[0])
+
+        if args.set_root:
+            tree = tree.subtree(args.set_root[0])
+
         if args.prune:
             AlgoTree.prune(tree, eval(args.prune[0]))
 
@@ -230,21 +260,18 @@ def main():
 
         if args.convert:
             target_type = args.convert[0].strip().lower()
-            if target_type == "flattree":
-                #if not isinstance(tree, AlgoTree.FlatTreeNode):
-                tree = AlgoTree.TreeConverter.convert(tree, AlgoTree.FlatTreeNode)
+            if target_type == "flatforest":
+                tree = AlgoTree.TreeConverter.convert(tree, AlgoTree.FlatForestNode)
             elif target_type == "treenode":
                 tree = AlgoTree.TreeConverter.convert(tree, AlgoTree.TreeNode)
             else:
                 raise ValueError("Invalid target type")
-
+            
         if args.json:
             print(json.dumps(tree.to_dict(), indent=4))
 
         if args.find_nodes:
             lam = args.find_nodes[0]
-            print(lam)
-            print(tree.nodes())
             nodes = AlgoTree.find_nodes(tree, eval(args.find_nodes[0]))
             print([node_name(n) for n in nodes])
 
@@ -288,7 +315,7 @@ def main():
             print(node)
             
         if args.subtree:
-            sub = AlgoTree.TreeConverter.convert(tree.subtree(args.subtree[0]), AlgoTree.FlatTreeNode)
+            sub = AlgoTree.TreeConverter.convert(tree.subtree(args.subtree[0]), AlgoTree.FlatForestNode)
             print(json.dumps(sub.tree, indent=4))
 
         if args.depth:
@@ -323,19 +350,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-        # return {
-        #     "type": "object",
-        #     "patternProperties": {
-        #         ".*": {
-        #             "type": "object",
-        #             "properties": {
-        #                 "parent": {"type": ["string", "null"]},
-        #             },
-        #             "additionalProperties": True,
-        #         }
-        #     },
-        #     "additionalProperties": False
-        # }

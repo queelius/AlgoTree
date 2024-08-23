@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Dict
+from copy import deepcopy
 
 if TYPE_CHECKING:
     from flat_forest_node import FlatForestNode
@@ -245,7 +246,7 @@ class FlatForest(dict):
         """
 
         from .flat_forest_node import FlatForestNode
-        import copy
+        
         new_dict = {}
         new_dict[root_name] = {FlatForest.PARENT_KEY: None}
         for key in self.keys():
@@ -378,6 +379,15 @@ class FlatForest(dict):
         :return: True if the forests are equal, False otherwise.
         """
         return isinstance(other, FlatForest) and dict(self) == dict(other)
+    
+    def nodes(self) -> List["FlatForestNode"]:
+        """
+        Get all the nodes in the forest.
+
+        :return: A list of all the nodes in the forest.
+        """
+        from .flat_forest_node import FlatForestNode
+        return [FlatForestNode.proxy(forest=self, node_key=key, root_key=key) for key in self.node_names()]
 
     #### node-centric methods which treat the forest as a tree rooted at the
     #### preferred root node. These methods are consistent with the expected
@@ -483,3 +493,11 @@ class FlatForest(dict):
         """
         return self.subtree().contains(name)
     
+    def to_dict(self) -> dict:
+        """
+        Convert the forest to a dictionary. Note this since this is already
+        a dictionary, we just return a copy of the dictionary.
+
+        :return: A dictionary representation of the forest.
+        """
+        return deepcopy(self)

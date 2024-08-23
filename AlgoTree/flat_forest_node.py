@@ -395,3 +395,12 @@ class FlatForestNode(collections.abc.MutableMapping):
         :return: True if the key is present in the payload, False otherwise.
         """
         return key in self.payload
+    
+    def to_dict(self):
+        """
+        Convert the subtree rooted at `node` to a dictionary.
+
+        :return: A dictionary representation of the subtree.
+        """
+        from .tree_converter import TreeConverter
+        return TreeConverter.convert(self, FlatForestNode).forest

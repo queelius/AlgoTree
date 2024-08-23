@@ -1,26 +1,24 @@
 {
   "name": "node1",
-  "data": "Some data for node1 (root)",
+  "payload": { "data": "Some data for node1 (root)" },
   "children": [
     {
       "name": "node2",
-      "data": "Some data for node2",
+      "payload": { "data": "Some data for node2" },
       "children": [
         {
           "name": "node4",
-          "data": "Some data for node4",
-          "children": []
+          "payload": { "data": "Some data for node4" }
         },
         {
           "name": "node5",
-          "data": "Some data for node5",
-          "children": []
+          "payload": { "data": "Some data for node5" }
         }
       ]
     },
     {
-      "data": "Some data for node3",
-      "children": []
+      "name": "node3",
+      "payload" : { "data": "Some data for node3" }
     }
   ]
 }

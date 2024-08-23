@@ -59,6 +59,7 @@ class PrettyTree:
         """
         Print the tree.
 
+        :param node: The root node of the tree.
         :param kwargs: Additional style parameters to override the default style.
         :return: A pretty string representation of the tree.
         """

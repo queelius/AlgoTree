@@ -57,7 +57,7 @@ class TreeConverter:
 
         node_type = type(under)
         tries: int = 0
-        def _build(cur, und):
+        def build(cur, und):
             nonlocal tries
             data = deepcopy(extract(cur))
             name = node_name(cur)
@@ -67,7 +67,6 @@ class TreeConverter:
                     node = node_type(name=name, parent=und, payload=data)
                     break
                 except Exception as e:
-                    print(e)
                     name = f"{base_name}_{tries}"
 
                 tries += 1
@@ -75,10 +74,10 @@ class TreeConverter:
                     raise ValueError("Max tries exceeded")
 
             for child in cur.children:
-                _build(child, node)
+                build(child, node)
             return node
 
-        return _build(node, under)
+        return build(node, under)
 
     @staticmethod
     def convert(
@@ -102,7 +101,7 @@ class TreeConverter:
         root = target_type(
             name=node_name(source),
             parent=None,
-            **extract(deepcopy(source)))
+            payload=deepcopy(extract(source)))
         
         for child in source.children:
             TreeConverter.copy_under(node=child,
