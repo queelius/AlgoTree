@@ -141,8 +141,11 @@ class FlatForest(dict):
 
         :return: List of logical root names.
         """
-        parents = [v[FlatForest.PARENT_KEY] for k, v in self.items() if FlatForest.PARENT_KEY in v]
-        return [k for k in parents if k not in self.keys()] + [FlatForest.DETACHED_KEY]
+        parents = [v[FlatForest.PARENT_KEY] for v in self.values() if FlatForest.PARENT_KEY in v and v[FlatForest.PARENT_KEY] is not None]
+        keys = [k for k in parents if k not in self.keys()]
+        if self.DETACHED_KEY not in keys:
+            keys.append(self.DETACHED_KEY)
+        return keys
 
     def interior_node_names(self) -> List[str]:
         """
@@ -264,7 +267,15 @@ class FlatForest(dict):
         :return: The key of the root node.
         :raises KeyError: If the key is not found in the tree.
         """
-        return self.subtree(name).root.name
+        if name not in self.node_names():
+            raise KeyError(f"Node name not found: {name!r}")
+        
+        if name in self.logical_root_names():
+            return name
+
+        while self[name].get(FlatForest.PARENT_KEY) is not None:
+            name = self[name][FlatForest.PARENT_KEY]
+        return name
 
     @property
     def trees(self) -> List["FlatForestNode"]:
@@ -389,11 +400,6 @@ class FlatForest(dict):
         from .flat_forest_node import FlatForestNode
         return [FlatForestNode.proxy(forest=self, node_key=key, root_key=key) for key in self.node_names()]
 
-    #### node-centric methods which treat the forest as a tree rooted at the
-    #### preferred root node. These methods are consistent with the expected
-    #### behavior of a tree structure, but we provide more flexibility by
-    #### allowing the user to choose the preferred root node.
-
     @property
     def root(self) -> "FlatForestNode":
         """
@@ -438,6 +444,8 @@ class FlatForest(dict):
         """
         Set the name of the preferred root node.
 
+        TODO: I don't think this will work. Test it.
+
         :param name: The name to set.
         :return: None
         """
@@ -452,7 +460,9 @@ class FlatForest(dict):
         :return: The node.
         """
         from .flat_forest_node import FlatForestNode
-        return FlatForestNode.proxy(forest=self, node_key=name, root_key=self._preferred_root)
+
+        return FlatForestNode.proxy(forest=self, node_key=name,
+                                    root_key=self.root_key(name))
 
     def subtree(self, name: Optional[str] = None) -> "FlatForestNode":
         """

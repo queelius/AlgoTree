@@ -139,10 +139,11 @@ def siblings(node) -> List:
     :param node: The node.
     :return: List of sibling nodes.
     """
-    return [] if is_root(node) else [
-        c for c in node.parent.children if c != node
-    ]
-
+    if node.parent is None:
+        return []   
+    sibs = [c for c in node.parent.children]
+    sibs.remove(node)
+    return sibs
 
 def leaves(node) -> List:
     """
@@ -213,38 +214,6 @@ def is_internal(node) -> bool:
     """
     return len(node.children) > 0
 
-
-def is_ancestor(node, other) -> bool:
-    """
-    Check if `node` is an ancestor of `other`.
-
-    :param node: The node to check.
-    :param other: The other node.
-    :return: True if the node is an ancestor of the other node, False otherwise.
-    """
-    return ancestors(other).count(node) > 0
-
-
-def is_descendant(node, other) -> bool:
-    """
-    Check if node `node` is a descendant of node `other`.
-
-    :param node: The node to check for being a descendant.
-    :param other: The node to check for being a descendant of.
-    :return: True if `node` is a descendant of `other`, False otherwise.
-    """
-    return node in descendants(other)
-
-
-def is_sibling(node, other) -> bool:
-    """
-    Check if a node is a sibling of another node.
-
-    :param node: The node to check.
-    :param other: The other node.
-    :return: True if the node is a sibling of the other node, False otherwise.
-    """
-    return node in siblings(other)
 
 
 def breadth_first(node: Any,
@@ -440,16 +409,6 @@ def find_path(source: Any, dest: Any) -> Any:
     :return: The path from the source node to the destination node.
     """
 
-    def _find_path(n, path):
-        if n == dest:
-            return path + [n]
-        for c in n.children:
-            p = _find_path(c, path + [n])
-            if p:
-                return p
-
-    return _find_path(source, [])
-
 def ancestors(node) -> List:
     """
     Get the ancestors of a node.
@@ -465,13 +424,13 @@ def ancestors(node) -> List:
     :param node: The root node.
     :return: List of ancestor nodes.
     """
+    anc = []
     def _ancestors(n):
         nonlocal anc
         if not is_root(n):
             anc.append(n.parent)
             _ancestors(n.parent)
 
-    anc = []
     _ancestors(node)
     return anc
 
@@ -483,7 +442,8 @@ def path(node: Any) -> List:
     :param node: The node.
     :return: The path from the root node to the given node.
     """
-    return find_path(node.root, node)
+    anc = ancestors(node)
+    return [node] + anc[::-1]
 
 def size(node: Any) -> int:
     """

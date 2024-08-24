@@ -1,37 +1,37 @@
 import unittest
 from AlgoTree.treenode import TreeNode
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 from AlgoTree.node_hash import NodeHash
 
 class TestFlatNodeHash(unittest.TestCase):
     def setUp(self):
-        self.node_a = FlatTreeNode(name="a", data1=1, data2=2)
-        self.node_b = FlatTreeNode(name="b", parent=self.node_a, data="test")
-        self.node_c = FlatTreeNode(name="c", parent=self.node_a, different_data="test2")
+        self.node_a = FlatForestNode(name="a", data1=1, data2=2)
+        self.node_b = FlatForestNode(name="b", parent=self.node_a, data="test")
+        self.node_c = FlatForestNode(name="c", parent=self.node_a, different_data="test2")
 
     def test_name_hash(self):
         # Test that the name hash of two nodes with different names is not the same
         self.assertNotEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(self.node_b))
 
         # Test that the name hash of two nodes with the same name is the same
-        root = FlatTreeNode(name="root")
-        another_a = FlatTreeNode(name="a", parent=root)
+        root = FlatForestNode(name="root")
+        another_a = FlatForestNode(name="a", parent=root)
         self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(another_a))
 
         # Test that the name hash of two nodes with different names is not the same
         self.assertNotEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(self.node_b))
 
         # Test that the name hash of two nodes with the same name is the same
-        root = FlatTreeNode(name="root")
-        another_a = FlatTreeNode(name="a", parent=root)
+        root = FlatForestNode(name="root")
+        another_a = FlatForestNode(name="a", parent=root)
         self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(another_a))
 
         # try different tree types with same name
         self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(self.node_a))
 
-        self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(FlatTreeNode(name="a")))
-        self.assertNotEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(FlatTreeNode(name="b", data1=1, data2=2)))
+        self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(FlatForestNode(name="a")))
+        self.assertNotEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(FlatForestNode(name="b", data1=1, data2=2)))
 
     def test_payload_hash(self):
         # Test that the payload hash of two nodes with different payloads is not the same
@@ -51,11 +51,11 @@ class TestFlatNodeHash(unittest.TestCase):
         self.assertNotEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(self.node_b))
 
         # Test that the node hash of two nodes with the same payload and same names are the same
-        self.assertEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(FlatTreeNode(name="a", data1=1, data2=2)))
+        self.assertEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(FlatForestNode(name="a", data1=1, data2=2)))
 
         self.assertEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(self.node_a))
 
-        self.assertNotEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(FlatTreeNode(name="a", data1=1, data2=2, more=None)))
+        self.assertNotEqual(NodeHash.node_hash(self.node_a), NodeHash.node_hash(FlatForestNode(name="a", data1=1, data2=2, more=None)))
 
     def test_path_hash(self):
         # Test that the path hash of two nodes with different paths is not the same

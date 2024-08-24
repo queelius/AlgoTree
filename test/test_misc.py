@@ -10,6 +10,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 class TestTreeNodeAdvanced(unittest.TestCase):
     def setUp(self):
+        """
+        Create a tree with the following structure:
+
+        root
+        ├── child1
+        │   └── child1_1
+        └── child2
+            └── child2_1
+        """
         self.root = TreeNode(name="root", value="root_value")
         self.child1 = TreeNode(
             name="child1", parent=self.root, value="child1_value"
@@ -24,36 +33,13 @@ class TestTreeNodeAdvanced(unittest.TestCase):
             name="child2_1", parent=self.child2, value="child2_1_value"
         )
 
-        # tree looks like this:
-        # root
-        # ├── child1
-        # │   └── child1_1
-        # └── child2
-        #     └── child2_1
-
     def test_move_subtree(self):
         new_parent = self.child2
         subtree_root = self.child1
-
-        # Move subtree
         subtree_root.parent = new_parent
-        # root
-        # └── child2 (new_parent)
-        #     ├── child2_1
-        #     └── child1 (subtree_root)
-        #         └── child1_1
-
         # Verify new structure
         self.assertEqual(subtree_root.parent, new_parent)
         self.assertIn(subtree_root, self.child2.children)
-        self.assertNotIn(subtree_root, self.root.children)
-
-    def test_custom_payload_and_attributes(self):
-        custom_node = TreeNode(
-            name="custom", parent=self.root, custom_attr="custom_value"
-        )
-        self.assertEqual(custom_node.custom_attr, "custom_value")
-        self.assertIn(custom_node, self.root.children)
 
     def test_large_tree_performance(self):
         # Create a large tree

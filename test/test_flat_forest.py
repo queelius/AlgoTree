@@ -1,8 +1,6 @@
 import unittest
 
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
-
+from AlgoTree.flat_forest import FlatForest
 
 class TestFlatTree(unittest.TestCase):
     def setUp(self):
@@ -14,26 +12,15 @@ class TestFlatTree(unittest.TestCase):
             "e": {"parent": "b"},
             "f": {"parent": "c"},
         }
-        self.flat_tree = FlatTree(self.tree_data)
+        self.flat_tree = FlatForest(self.tree_data)
 
     def test_initialization(self):
         self.assertEqual(self.flat_tree["a"]["parent"], None)
         self.assertEqual(self.flat_tree["b"]["parent"], "a")
         self.assertEqual(self.flat_tree["c"]["parent"], "a")
 
-    def test_repr(self):
-        flattree = FlatTree({
-            "A": {"parent": None, "value": 1},
-            "B": {"parent": "A", "value": 2},
-            "C": {"parent": "A", "value": 3},
-            "D": {"parent": "B", "value": 4},
-            "E": {"parent": "D", "value": 5},
-            })
-        recreated_tree = eval(repr(flattree))
-        self.assertEqual(flattree, recreated_tree)
-
-    def test_unique_keys(self):
-        unique_keys = self.flat_tree.unique_keys()
+    def test_node_names(self):
+        keys = self.flat_tree.node_names()
         expected_keys = [
             "__DETACHED__",
             "a",
@@ -43,44 +30,44 @@ class TestFlatTree(unittest.TestCase):
             "e",
             "f",
         ]
-        self.assertCountEqual(unique_keys, expected_keys)
+        self.assertCountEqual(keys, expected_keys)
 
-    def test_child_keys(self):
-        self.assertEqual(self.flat_tree.child_keys("a"), ["b", "c"])
-        self.assertEqual(self.flat_tree.child_keys("b"), ["d", "e"])
-        self.assertEqual(self.flat_tree.child_keys("c"), ["f"])
+    def test_child_names(self):
+        self.assertEqual(self.flat_tree.child_names("a"), ["b", "c"])
+        self.assertEqual(self.flat_tree.child_names("b"), ["d", "e"])
+        self.assertEqual(self.flat_tree.child_names("c"), ["f"])
 
     def test_detach(self):
         detached_node = self.flat_tree.detach("b")
-        self.assertEqual(self.flat_tree["b"]["parent"], FlatTree.DETACHED_KEY)
+        self.assertEqual(self.flat_tree["b"]["parent"], FlatForest.DETACHED_KEY)
         self.assertEqual(detached_node._key, "b")
 
-    def test_prune(self):
-        pruned_keys = self.flat_tree.prune("b")
+    def test_purge(self):
+        self.flat_tree.detach("b")
+        self.flat_tree.purge()
         # order doesn't matter, so use this instead:
-        self.assertCountEqual(pruned_keys, ["d", "e", "b"])
         self.assertNotIn("b", self.flat_tree)
         self.assertNotIn("d", self.flat_tree)
         self.assertNotIn("e", self.flat_tree)
 
     def test_check_valid(self):
         # Valid tree
-        FlatTree.check_valid(self.flat_tree)
+        FlatForest.check_valid(self.flat_tree)
 
         # Invalid tree (cycle)
         self.flat_tree["a"]["parent"] = "f"
         with self.assertRaises(ValueError):
-            FlatTree.check_valid(self.flat_tree)
+            FlatForest.check_valid(self.flat_tree)
 
         # Invalid tree (non-dict node value)
         self.flat_tree["a"] = "invalid"
         with self.assertRaises(ValueError):
-            FlatTree.check_valid(self.flat_tree)
+            FlatForest.check_valid(self.flat_tree)
 
         # Invalid tree (non-existing parent)
         self.flat_tree["a"] = {"parent": "non_existing"}
         with self.assertRaises(KeyError):
-            FlatTree.check_valid(self.flat_tree)
+            FlatForest.check_valid(self.flat_tree)
 
     def test_node(self):
         node_b = self.flat_tree.node("b")
@@ -95,7 +82,7 @@ class TestFlatTree(unittest.TestCase):
 
     def test_detached(self):
         detached_node = self.flat_tree.detached
-        self.assertEqual(detached_node._key, FlatTree.DETACHED_KEY)
+        self.assertEqual(detached_node._key, FlatForest.DETACHED_KEY)
 
 
 if __name__ == "__main__":

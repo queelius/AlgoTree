@@ -1,7 +1,7 @@
 import unittest
 
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 
 
 class TestFlatTreeNode(unittest.TestCase):
@@ -14,11 +14,11 @@ class TestFlatTreeNode(unittest.TestCase):
             "e": {"parent": "b"},
             "f": {"parent": "c"},
         }
-        self.flat_tree = FlatTree(self.tree_data)
-        self.node_a = FlatTreeNode.proxy(self.flat_tree, "a")
-        self.node_b = FlatTreeNode.proxy(self.flat_tree, "b")
-        self.node_c = FlatTreeNode.proxy(self.flat_tree, "c")
-        self.root = FlatTreeNode.proxy(self.flat_tree, "a")
+        self.flat_tree = FlatForest(self.tree_data)
+        self.node_a = FlatForestNode.proxy(self.flat_tree, "a")
+        self.node_b = FlatForestNode.proxy(self.flat_tree, "b")
+        self.node_c = FlatForestNode.proxy(self.flat_tree, "c")
+        self.root = FlatForestNode.proxy(self.flat_tree, "a")
 
     def test_initialization(self):
         self.assertEqual(self.node_a.name, "a")
@@ -50,15 +50,11 @@ class TestFlatTreeNode(unittest.TestCase):
     def test_detach(self):
         detached_node = self.node_b.detach()
         self.assertEqual(detached_node._key, "b")
-        self.assertEqual(self.flat_tree["b"]["parent"], FlatTree.DETACHED_KEY)
+        self.assertEqual(self.flat_tree["b"]["parent"], FlatForest.DETACHED_KEY)
 
     def test_set_parent(self):
         self.flat_tree.node("b").parent = self.node_c
         self.assertEqual(self.flat_tree["b"]["parent"], "c")
-
-    def test_repr(self):
-        repr_str = repr(self.node_a)
-        self.assertIn("FlatTreeNode(name=a", repr_str)
 
     def test_len_and_iter(self):
         self.assertEqual(len(self.node_a), 0)

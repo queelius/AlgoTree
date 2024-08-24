@@ -1,7 +1,7 @@
 import unittest
 from AlgoTree.utils import node_to_leaf_paths, prune
 from AlgoTree.treenode import TreeNode
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest_node import FlatForestNode
 
 class TestUtils(unittest.TestCase):
 

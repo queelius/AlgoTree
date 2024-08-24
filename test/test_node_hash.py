@@ -1,18 +1,41 @@
 import unittest
 from AlgoTree.treenode import TreeNode
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 from AlgoTree.node_hash import NodeHash
 
 class TestNodeHash(unittest.TestCase):
     def setUp(self):
-        self.node_a = FlatTreeNode(name="a", data1=1, data2=2)
-        self.node_b = FlatTreeNode(name="b", parent=self.node_a, data="test")
-        self.node_c = FlatTreeNode(name="c", parent=self.node_a, different_data="test2")
+        """
+        Create a sample tree for testing
+
+        Here is what the tree looks like::
+            
+                a
+                |
+                +-- b
+                |   |
+                |   +-- d
+                |   |   |
+                |   |   +-- f
+                |   |
+                |   +-- e
+                |
+                +-- c
+        """
+        self.node_a = FlatForestNode(name="a", data1=1, data2=2)
+        self.node_b = FlatForestNode(name="b", parent=self.node_a, data="test")
+        self.node_c = FlatForestNode(name="c", parent=self.node_a, different_data="test2")
+        self.node_d = FlatForestNode(name="d", parent=self.node_b, data="test")
+        self.node_e = FlatForestNode(name="e", parent=self.node_b, different_data="test2")
+        self.node_f = FlatForestNode(name="f", parent=self.node_d, data="test")
 
         self.tree_node_a = TreeNode(name="a", data1=1, data2=2)
         self.tree_node_b = TreeNode(name="b", parent=self.tree_node_a, data="test")
         self.tree_node_c = TreeNode(name="c", parent=self.tree_node_a, different_data="test2")
+        self.tree_node_d = TreeNode(name="d", parent=self.tree_node_b, data="test")
+        self.tree_node_e = TreeNode(name="e", parent=self.tree_node_b, different_data="test2")
+        self.tree_node_f = TreeNode(name="f", parent=self.tree_node_d, data="test")
 
     def test_name_hash(self):
         # Test that the name hash of two nodes with different names is not the same
@@ -27,8 +50,8 @@ class TestNodeHash(unittest.TestCase):
         self.assertNotEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(self.node_b))
 
         # Test that the name hash of two nodes with the same name is the same
-        root = FlatTreeNode(name="root")
-        another_a = FlatTreeNode(name="a", parent=root)
+        root = FlatForestNode(name="root")
+        another_a = FlatForestNode(name="a", parent=root)
         self.assertEqual(NodeHash.name_hash(self.node_a), NodeHash.name_hash(another_a))
 
         # try different tree types with same name
@@ -64,11 +87,8 @@ class TestNodeHash(unittest.TestCase):
     def test_path_hash(self):
         # Test that the path hash of two nodes with different paths is not the same
         self.assertNotEqual(NodeHash.path_hash(self.tree_node_a), NodeHash.path_hash(self.tree_node_b))
-
-        # Test that the path hash of two nodes with the same path is the same
-        #self.assertEqual(NodeHash.path_hash(self.tree_node_b), NodeHash.path_hash(TreeNode(name="b", parent=TreeNode(name="a",data=0), data1=10, data2=2)))
-
-        #self.assertEqual(NodeHash.path_hash(self.tree_node_a), NodeHash.path_hash(self.node_a))
+        self.assertEqual(NodeHash.path_hash(self.tree_node_b), NodeHash.path_hash(TreeNode(name="b", parent=TreeNode(name="a",data=0), data1=10, data2=2)))
+        self.assertEqual(NodeHash.path_hash(self.tree_node_a), NodeHash.path_hash(self.node_a))
 
 if __name__ == "__main__":
     unittest.main()

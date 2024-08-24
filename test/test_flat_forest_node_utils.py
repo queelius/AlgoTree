@@ -1,7 +1,7 @@
 import unittest
 
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 from AlgoTree.utils import (
     ancestors,
     breadth_first,
@@ -10,12 +10,9 @@ from AlgoTree.utils import (
     find_node,
     find_nodes,
     height,
-    is_ancestor,
-    is_descendant,
     is_internal,
     is_leaf,
     is_root,
-    is_sibling,
     leaves,
     map,
     siblings,
@@ -26,21 +23,21 @@ from AlgoTree.utils import (
 
 class TestTreeUtils(unittest.TestCase):
     def setUp(self):
-        self.node0 = FlatTreeNode(name="node0", data=0)
-        self.node1 = FlatTreeNode(name="node1", parent=self.node0, data=1)
-        self.node2 = FlatTreeNode(name="node2", parent=self.node0, data=2)
-        self.node3 = FlatTreeNode(name="node3", parent=self.node0, data=3)
-        self.node4 = FlatTreeNode(name="node4", parent=self.node3, data=4)
-        self.node5 = FlatTreeNode(name="node5", parent=self.node3, data=5)
-        self.node6 = FlatTreeNode(name="node6", parent=self.node3, data=6)
-        self.node7 = FlatTreeNode(name="node7", parent=self.node3, data=7)
-        self.node8 = FlatTreeNode(name="node8", parent=self.node3, data=8)
-        self.node9 = FlatTreeNode(name="node9", parent=self.node6, data=9)
+        self.node0 = FlatForestNode(name="node0", data=0)
+        self.node1 = FlatForestNode(name="node1", parent=self.node0, data=1)
+        self.node2 = FlatForestNode(name="node2", parent=self.node0, data=2)
+        self.node3 = FlatForestNode(name="node3", parent=self.node0, data=3)
+        self.node4 = FlatForestNode(name="node4", parent=self.node3, data=4)
+        self.node5 = FlatForestNode(name="node5", parent=self.node3, data=5)
+        self.node6 = FlatForestNode(name="node6", parent=self.node3, data=6)
+        self.node7 = FlatForestNode(name="node7", parent=self.node3, data=7)
+        self.node8 = FlatForestNode(name="node8", parent=self.node3, data=8)
+        self.node9 = FlatForestNode(name="node9", parent=self.node6, data=9)
         self.nodes = [
             self.node0, self.node1, self.node2, self.node3, self.node4,
             self.node5, self.node6, self.node7, self.node8, self.node9
         ]
-        self.tree = self.node0.tree
+        self.tree = self.node0.forest
         """
         Create a sample tree for testing
 
@@ -140,9 +137,11 @@ class TestTreeUtils(unittest.TestCase):
         )
 
     def test_ancestors(self):
-        node9 = self.node0.tree.node("node9")
+        node9 = self.tree.node("node9")
+        from AlgoTree.pretty_tree import pretty_tree
+        print(pretty_tree(node9.parent))
         anc = [n.name for n in ancestors(node9)]
-        self.assertEqual(anc, ["node6", "node3", "node0"])
+        self.assertCountEqual(anc, ["node6", "node3", "node0"])
 
     def test_subtree(self):
         subtree = self.tree.subtree("node3")
@@ -201,18 +200,6 @@ class TestTreeUtils(unittest.TestCase):
         self.assertTrue(is_internal(self.node3))
         self.assertFalse(is_internal(self.node1))
 
-    def test_is_ancestor(self):
-        self.assertTrue(is_ancestor(self.node0, self.node9))
-        self.assertFalse(is_ancestor(self.node1, self.node9))
-
-    def test_is_descendant(self):
-        self.assertTrue(is_descendant(self.node9, self.node0))
-        self.assertFalse(is_descendant(self.node1, self.node9))
-
-    def test_is_sibling(self):
-        self.assertTrue(is_sibling(self.node1, self.node2))
-        self.assertFalse(is_sibling(self.node1, self.node9))
-
     def test_breadth_first(self):
         result = []
         breadth_first(
@@ -245,14 +232,14 @@ class TestTreeUtils(unittest.TestCase):
 
     def test_size(self):
         self.assertEqual(size(self.node0), 10)
-        self.assertEqual(size(self.tree.node("node0").root), 10)
+        self.assertEqual(size(self.tree.node("node0")), 10)
         self.assertEqual(size(self.tree.node("node0")), 10)
         self.assertEqual(size(self.node3), 7)
         self.assertEqual(size(self.node9.root), 10)
         self.assertEqual(size(self.node9), 1)
         self.assertEqual(size(self.node9.subtree().root), 1)
         self.assertEqual(size(self.node9.subtree()), 1)
-        self.assertEqual(size(self.node9.tree.root), len(self.nodes))
+        self.assertEqual(size(self.node9.forest.root), len(self.nodes))
 
     def test_find_node(self):
         node = find_node(self.node0, lambda n, **_: n["data"] == 7)

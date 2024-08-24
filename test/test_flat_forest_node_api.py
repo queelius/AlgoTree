@@ -1,18 +1,18 @@
 import unittest
 
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 
 
 class TestFlatTreeNodeAPI(unittest.TestCase):
     def setUp(self):
-        self.root = FlatTreeNode(name="root", data=0)
-        self.tree = self.root._tree
+        self.root = FlatForestNode(name="root", data=0)
+        self.tree = self.root.forest
 
     def test_create_and_add_nodes(self):
         # Create nodes
-        node1 = FlatTreeNode(name="node1", parent=self.root, data=1)
-        node2 = FlatTreeNode(name="node2", parent=self.root, data=2)
+        node1 = FlatForestNode(name="node1", parent=self.root, data=1)
+        node2 = FlatForestNode(name="node2", parent=self.root, data=2)
         node3 = self.root.add_child(name="node3", data=3)
 
         # Verify creation
@@ -38,14 +38,14 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         self.assertCountEqual(children_names, ["node4", "node5", "node6"])
 
         # Update children
-        node7 = FlatTreeNode(name="node7", data=7, parent=node3)
+        node7 = FlatForestNode(name="node7", data=7, parent=node3)
         node3.children = [node4, node5, node7]
         updated_children_names = [child.name for child in node3.children]
         self.assertCountEqual(
             updated_children_names, ["node4", "node5", "node7"]
         )
 
-    def test_detach_and_prune(self):
+    def test_detach_and_purge(self):
         # Create nodes
         node1 = self.root.add_child(name="node1", data=1)
         node3 = self.root.add_child(name="node3", data=3)
@@ -54,15 +54,14 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
 
         # Detach node3
         detached_node3 = node3.detach()
-        self.assertEqual(self.tree["node3"]["parent"], FlatTree.DETACHED_KEY)
+        self.assertEqual(self.tree["node3"]["parent"], FlatForest.DETACHED_KEY)
         detached_children_names = [
             child.name for child in detached_node3.children
         ]
         self.assertCountEqual(detached_children_names, ["node4", "node5"])
 
         # Prune detached node3
-        pruned_keys = self.tree.prune(detached_node3)
-        self.assertCountEqual(pruned_keys, ["node4", "node5", "node3"])
+        self.tree.purge()
         self.assertNotIn("node3", self.tree)
         self.assertNotIn("node4", self.tree)
         self.assertNotIn("node5", self.tree)

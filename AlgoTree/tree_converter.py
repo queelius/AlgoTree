@@ -36,8 +36,7 @@ class TreeConverter:
         under,
         node_name: Callable = default_node_name,
         extract: Callable = default_extract,
-        max_tries: int = 1
-    ):
+        max_tries: int = 1000) -> Any:
         """
         Copy the subtree rooted at `node` as a child of `under`, where
         the copy takes on the node type of `under`. It returns the subtree

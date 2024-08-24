@@ -341,15 +341,19 @@ class FlatForestNode(collections.abc.MutableMapping):
             node.parent = self
 
     def __eq__(self, other):
+        """
+        Equality and identity is a tricky question (see Ship of Theseus).
+        There are many ways to define it for nodes in a tree, e.g., we might
+        only care about intrinsic equality (like payload), or we might only
+        care about extrensic equality. Here, we define equality as being in
+        the same tree and having the same name.
+
+        :param other: The other node to compare with.
+        :return: True if the nodes are equal, False otherwise.
+        """
         if not isinstance(other, FlatForestNode):
             return False
         
-        # we do not care if they the same node but rooted at different places
-        # so we only compare the key and the forest
-        # this is a pretty complicated question, equality and identity, and
-        # there are many ways to define it, e.g., we could not care if they
-        # are the same node in different forests and so on. your use case
-        # will determine what equality means, but here is a reasonable default
         return self._key == other._key and self._forest == other._forest
     
     def node(self, name: str) -> "FlatForestNode":

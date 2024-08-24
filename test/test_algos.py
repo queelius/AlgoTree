@@ -1,7 +1,7 @@
 import unittest
 from AlgoTree.utils import node_to_leaf_paths, prune
 from AlgoTree.treenode import TreeNode
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest_node import FlatForestNode
 
 class TestUtils(unittest.TestCase):
 
@@ -22,14 +22,14 @@ class TestUtils(unittest.TestCase):
         """
 
         # Create a sample tree for testing
-        self.node_a = FlatTreeNode(name="A")
-        self.node_b = FlatTreeNode(name="B", parent=self.node_a)
-        self.node_c = FlatTreeNode(name="C", parent=self.node_a)
-        self.node_d = FlatTreeNode(name="D", parent=self.node_a)
-        self.node_e = FlatTreeNode(name="E", parent=self.node_b)
-        self.node_f = FlatTreeNode(name="F", parent=self.node_b)
-        self.node_g = FlatTreeNode(name="G", parent=self.node_c)
-        self.node_h = FlatTreeNode(name="H", parent=self.node_f)
+        self.node_a = FlatForestNode(name="A")
+        self.node_b = FlatForestNode(name="B", parent=self.node_a)
+        self.node_c = FlatForestNode(name="C", parent=self.node_a)
+        self.node_d = FlatForestNode(name="D", parent=self.node_a)
+        self.node_e = FlatForestNode(name="E", parent=self.node_b)
+        self.node_f = FlatForestNode(name="F", parent=self.node_b)
+        self.node_g = FlatForestNode(name="G", parent=self.node_c)
+        self.node_h = FlatForestNode(name="H", parent=self.node_f)
 
     def test_node_to_leaf_paths(self):
         """

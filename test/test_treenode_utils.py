@@ -9,18 +9,14 @@ from AlgoTree.utils import (
     find_node,
     find_nodes,
     height,
-    is_ancestor,
-    is_descendant,
     is_internal,
     is_leaf,
     is_root,
-    is_sibling,
     leaves,
     map,
     siblings,
     visit,
 )
-
 
 class TestTreeNodeUtils(unittest.TestCase):
     def setUp(self):
@@ -114,13 +110,13 @@ class TestTreeNodeUtils(unittest.TestCase):
 
     def test_map(self):
         def increment_value(node):
-            node["value"] += 1
+            node.payload["value"] += 1
             return node
 
         map(self.node0, increment_value)
-        self.assertEqual(self.node0["value"], 1)
-        self.assertEqual(self.node1["value"], 2)
-        self.assertEqual(self.node9["value"], 10)
+        self.assertEqual(self.node0.payload["value"], 1)
+        self.assertEqual(self.node1.payload["value"], 2)
+        self.assertEqual(self.node9.payload["value"], 10)
 
     def test_descendants_node3(self):
         self.assertCountEqual(
@@ -132,7 +128,13 @@ class TestTreeNodeUtils(unittest.TestCase):
         self.assertCountEqual(ancestors(self.node9), [self.node6, self.node3, self.node0])
 
     def test_siblings_node6(self):
-        self.assertCountEqual(siblings(self.node6), [self.node4, self.node5, self.node7, self.node8])
+        from AlgoTree.pretty_tree import pretty_tree
+        print(pretty_tree(self.node0.node("node6")))
+        print(pretty_tree(self.node0.node("node6").root))
+        print(siblings(self.node0.node("node6")))
+
+        self.assertCountEqual(siblings(self.node0.node("node6")),
+                              [self.node4, self.node5, self.node7, self.node8])
 
     def test_leaves(self):
         self.assertCountEqual(
@@ -181,18 +183,6 @@ class TestTreeNodeUtils(unittest.TestCase):
         self.assertTrue(is_internal(self.node3))
         self.assertFalse(is_internal(self.node1))
 
-    def test_is_ancestor(self):
-        self.assertTrue(is_ancestor(self.node0, self.node9))
-        self.assertFalse(is_ancestor(self.node1, self.node9))
-
-    def test_is_descendant(self):
-        self.assertTrue(is_descendant(self.node9, self.node0))
-        self.assertFalse(is_descendant(self.node1, self.node9))
-
-    def test_is_sibling(self):
-        self.assertTrue(is_sibling(self.node1, self.node2))
-        self.assertFalse(is_sibling(self.node1, self.node9))
-
     def test_breadth_first(self):
         result = []
         breadth_first(
@@ -217,14 +207,14 @@ class TestTreeNodeUtils(unittest.TestCase):
         )
 
     def test_find_nodes(self):
-        nodes = find_nodes(self.node0, lambda n, **_: n["value"] > 3)
+        nodes = find_nodes(self.node0, lambda n, **_: n.payload["value"] > 3)
         self.assertCountEqual(
             [n.name for n in nodes],
             ["node4", "node5", "node6", "node7", "node8", "node9"],
         )
 
     def test_find_node(self):
-        node = find_node(self.node0, lambda n, **_: n["value"] == 7)
+        node = find_node(self.node0, lambda n, **_: n.payload["value"] == 7)
         self.assertEqual(node.name, "node7")
 
     def test_get_node(self):

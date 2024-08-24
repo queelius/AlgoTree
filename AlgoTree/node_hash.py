@@ -150,12 +150,7 @@ class NodeHash:
         if node is None:
             raise ValueError("Node cannot be None")
         p = utils.path(node)
-        print("\n\nOKAY TEST::::")
-        print(node)
-        print(p)
         path = [n.name for n in p]
-        print(str(path))
-        print("OKAY TEST END::::")
         return hash(str(path))
 
     @staticmethod

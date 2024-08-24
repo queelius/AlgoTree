@@ -1,7 +1,7 @@
 import unittest
 from AlgoTree.pretty_tree import PrettyTree, pretty_tree
-from AlgoTree.flattree import FlatTree
-from AlgoTree.flattree_node import FlatTreeNode
+from AlgoTree.flat_forest import FlatForest
+from AlgoTree.flat_forest_node import FlatForestNode
 
 class TestTreePrettyPrinter(unittest.TestCase):
     
@@ -32,7 +32,7 @@ class TestTreePrettyPrinter(unittest.TestCase):
             "i": {"parent": "d"},
             "j": {"parent": "d"},
         }
-        self.flat_tree = FlatTree(self.tree_data)
+        self.flat_tree = FlatForest(self.tree_data)
 
     def test_default_pretty_print(self):
         printer = PrettyTree()
