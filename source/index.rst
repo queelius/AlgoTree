@@ -16,7 +16,8 @@ Welcome to AlgoTree's documentation!
    tutorial
    flat_forest_nb
    expr_trees_nb
-   identity   
+   identity
+   jt
 
    modules
 
