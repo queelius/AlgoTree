@@ -7,10 +7,14 @@ setup(
     author_email="lex@metafunctor.com",
     description="A algorithmic tookit for working with trees in Python",
     long_description=open("README.rst").read(),
-#    long_description_content_type="text/markdown",
     long_description_content_type="text/x-rst",
     packages=find_packages(),
     url='https://github.com/queelius/AlgoTree',
+    project_urls={
+        "Documentation": "https://queelius.github.io/AlgoTree/",
+        "Source Code": "https://github.com/queelius/AlgoTree",
+        "Issue Tracker": "https://github.com/queelius/AlgoTree/issues",
+    },
     python_requires=">=3.6",
     extras_require={
          'dev': [
