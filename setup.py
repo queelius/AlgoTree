@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="AlgoTree",
-    version="0.1.1",
+    version="0.7.0",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="A algorithmic tookit for working with trees in Python",
