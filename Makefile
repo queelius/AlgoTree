@@ -40,3 +40,7 @@ coverage:
 	coverage run -m unittest discover -s test
 	coverage report
 	coverage json
+
+pypi:
+	$(PYTHON) setup.py sdist bdist_wheel
+	$(PYTHON) -m twine upload dist/*

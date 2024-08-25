@@ -2,13 +2,13 @@ from setuptools import find_packages, setup
 
 setup(
     name="AlgoTree",
-    version="0.7.1",
+    version="0.7.2",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="A algorithmic tookit for working with trees in Python",
     long_description=open("README.rst").read(),
     long_description_content_type="text/x-rst",
-    packages=find_packages(),
+    packages=find_packages() + ['bin'],
     url='https://github.com/queelius/AlgoTree',
     project_urls={
         "Documentation": "https://queelius.github.io/AlgoTree/",
