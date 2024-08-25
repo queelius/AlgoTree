@@ -9,32 +9,35 @@ In philosophy, **Leibniz's Law** (or the *Indiscernibility of Identicals*) state
 
 In computer science, this strict definition of identity corresponds to the concept of **object identity**. Two objects are identical if they are the same instance in memory, which can be checked using the `id()` function in Python. This is the only situation in which we can guarantee that every predicate will yield the same result for both objects, as their memory addresses are the same.
 
-- **Example:** In Python, two variables are considered identical if they point to the same object in memory:
-  ```python
-  x = [1, 2, 3]
-  y = x
-  assert id(x) == id(y)  # True, x and y are identical
-  ```
+**Example:** In Python, two variables are considered identical if they point to the same object in memory:
+  
+```python
+x = [1, 2, 3]
+y = x
+assert id(x) == id(y)  # True, x and y are identical
+```
 
 However, strict identity is often not what we are interested in when reasoning about data structures or values. In most cases, we want to compare objects based on their properties or behaviors, rather than their memory addresses. This leads us to the concept of **equality**, which can be defined in various ways depending on the context.
 
-### Equality: Intrinsic and Extrinsic Properties
+Equality: Intrinsic and Extrinsic Properties
+--------------------------------------------
 
 When defining equality, we must consider whether we are comparing the *intrinsic* properties of an object or its *extrinsic* properties:
 
-1. **Intrinsic Properties:**
-   - These are the properties that belong to the object itself, independent of its relationships with other objects. For example, the intrinsic properties of an object might include its name, value, or other internal attributes.
+1. **Intrinsic Properties:**: These are the properties that belong to the object itself, independent of its relationships with other objects. For example, the intrinsic properties of an object might include its name, value, or other internal attributes.
    
-2. **Extrinsic Properties:**
-   - These are properties that depend on the object's relationships to other objects or its environment. For example, the extrinsic properties of an object might include its position within a structure, its relationships to other objects, or its role within a larger context.
+2. **Extrinsic Properties:**: These are properties that depend on the object's relationships to other objects or its environment. For example, the extrinsic properties of an object might include its position within a structure, its relationships to other objects, or its role within a larger context.
 
-### Equality in Trees and Nodes
+Equality in Trees and Nodes
+---------------------------
 
 Now that we have discussed identity and equality at a high level, we can turn our attention to how these concepts apply specifically to trees and nodes. Trees, being hierarchical data structures, bring particular concerns about how we compare nodes and entire tree structures. Equality can be defined based on both intrinsic and extrinsic properties in this context.
 
 1. **Value Equality (Intrinsic):**
+
    - **Definition:** Two nodes are considered equal if they have the same intrinsic value, even if they are different instances in memory.
    - **Example:**
+
      ```python
      x = Node('A', payload=10)
      y = Node('A', payload=10)
@@ -42,8 +45,10 @@ Now that we have discussed identity and equality at a high level, we can turn ou
      ```
 
 2. **Structural Equality (Mixed):**
+   
    - **Definition:** Two nodes or trees are equal if they have the same structure, considering both intrinsic and extrinsic properties. For example, two nodes are structurally equal if they have the same arrangement of children and corresponding values.
    - **Example:**
+   
      ```python
      node1 = Node('A')
      node2 = Node('A')
@@ -53,6 +58,7 @@ Now that we have discussed identity and equality at a high level, we can turn ou
      ```
 
 3. **Name Equality (Intrinsic):**
+   
    - **Definition:** Two nodes are equal if they share the same name or identifier. This focuses only on a specific intrinsic attribute, abstracting away other properties.
    - **Example:**
      ```python
@@ -62,8 +68,10 @@ Now that we have discussed identity and equality at a high level, we can turn ou
      ```
 
 4. **Payload Equality (Intrinsic):**
+
    - **Definition:** Two nodes are equal if they contain the same payload, even if their structure or position in the tree differs.
    - **Example:**
+
      ```python
      node1 = Node('A', payload=10)
      node2 = Node('B', payload=10)
@@ -75,8 +83,10 @@ Now that we have discussed identity and equality at a high level, we can turn ou
    - **Example:** Two nodes in corresponding positions in two structurally identical trees would be considered equal under positional equality.
 
 6. **Tree Equality (Mixed):**
+
    - **Definition:** Two trees are equal if they have the same structure and the same data at each corresponding node, considering both intrinsic and extrinsic properties.
    - **Example:**
+
      ```python
      tree1 = Node('A')
      tree2 = Node('A')
@@ -85,7 +95,8 @@ Now that we have discussed identity and equality at a high level, we can turn ou
      assert tree1 == tree2  # True, assuming equality checks both structure and data
      ```
 
-### Philosophical Perspective: The Ship of Theseus
+Philosophical Perspective: The Ship of Theseus
+----------------------------------------------
 
 The **Ship of Theseus** is a famous philosophical thought experiment that raises questions about identity and persistence over time. The thought experiment asks: if all the parts of a ship are gradually replaced, piece by piece, is it still the same ship? This highlights the tension between identity as a matter of intrinsic properties (the materials of the ship) versus extrinsic properties (the ship as a whole and its continuity over time).
 

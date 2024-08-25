@@ -1,6 +1,5 @@
 
-from typing import Any, List
-import AlgoTree.utils as utils
+from typing import Any
 from AlgoTree.tree_converter import TreeConverter
 
 class TreeHasher:

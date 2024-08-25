@@ -1,6 +1,6 @@
 from collections import deque
 from typing import Any, Callable, Deque, List, Tuple, Type
-from AlgoTree.treenode_api import TreeNodeApi
+# from AlgoTree.treenode_api import TreeNodeApi
 
 def visit(node: Any,
           func: Callable[[Any], bool],
@@ -381,7 +381,7 @@ def node_to_leaf_paths(node: Any) -> List:
         └── C
             └── F
     
-    Invoking `node_to_leaf_paths(A) enumerates the following list of paths::
+    Invoking `node_to_leaf_paths(A)` enumerates the following list of paths::
 
         [[A, B, D], [A, B, E], [A, C, F]]
     

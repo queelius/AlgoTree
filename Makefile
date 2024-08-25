@@ -9,8 +9,7 @@ TESTS=$(shell find test -name "*.py")
 # Phony targets
 .PHONY: all install test lint clean docs coverage
 
-# Default target
-all: install test lint docs
+# Default targetq
 
 # Install dependencies
 install:
@@ -40,4 +39,4 @@ docs:
 coverage:
 	coverage run -m unittest discover -s test
 	coverage report
-	coverage html
+	coverage json

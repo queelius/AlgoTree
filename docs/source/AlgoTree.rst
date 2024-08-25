@@ -20,10 +20,18 @@ AlgoTree.flat\_forest\_node module
    :undoc-members:
    :show-inheritance:
 
-AlgoTree.node\_hash module
---------------------------
+AlgoTree.node\_hasher module
+----------------------------
 
-.. automodule:: AlgoTree.node_hash
+.. automodule:: AlgoTree.node_hasher
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+AlgoTree.tree\_hasher module
+----------------------------
+
+.. automodule:: AlgoTree.tree_hasher
    :members:
    :undoc-members:
    :show-inheritance:

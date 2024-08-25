@@ -49,37 +49,21 @@ class FlatForest(dict):
         
         This method returns a dictionary representing the structure of the
         FlatForest. This is useful for documentation purposes and for
-        understanding the structure of the data. The structure is as follows:
-
-        {
-            "<node_key>": {
-                "parent" | None: "<parent_key>" | None,
-                "<any_key>": "<any_value>",
-                "...": "...",
-                "<any_key>": "<any_value>"
-            },
-            "...": "...",
-            "<node_key>": {
-                "parent" | None: "<parent_key>" | None,
-                "<any_key>": "<any_value>",
-                "...": "...",
-                "<any_key>": "<any_value>"
-            }
-        }
+        understanding the structure of the data. The structure is as follows::
 
         :return: A dict pattern representing the structure of the FlatForest.
         """
 
         return {
             "<node_key>": {
-                "parent" | None: "<parent_key>" | None,
+                "parent | None": "<parent_key> | None",
                 "<any_key>": "<any_value>",
                 "...": "...",
                 "<any_key>": "<any_value>"
             },
             "...": "...",
             "<node_key>": {
-                "parent" | None: "<parent_key>" | None,
+                "parent | None": "<parent_key> | None",
                 "<any_key>": "<any_value>",
                 "...": "...",
                 "<any_key>": "<any_value>"

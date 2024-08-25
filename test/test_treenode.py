@@ -2,7 +2,6 @@ import unittest
 
 from AlgoTree.treenode import TreeNode
 
-
 class TestTreeNode(unittest.TestCase):
     def test_constructor_with_name_and_value(self):
         node = TreeNode(name="root", value=10)
@@ -14,10 +13,10 @@ class TestTreeNode(unittest.TestCase):
         root = TreeNode(name="root", value=10)
         child = root.add_child(name="child1", value=1)
         self.assertEqual(len(root.children), 1)
-        #self.assertEqual(root.children[0].name, "child1")
-        #self.assertEqual(root.children[0]["value"], 1)
-        #self.assertEqual(child.name, "child1")
-        #self.assertEqual(child["value"], 1)
+        self.assertEqual(root.children[0].name, "child1")
+        self.assertEqual(root.children[0].payload["value"], 1)
+        self.assertEqual(child.name, "child1")
+        self.assertEqual(child.payload["value"], 1)
 
     def test_set_get_children(self):
         root = TreeNode(name="root", value=10)
