@@ -14,7 +14,7 @@ We can import JSON data into a `TreeNode` object as follows:
 
 .. code-block:: python
 
-TreeNode.from_dict(
+  TreeNode.from_dict(
     {
       "name": "root",
       "value": "root_value",

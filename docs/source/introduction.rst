@@ -86,12 +86,12 @@ The tree node concept is defined as follows:
 - **children** property
 
       Represents a list of child nodes for the current node that can be
-      accessed and modified[1_].
+      accessed and modified [1]_.
 
 - **parent** property
 
       Represents the parent node of the current node that can be accessed
-      and modified[2_]. 
+      and modified [2]_. 
       
       Suppose we have the subtree `G` at node `G`::
 

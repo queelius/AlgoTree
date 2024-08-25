@@ -13,14 +13,23 @@ A `FlatForest` is represented using a dictionary, where each key is a unique
 node identifier, and the value is another dictionary containing node data and
 an optional 'parent' key indicating the parent node.
 
-.. code-block:: json
+.. code-block:: python
 
     {
       "<node_key>": {
-          "parent": "<parent_node_key>",  // Parent node key (optional)
-          <key>: "<value>"  // Node payload (optional key-value pairs)
-      }
-      // ... more node key-value pairs
+          "parent": "<parent_node_key>",  # Parent node key (optional)
+          "<key>": "<value>", # Node payload (optional key-value pairs)
+          "...": "...",
+          "<key>": "<value>"
+      },
+      "...": "...",
+      "<node_key>": {
+          "parent": "<parent_node_key>",
+          "<key>": "<value>",
+          "...": "...",
+          "<key>": "<value>"
+      }      
+      # ... more node key-value pairs
     }
 
 Example Forest Data:
@@ -106,7 +115,7 @@ under a new root node, which can be useful if a tree-like structure is needed
 for all nodes in the forest.
 
 `FlatForest` Class
-----------------
+------------------
 
 The `FlatForest` class provides a flexible way to work with tree structures
 using a flat dictionary format. It offers various methods for manipulating and visualizing trees.
