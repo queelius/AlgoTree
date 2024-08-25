@@ -1,6 +1,6 @@
 from collections import deque
 from typing import Any, Callable, Deque, List, Tuple, Type
-# from AlgoTree.treenode_api import TreeNodeApi
+from AlgoTree.treenode_api import TreeNodeApi
 
 def visit(node: Any,
           func: Callable[[Any], bool],
@@ -36,6 +36,9 @@ def visit(node: Any,
 
     if not callable(func):
         raise TypeError("func must be callable")
+    
+    if node is None:
+        raise ValueError("Node must not be None")
 
     if order not in ("pre", "post", "level"):
         raise ValueError(f"Invalid order: {order}")
@@ -97,6 +100,9 @@ def map(node: Any,
 
     if not callable(func):
         raise TypeError("`func` must be callable")
+    
+    if node is None:
+        return None
 
     if order not in ("pre", "post"):
         raise ValueError(f"Invalid order: {order}")
@@ -127,6 +133,9 @@ def descendants(node) -> List:
     :param node: The root node.
     :return: List of descendant nodes.
     """
+    if node is None:
+        raise ValueError("Node must not be None")
+
     results = []
     visit(node, lambda n: results.append(n) or False, order="pre")
     return results[1:]
@@ -139,6 +148,9 @@ def siblings(node) -> List:
     :param node: The node.
     :return: List of sibling nodes.
     """
+    if node is None:
+        raise ValueError("Node must not be None")
+
     if node.parent is None:
         return []   
     sibs = [c for c in node.parent.children]
@@ -152,6 +164,10 @@ def leaves(node) -> List:
     :param node: The root node.
     :return: List of leaf nodes.
     """
+
+    if node is None:
+        raise ValueError("Node must not be None")
+
     results = []
     visit(
         node,
@@ -169,6 +185,9 @@ def height(node) -> int:
     :param node: The subtree containing `node`.
     :return: The height of the subtree.
     """
+    if node is None:
+        raise ValueError("Node must not be None")
+
     def _height(n):
         return 0 if is_leaf(n) else 1 + max(_height(c) for c in n.children)
     
@@ -182,6 +201,9 @@ def depth(node) -> int:
     :param node: The node.
     :return: The depth of the node.
     """
+    if node is None:
+        raise ValueError("Node must not be None")
+
     return 0 if is_root(node) else 1 + depth(node.parent)
 
 
@@ -212,8 +234,11 @@ def is_internal(node) -> bool:
     :param node: The node to check.
     :return: True if the node is an internal node, False otherwise.
     """
-    return len(node.children) > 0
 
+    if node is None:
+        raise ValueError("Node must not be None")
+
+    return len(node.children) > 0
 
 
 def breadth_first(node: Any,
@@ -254,6 +279,9 @@ def breadth_first(node: Any,
     """
     if not callable(func):
         raise TypeError("func must be callable")
+    
+    if node is None:
+        raise ValueError("Node must not be None")
 
     if not hasattr(node, "children"):
         raise AttributeError("node must have a 'children' property")
@@ -277,6 +305,10 @@ def breadth_first_undirected(node, max_hops = float("inf")):
     Traverse the tree in breadth-first order. It treats the tree as an
     undirected graph, where each node is connected to its parent and children.
     """
+
+    if node is None:
+        raise ValueError("Node must not be None")
+
     within_hops = []
     q : Deque[Tuple[Any, int]] = deque([(node, 0)])
     visited = []
@@ -400,7 +432,7 @@ def node_to_leaf_paths(node: Any) -> List:
     _find_paths(node, [])
     return paths
 
-def find_path(source: Any, dest: Any) -> Any:
+def find_path(source: Any, dest: Any, bidirectional: bool = False) -> List:
     """
     Find the path from a source node to a destination node.
 
@@ -408,6 +440,24 @@ def find_path(source: Any, dest: Any) -> Any:
     :param dest: The destination node.
     :return: The path from the source node to the destination node.
     """
+    if source is None or dest is None:
+        raise ValueError("Source and destination nodes must not be None")
+
+    def _find(n, p, dst):
+        p.append(n)
+        if n == dst:
+            # return the reversed path
+            return p[::-1]
+        elif is_root(n):
+            return None
+        else:
+            return _find(n.parent, p, dst)
+
+    found_path = _find(dest, [], source)
+    if found_path is None and bidirectional:
+        found_path = _find(source, [], dest)
+    return found_path
+    
 
 def ancestors(node) -> List:
     """
@@ -434,7 +484,6 @@ def ancestors(node) -> List:
     _ancestors(node)
     return anc
 
-
 def path(node: Any) -> List:
     """
     Get the path from the root node to the given node.
@@ -454,7 +503,7 @@ def size(node: Any) -> int:
     """
     return len(descendants(node)) + 1
 
-def lca(node1: Any, node2: Any) -> Any:
+def lca(node1, node2, hash_fn=None) -> Any:
     """
     Find the lowest common ancestor of two nodes.
 
@@ -462,15 +511,24 @@ def lca(node1: Any, node2: Any) -> Any:
     :param node2: The second node.
     :return: The lowest common ancestor of the two nodes.
     """
-    path1 = path(node1)
-    path2 = path(node2)
-    lca_node = None
-    for n1, n2 in zip(path1, path2):
-        if n1 == n2:
-            lca_node = n1
-        else:
-            break
-    return lca_node
+
+    if node1 is None or node2 is None:
+        raise ValueError("Nodes must not be None")
+
+    if hash_fn is None:
+        hash_fn = hash
+
+    ancestors = set()
+    while node1 is not None:
+        ancestors.add(hash_fn(node1))
+        node1 = node1.parent
+    
+    while node2 is not None:
+        if hash_fn(node2) in ancestors:
+            return node2
+        node2 = node2.parent
+    
+    return None
 
 def distance(node1: Any, node2: Any) -> int:
     """
@@ -480,7 +538,13 @@ def distance(node1: Any, node2: Any) -> int:
     :param node2: The second node.
     :return: The distance between the two nodes.
     """
-    return depth(node1) + depth(node2) - 2 * depth(lca(node1, node2))
+    if node1 is None or node2 is None:
+        raise ValueError("Nodes must not be None")
+    
+    lca_node = lca(node1, node2)
+    if lca_node is None:
+        raise ValueError("Nodes must be in the same tree")
+    return depth(node1) + depth(node2) - 2 * depth(lca_node)
 
 def subtree_rooted_at(node: Any, max_lvl: int) -> Any:
     """
@@ -536,10 +600,25 @@ def subtree_centered_at(node: Any, max_hops: int) -> Any:
     
     return _build(root, None)
 
+def average_distance(node: Any) -> float:
+    """
+    Compute the average distance between all pairs of nodes in the subtree
+    rooted at the current node.
+
+    :param node: The node.
+    :return: The average distance between all pairs of nodes.
+    """
+    from itertools import combinations
+    from statistics import mean
+    distances = []
+    nodes = descendants(node) + [node]
+    for n1, n2 in combinations(nodes, 2):
+        distances.append(distance(n1, n2))
+    return mean(distances)
 
 def node_stats(node,
                node_name: Callable = lambda node: node.name,
-               payload: Callable = lambda node: node.payload):
+               payload: Callable = lambda node: node.payload) -> dict:
     """
     Gather statistics about the current node and its subtree.
 
@@ -550,31 +629,30 @@ def node_stats(node,
                     returning the node's `payload` property.
     :return: A dictionary containing the statistics.
     """
-    #TreeNodeApi.check(node)
+
+    from AlgoTree.treenode_api import TreeNodeApi
+    if not TreeNodeApi.is_valid(node):
+        raise ValueError("Node must be a valid TreeNode")
+
     return {
-        "node_info": {
-            "type": str(type(node)),
-            "name": node_name(node),
-            "payload": payload(node),
-            "children": [node_name(n) for n in node.children],
-            "parent": node_name(node.parent) if node.parent else None,
-            "depth": depth(node),
-            "is_root": is_root(node),
-            "is_leaf": is_leaf(node),
-            "is_internal": is_internal(node),
-            "ancestors": [node_name(n) for n in ancestors(node)],
-            "siblings": [node_name(n) for n in siblings(node)],
-            "descendants": [node_name(n) for n in descendants(node)],
-            "path": [node_name(n) for n in path(node)],
-            "root_distance": distance(node.root, node),
-            "leaves_under": [node_name(n) for n in leaves(node)]
-        },
-        "subtree_info": {
-            "leaves": [node_name(n) for n in leaves(node.root)],
-            "height": height(node),
-            "root": node_name(node.root),
-            "size": size(node)
-        }
+        "type": str(type(node)),
+        "name": node_name(node),
+        "payload": payload(node),
+        "children": [node_name(n) for n in node.children],
+        "parent": node_name(node.parent) if node.parent is not None else None,
+        "depth": depth(node),
+        "height": height(node),
+        "is_root": is_root(node),
+        "is_leaf": is_leaf(node),
+        "is_internal": is_internal(node),
+        "ancestors": [node_name(n) for n in ancestors(node)],
+        "siblings": [node_name(n) for n in siblings(node)],
+        "descendants": [node_name(n) for n in descendants(node)],
+        "path": [node_name(n) for n in path(node)],
+        "root_distance": distance(node.root, node),
+        "leaves_under": [node_name(n) for n in leaves(node)],
+        "subtree_size": size(node),
+        "average_distance": average_distance(node)
     }
 
 

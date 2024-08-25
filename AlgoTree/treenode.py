@@ -247,6 +247,26 @@ class TreeNode(dict):
 
         return _convert(self)
     
+    def __eq__(self, other) -> bool:
+        """
+        Check if the current node is equal to the given node.
+
+        :param other: The other node to compare with.
+        :return: True if the nodes are equal, False otherwise.
+        """
+        if not isinstance(other, TreeNode):
+            return False
+        
+        return hash(self) == hash(other)
+    
+    def __hash__(self) -> int:
+        """
+        Compute the hash of the current node.
+
+        :return: The hash of the node.
+        """
+        return id(self)
+    
     def __contains__(self, key) -> bool:
         """
         Check if the node's payload contains the given key.

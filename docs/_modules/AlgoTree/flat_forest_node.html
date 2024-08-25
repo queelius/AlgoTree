@@ -176,6 +176,26 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span>
     
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the unique name of the node.</span>
+
+<span class="sd">        :param name: The new unique name of the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node with name </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">child_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">[</span><span class="n">child_key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">[</span><span class="n">child_key</span><span class="p">][</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">name</span>
+    
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -327,31 +347,6 @@
         <span class="k">return</span> <span class="n">FlatForestNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     
-    <span class="c1"># @property</span>
-    <span class="c1"># def ancestors(self) -&gt; List[&quot;FlatForestNode&quot;]:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Get a list of all ancestors of the node.</span>
-
-    <span class="c1">#     :return: A list of all ancestors of the node.</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     def build(node, nodes):</span>
-    <span class="c1">#         build(node.parent, nodes)</span>
-    <span class="c1">#         nodes.append(node)</span>
-    <span class="c1">#     return build(self, [])</span>
-    
-    <span class="c1"># @property</span>
-    <span class="c1"># def descendents(self) -&gt; List[&quot;FlatForestNode&quot;]:</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Get a list of all nodes in the subtree rooted at the current node.</span>
-
-    <span class="c1">#     :return: A list of all nodes in the subtree.</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     def build(node, nodes):</span>
-    <span class="c1">#         nodes.append(node)</span>
-    <span class="c1">#         for child in node.children:</span>
-    <span class="c1">#             nodes.extend(build(child))</span>
-    <span class="c1">#     return build(self, [])</span>
-
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -388,19 +383,15 @@
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Equality and identity is a tricky question (see Ship of Theseus).</span>
-<span class="sd">        There are many ways to define it for nodes in a tree, e.g., we might</span>
-<span class="sd">        only care about intrinsic equality (like payload), or we might only</span>
-<span class="sd">        care about extrensic equality. Here, we define equality as being in</span>
-<span class="sd">        the same tree and having the same name.</span>
+<span class="sd">        There are many ways to define equality for nodes in a tree. We define</span>
+<span class="sd">        node equality, by default, as path equality. Two nodes are equal if</span>
+<span class="sd">        they have the same path in a tree. Note that we allow equality of nodes</span>
+<span class="sd">        in different trees.</span>
 
 <span class="sd">        :param other: The other node to compare with.</span>
 <span class="sd">        :return: True if the nodes are equal, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">FlatForestNode</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">False</span>
-        
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_key</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_forest</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
     
 <div class="viewcode-block" id="FlatForestNode.node">
 <a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.node">[docs]</a>
@@ -465,7 +456,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">.tree_converter</span> <span class="kn">import</span> <span class="n">TreeConverter</span>
         <span class="k">return</span> <span class="n">TreeConverter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">FlatForestNode</span><span class="p">)</span><span class="o">.</span><span class="n">forest</span></div>
-</div>
+
+    
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the hash of the node.</span>
+
+<span class="sd">        :return: The hash of the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="kn">from</span> <span class="nn">.node_hasher</span> <span class="kn">import</span> <span class="n">NodeHasher</span>
+        <span class="k">return</span> <span class="n">NodeHasher</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 </pre></div>
 
@@ -491,12 +492,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html">FlatForest Notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#conclusion">Conclusion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Understanding Equality in Trees and Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
 </ul>
 

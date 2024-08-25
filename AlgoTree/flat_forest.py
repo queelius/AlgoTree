@@ -125,7 +125,9 @@ class FlatForest(dict):
 
         :return: List of logical root names.
         """
-        parents = [v[FlatForest.PARENT_KEY] for v in self.values() if FlatForest.PARENT_KEY in v and v[FlatForest.PARENT_KEY] is not None]
+        parents = [v[FlatForest.PARENT_KEY] for v in self.values() if
+                   FlatForest.PARENT_KEY in v and v[FlatForest.PARENT_KEY] is not None]
+        #print(parents)
         keys = [k for k in parents if k not in self.keys()]
         if self.DETACHED_KEY not in keys:
             keys.append(self.DETACHED_KEY)
@@ -332,12 +334,22 @@ class FlatForest(dict):
         """
         return self.subtree().add_child(name=name, *args, **kwargs)
     
+    @property
     def parent(self) -> Optional["FlatForestNode"]:
         """
         Get the parent of the preferred root node. This is always None
         since the preferred root node is a root node.
         """
-        return self.subtree().parent
+        return None
+    
+    @property
+    def roots(self) -> List["FlatForestNode"]:
+        """
+        Get the root nodes of the forest.
+
+        :return: The root nodes of the forest.
+        """
+        return [self.subtree(name) for name in self.root_names]
 
     @property
     def preferred_root(self) -> str:
@@ -373,7 +385,8 @@ class FlatForest(dict):
         :param other: The other forest to compare to.
         :return: True if the forests are equal, False otherwise.
         """
-        return isinstance(other, FlatForest) and dict(self) == dict(other)
+        #return isinstance(other, FlatForest) and dict(self) == dict(other)
+        return hash(self.subtree()) == hash(other.subtree())
     
     def nodes(self) -> List["FlatForestNode"]:
         """
@@ -421,20 +434,18 @@ class FlatForest(dict):
 
         :return: The name of the preferred root node.
         """
-        return self.subtree().name
+        return self.preferred_root
     
     @name.setter
     def name(self, name: str) -> None:
         """
         Set the name of the preferred root node.
 
-        TODO: I don't think this will work. Test it.
-
         :param name: The name to set.
         :return: None
         """
         self.subtree().name = name
-        self.preferred_root = name
+        self._preferred_root = name
     
     def node(self, name: str) -> "FlatForestNode":
         """
@@ -495,3 +506,6 @@ class FlatForest(dict):
         :return: A dictionary representation of the forest.
         """
         return deepcopy(self)
+    
+    def __hash__(self) -> int:
+        return hash(self.subtree())

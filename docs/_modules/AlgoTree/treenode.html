@@ -305,6 +305,26 @@
         <span class="k">return</span> <span class="n">_convert</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
     
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the current node is equal to the given node.</span>
+
+<span class="sd">        :param other: The other node to compare with.</span>
+<span class="sd">        :return: True if the nodes are equal, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the hash of the current node.</span>
+
+<span class="sd">        :return: The hash of the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    
     <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the node&#39;s payload contains the given key.</span>
@@ -338,12 +358,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html">FlatForest Notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#conclusion">Conclusion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Understanding Equality in Trees and Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
 </ul>
 

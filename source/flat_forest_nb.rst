@@ -1,5 +1,11 @@
-``FlatForest Notebook``
-=======================
+FlatForest Notebook
+===================
+
+.. contents:: Table of Contents
+    :backlinks: none
+
+Introduction
+------------
 
 In this notebook, we explore the ``FlatForest`` data structure, which is
 a forest structure with a flat (non-nested) data structure. It is a
@@ -11,6 +17,9 @@ which allows us to access the ``dict`` with a node-centric abstraction.
 This allows us to implement tree-like operations in a flat data
 structure. As a proxy, it also modifies the ``dict`` in place, so it is
 a mutable data structure.
+
+Creating a ``FlatForest``
+-------------------------
 
 Let’s load the required libraries and create a ``FlatForest`` data
 structure using the node interface.
@@ -67,6 +76,9 @@ structure using the node interface.
         print()
 
 
+Output
+^^^^^^
+
 .. parsed-literal::
 
     1 {'data': 1} None
@@ -106,17 +118,19 @@ structure using the node interface.
     M {'data': 'Data for M'} C
     
 
+Storing and Transmitting Trees
+------------------------------
 
 It’s easy to regenerate any JSON files that may have been used to
 generate the ``FlatForest`` object. So, JSON is a good format for
 storing and transmitting trees. And, of course, ``FlatForest`` *is* a
-dictionary. Of course, if we store an object that has no serializable
-representation, it cannot be stored in JSON.
+dictionary.
 
-Let’s do something similar, but using the ``FlatForest``\ ’s ``dict`` or
-``json`` constructor. This is more direct and makes it explicit what
-data the tree is providing a *view* of. After all, the ``FlatForest`` is
-itself just a ``dict`` of a particular shape.
+Note that when we load a dictionary, the tree is providing a *view* of it
+in-place. So, if we modify the dictionary, we modify the tree, and vice versa.
+
+Creating a `FlatForest` from a JSON
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: ipython3
 

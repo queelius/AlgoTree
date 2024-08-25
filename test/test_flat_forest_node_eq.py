@@ -56,10 +56,9 @@ class TestFlatTreeNodeEq(unittest.TestCase):
 
         So we just repositioned the current node in the subtree `t.subtree("b")`.
 
-        When we test for equality of a node, we are testing that the current
-        node is the same node in the same (sub)tree. It is not enough that
-        it is the same node, but it must also have the same relationships,
-        i.e., be situated in the same (sub)tree.
+        When we test for equality of a node, there are many ways to define it.
+        By default, we define it by path equality, i.e., the path from the root
+        to the current node.
         """
         self.tree_data = {
             "a": {"parent": None},
@@ -79,10 +78,11 @@ class TestFlatTreeNodeEq(unittest.TestCase):
 
     def test_eq(self):
         root_logical_node_d = self.flat_tree.node("d")
-        self.assertEqual(root_logical_node_d, self.root_b_node_d)
+        self.assertNotEqual(root_logical_node_d, self.root_b_node_d)
         self.assertNotEqual(self.flat_tree.node("b"), self.root_b_node_d)
         self.assertNotEqual(self.flat_tree.node("e"), self.root_b_node_d)
         self.assertNotEqual(self.flat_tree.node("b"), self.flat_tree.node("d"))
         self.assertNotEqual(self.flat_tree.node("b"), self.flat_tree.node("e"))
         self.assertNotEqual(self.flat_tree.node("d"), self.flat_tree.node("e"))
         self.assertEqual(self.flat_tree.subtree("b").node("d"), self.root_b_node_d)
+        self.assertEqual(self.flat_tree.subtree("b").node("i"), self.flat_tree.subtree("b").node("i"))

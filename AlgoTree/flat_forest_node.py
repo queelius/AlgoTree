@@ -136,6 +136,26 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
         return self._key
     
+    @name.setter
+    def name(self, name: str) -> None:
+        """
+        Set the unique name of the node.
+
+        :param name: The new unique name of the node.
+        """
+
+        if name == self._key:
+            return
+
+        if name in self._forest.keys():
+            raise ValueError(f"Node with name {name} already exists")
+
+        for child_key in self._forest.keys():
+            if self._forest[child_key].get(FlatForest.PARENT_KEY, None) == self._key:
+                self._forest[child_key][FlatForest.PARENT_KEY] = name
+        self._forest[name] = self._forest.pop(self._key)
+        self._key = name
+    
     @property
     def root(self) -> "FlatForestNode":
         """
@@ -281,31 +301,6 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
         return FlatForestNode(name=name, parent=self, *args, **kwargs)
     
-    # @property
-    # def ancestors(self) -> List["FlatForestNode"]:
-    #     """
-    #     Get a list of all ancestors of the node.
-
-    #     :return: A list of all ancestors of the node.
-    #     """
-    #     def build(node, nodes):
-    #         build(node.parent, nodes)
-    #         nodes.append(node)
-    #     return build(self, [])
-    
-    # @property
-    # def descendents(self) -> List["FlatForestNode"]:
-    #     """
-    #     Get a list of all nodes in the subtree rooted at the current node.
-
-    #     :return: A list of all nodes in the subtree.
-    #     """
-    #     def build(node, nodes):
-    #         nodes.append(node)
-    #         for child in node.children:
-    #             nodes.extend(build(child))
-    #     return build(self, [])
-
     @property
     def children(self) -> List["FlatForestNode"]:
         """
@@ -342,19 +337,15 @@ class FlatForestNode(collections.abc.MutableMapping):
 
     def __eq__(self, other):
         """
-        Equality and identity is a tricky question (see Ship of Theseus).
-        There are many ways to define it for nodes in a tree, e.g., we might
-        only care about intrinsic equality (like payload), or we might only
-        care about extrensic equality. Here, we define equality as being in
-        the same tree and having the same name.
+        There are many ways to define equality for nodes in a tree. We define
+        node equality, by default, as path equality. Two nodes are equal if
+        they have the same path in a tree. Note that we allow equality of nodes
+        in different trees.
 
         :param other: The other node to compare with.
         :return: True if the nodes are equal, False otherwise.
         """
-        if not isinstance(other, FlatForestNode):
-            return False
-        
-        return self._key == other._key and self._forest == other._forest
+        return hash(self) == hash(other)
     
     def node(self, name: str) -> "FlatForestNode":
         """
@@ -408,3 +399,13 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
         from .tree_converter import TreeConverter
         return TreeConverter.convert(self, FlatForestNode).forest
+    
+    def __hash__(self) -> int:
+        """
+        Get the hash of the node.
+
+        :return: The hash of the node.
+        """
+        
+        from .node_hasher import NodeHasher
+        return NodeHasher.path(self)
