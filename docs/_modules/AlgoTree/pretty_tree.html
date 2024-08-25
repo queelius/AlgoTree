@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlgoTree.pretty_tree &#8212; AlgoTree 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../_static/documentation_options.js?v=486e5634"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=6a14807c"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
-
   
-  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
   
@@ -34,9 +33,7 @@
 
 <span class="c1">#from AlgoTree.treenode_api import TreeNodeApi</span>
 
-<div class="viewcode-block" id="PrettyTree">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.PrettyTree">[docs]</a>
-<span class="k">class</span> <span class="nc">PrettyTree</span><span class="p">:</span>
+<div class="viewcode-block" id="PrettyTree"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.PrettyTree">[docs]</a><span class="k">class</span> <span class="nc">PrettyTree</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class to print a tree in a more readable way.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -79,9 +76,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">marked_nodes</span> <span class="o">=</span> <span class="n">mark</span> <span class="k">if</span> <span class="n">mark</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">=</span> <span class="n">indent</span>
 
-<div class="viewcode-block" id="PrettyTree.mark">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.PrettyTree.mark">[docs]</a>
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="PrettyTree.mark"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.PrettyTree.mark">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">mark</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">markers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the marker for a node based on the hash of the node name.</span>
@@ -90,7 +85,6 @@
 <span class="sd">        :return: The marker for the node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">markers</span><span class="p">[</span><span class="nb">hash</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">markers</span><span class="p">)]</span></div>
-
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -148,10 +142,7 @@
         <span class="k">return</span> <span class="n">_build</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">set</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span></div>
 
 
-
-<div class="viewcode-block" id="pretty_tree">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.pretty_tree">[docs]</a>
-<span class="k">def</span> <span class="nf">pretty_tree</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="pretty_tree"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.pretty_tree.pretty_tree">[docs]</a><span class="k">def</span> <span class="nf">pretty_tree</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts a tree to a pretty string representation.</span>
 
@@ -159,7 +150,6 @@
 <span class="sd">    :return: A pretty string representation of the tree.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">PrettyTree</span><span class="p">()(</span><span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-
 </pre></div>
 
           </div>
@@ -184,12 +174,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html">FlatForest Notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html#conclusion">Conclusion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Understanding Equality in Trees and Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../jt.html">jt Command-Line Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
 </ul>
 
@@ -202,7 +190,7 @@
   </ul></li>
 </ul>
 </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -210,7 +198,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 
 
@@ -225,11 +213,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2024, Alex Towell.
+      &copy;2024, Alex Towell.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 
