@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Identity and Equality &#8212; AlgoTree 0.8.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AlgoTree" href="modules.html" />
+    <link rel="prev" title="Expression Trees and Evaluation" href="expr_trees_nb.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="identity-and-equality">
+<h1>Identity and Equality<a class="headerlink" href="#identity-and-equality" title="Link to this heading">¶</a></h1>
+<p>Identity and equality are foundational concepts that help us reason about relationships between objects in both philosophy and computer science. While identity implies strict sameness, equality often refers to contextual similarities between objects. In this document, we will define identity in a strict sense and then explore different ways to define and use equality.</p>
+<p>### Identity: The Strict Definition</p>
+<p>In philosophy, <strong>Leibniz’s Law</strong> (or the <em>Indiscernibility of Identicals</em>) states that two objects, <cite>x</cite> and <cite>y</cite>, are identical if and only if for all predicates <cite>p</cite>, <cite>p(x) = p(y)</cite>. In other words, two objects are identical if every possible property holds equally for both objects. This is a very strong form of identity, implying that there is no possible distinction between <cite>x</cite> and <cite>y</cite>.</p>
+<p>In computer science, this strict definition of identity corresponds to the concept of <strong>object identity</strong>. Two objects are identical if they are the same instance in memory, which can be checked using the <cite>id()</cite> function in Python. This is the only situation in which we can guarantee that every predicate will yield the same result for both objects, as their memory addresses are the same.</p>
+<p><strong>Example:</strong> In Python, two variables are considered identical if they point to the same object in memory:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">x</span> <span class="pre">=</span> <span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3]</span>
+<span class="pre">y</span> <span class="pre">=</span> <span class="pre">x</span>
+<span class="pre">assert</span> <span class="pre">id(x)</span> <span class="pre">==</span> <span class="pre">id(y)</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">x</span> <span class="pre">and</span> <span class="pre">y</span> <span class="pre">are</span> <span class="pre">identical</span>
+<span class="pre">`</span></code></p>
+<p>However, strict identity is often not what we are interested in when reasoning about data structures or values. In most cases, we want to compare objects based on their properties or behaviors, rather than their memory addresses. This leads us to the concept of <strong>equality</strong>, which can be defined in various ways depending on the context.</p>
+<section id="equality-intrinsic-and-extrinsic-properties">
+<h2>Equality: Intrinsic and Extrinsic Properties<a class="headerlink" href="#equality-intrinsic-and-extrinsic-properties" title="Link to this heading">¶</a></h2>
+<p>When defining equality, we must consider whether we are comparing the <em>intrinsic</em> properties of an object or its <em>extrinsic</em> properties:</p>
+<ol class="arabic simple">
+<li><p><strong>Intrinsic Properties:</strong>: These are the properties that belong to the object itself, independent of its relationships with other objects. For example, the intrinsic properties of an object might include its name, value, or other internal attributes.</p></li>
+<li><p><strong>Extrinsic Properties:</strong>: These are properties that depend on the object’s relationships to other objects or its environment. For example, the extrinsic properties of an object might include its position within a structure, its relationships to other objects, or its role within a larger context.</p></li>
+</ol>
+</section>
+<section id="equality-in-trees-and-nodes">
+<h2>Equality in Trees and Nodes<a class="headerlink" href="#equality-in-trees-and-nodes" title="Link to this heading">¶</a></h2>
+<p>Now that we have discussed identity and equality at a high level, we can turn our attention to how these concepts apply specifically to trees and nodes. Trees, being hierarchical data structures, bring particular concerns about how we compare nodes and entire tree structures. Equality can be defined based on both intrinsic and extrinsic properties in this context.</p>
+<ol class="arabic">
+<li><p><strong>Value Equality (Intrinsic):</strong></p>
+<ul>
+<li><p><strong>Definition:</strong> Two nodes are considered equal if they have the same intrinsic value, even if they are different instances in memory.</p></li>
+<li><p><strong>Example:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">x</span> <span class="pre">=</span> <span class="pre">Node('A',</span> <span class="pre">payload=10)</span>
+<span class="pre">y</span> <span class="pre">=</span> <span class="pre">Node('A',</span> <span class="pre">payload=10)</span>
+<span class="pre">assert</span> <span class="pre">x</span> <span class="pre">==</span> <span class="pre">y</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">x</span> <span class="pre">and</span> <span class="pre">y</span> <span class="pre">have</span> <span class="pre">equal</span> <span class="pre">values,</span> <span class="pre">even</span> <span class="pre">though</span> <span class="pre">they</span> <span class="pre">are</span> <span class="pre">different</span> <span class="pre">objects</span>
+<span class="pre">`</span></code></p>
+</li>
+</ul>
+</li>
+<li><p><strong>Structural Equality (Mixed):</strong></p>
+<ul>
+<li><p><strong>Definition:</strong> Two nodes or trees are equal if they have the same structure, considering both intrinsic and extrinsic properties. For example, two nodes are structurally equal if they have the same arrangement of children and corresponding values.</p></li>
+<li><p><strong>Example:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">node1</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">node2</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">node1.add_child(Node('B'))</span>
+<span class="pre">node2.add_child(Node('B'))</span>
+<span class="pre">assert</span> <span class="pre">node1</span> <span class="pre">==</span> <span class="pre">node2</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">assuming</span> <span class="pre">equality</span> <span class="pre">checks</span> <span class="pre">structure</span> <span class="pre">and</span> <span class="pre">data</span>
+<span class="pre">`</span></code></p>
+</li>
+</ul>
+</li>
+<li><p><strong>Name Equality (Intrinsic):</strong></p>
+<ul class="simple">
+<li><p><strong>Definition:</strong> Two nodes are equal if they share the same name or identifier. This focuses only on a specific intrinsic attribute, abstracting away other properties.</p></li>
+<li><p><strong>Example:</strong>
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">node1</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">node2</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">assert</span> <span class="pre">node1.name</span> <span class="pre">==</span> <span class="pre">node2.name</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">same</span> <span class="pre">name</span>
+<span class="pre">`</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Payload Equality (Intrinsic):</strong></p>
+<ul>
+<li><p><strong>Definition:</strong> Two nodes are equal if they contain the same payload, even if their structure or position in the tree differs.</p></li>
+<li><p><strong>Example:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">node1</span> <span class="pre">=</span> <span class="pre">Node('A',</span> <span class="pre">payload=10)</span>
+<span class="pre">node2</span> <span class="pre">=</span> <span class="pre">Node('B',</span> <span class="pre">payload=10)</span>
+<span class="pre">assert</span> <span class="pre">node1.payload</span> <span class="pre">==</span> <span class="pre">node2.payload</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">same</span> <span class="pre">payload</span>
+<span class="pre">`</span></code></p>
+</li>
+</ul>
+</li>
+<li><p><strong>Positional Equality (Extrinsic):</strong>
+- <strong>Definition:</strong> Two nodes are equal if they occupy the same position in isomorphic trees, regardless of their names or payloads.
+- <strong>Example:</strong> Two nodes in corresponding positions in two structurally identical trees would be considered equal under positional equality.</p></li>
+<li><p><strong>Tree Equality (Mixed):</strong></p>
+<ul>
+<li><p><strong>Definition:</strong> Two trees are equal if they have the same structure and the same data at each corresponding node, considering both intrinsic and extrinsic properties.</p></li>
+<li><p><strong>Example:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">tree1</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">tree2</span> <span class="pre">=</span> <span class="pre">Node('A')</span>
+<span class="pre">tree1.add_child(Node('B'))</span>
+<span class="pre">tree2.add_child(Node('B'))</span>
+<span class="pre">assert</span> <span class="pre">tree1</span> <span class="pre">==</span> <span class="pre">tree2</span>&#160; <span class="pre">#</span> <span class="pre">True,</span> <span class="pre">assuming</span> <span class="pre">equality</span> <span class="pre">checks</span> <span class="pre">both</span> <span class="pre">structure</span> <span class="pre">and</span> <span class="pre">data</span>
+<span class="pre">`</span></code></p>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="philosophical-perspective-the-ship-of-theseus">
+<h2>Philosophical Perspective: The Ship of Theseus<a class="headerlink" href="#philosophical-perspective-the-ship-of-theseus" title="Link to this heading">¶</a></h2>
+<p>The <strong>Ship of Theseus</strong> is a famous philosophical thought experiment that raises questions about identity and persistence over time. The thought experiment asks: if all the parts of a ship are gradually replaced, piece by piece, is it still the same ship? This highlights the tension between identity as a matter of intrinsic properties (the materials of the ship) versus extrinsic properties (the ship as a whole and its continuity over time).</p>
+<p>In the context of trees and nodes, this thought experiment reminds us that identity is often a convention and can depend on what we consider intrinsic or extrinsic. For instance, a node might be considered the “same” if it has the same name and payload, even if its position in the tree changes. Alternatively, a node’s identity might be tied to its position within the tree, and changing that position might alter its identity.</p>
+<p>### Conclusion</p>
+<p>Identity and equality are distinct but related concepts. <strong>Identity</strong> in its strictest sense, as defined by Leibniz’s Law, implies complete indistinguishability and is typically realized in computer science through object identity (i.e., the <cite>id()</cite> function). However, in practice, we often work with different forms of <strong>equality</strong>, which allow us to compare objects based on specific properties or criteria.</p>
+<p>By distinguishing between <strong>intrinsic</strong> and <strong>extrinsic</strong> properties, we can better define equality in context. Whether we care about value, structure, or position, choosing the right form of equality for our problem is crucial to building correct and efficient systems, particularly when working with tree structures.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#conclusion">Conclusion</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Identity and Equality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#equality-intrinsic-and-extrinsic-properties">Equality: Intrinsic and Extrinsic Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#equality-in-trees-and-nodes">Equality in Trees and Nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#philosophical-perspective-the-ship-of-theseus">Philosophical Perspective: The Ship of Theseus</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="expr_trees_nb.html" title="previous chapter">Expression Trees and Evaluation</a></li>
+      <li>Next: <a href="modules.html" title="next chapter">AlgoTree</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/identity.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>TreeNode &#8212; AlgoTree 0.8.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AlgoTree: Comprehensive Tutorial" href="tutorial.html" />
+    <link rel="prev" title="FlatForest" href="flat_forest.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="treenode">
+<h1>TreeNode<a class="headerlink" href="#treenode" title="Link to this heading">¶</a></h1>
+<p>The <cite>TreeNode</cite> class is a recursive representation of a tree.</p>
+<section id="treenode-structure">
+<h2>TreeNode Structure<a class="headerlink" href="#treenode-structure" title="Link to this heading">¶</a></h2>
+<p>Each node is a <cite>TreeNode</cite> object.</p>
+<p>Example Structure:</p>
+<p>We can import JSON data into a <cite>TreeNode</cite> object as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TreeNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;root_value&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;child1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;child1_value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;child1_1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;child1_1_value&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;child2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;child2_value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;child2_1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;child2_1_value&quot;</span>
+          <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">})</span>
+</pre></div>
+</div>
+<p>Where:</p>
+<ul class="simple">
+<li><p><cite>name</cite> (optional) is a key that maps to the name of the node. If not
+provided, the name defaults to a UUID.</p></li>
+<li><p><cite>children</cite> is a list of child nodes, each of which is a <cite>TreeNode</cite> object.</p></li>
+<li><p>Other key-value pairs can be stored in the node as needed, which in total
+form the <cite>payload</cite> of the node, which can be accessed using the <cite>payload</cite> property.</p></li>
+</ul>
+</section>
+<section id="attributes-and-methods">
+<h2>Attributes and Methods<a class="headerlink" href="#attributes-and-methods" title="Link to this heading">¶</a></h2>
+<section id="initialization">
+<h3>Initialization<a class="headerlink" href="#initialization" title="Link to this heading">¶</a></h3>
+<p>Each <cite>TreeNode</cite> can be initialized with an optional parent, name, and additional key-value pairs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;TreeNode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">payload</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="c1"># Initialization code here</span>
+</pre></div>
+</div>
+<p>If the <cite>payload</cite> argument is provided, that is used as payload. However, we
+also allow for the payload to be specified by arguments and key-word arguments,
+<cite>*args</cite> and <cite>**kwargs</cite>. If the <cite>name</cite> argument is provided, it is stored as the
+name of the node, otherwise a UUID is generated. If the <cite>parent</cite> argument is
+provided, the node is added as a child of the parent node.</p>
+</section>
+<section id="properties">
+<h3>Properties<a class="headerlink" href="#properties" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><cite>name</cite>: Returns the name of the node.</p></li>
+<li><p><cite>children</cite>: Returns the list of children of the node.</p></li>
+<li><p><cite>payload</cite>: Returns the data stored in the node.</p></li>
+</ul>
+</section>
+<section id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><cite>node(name: str) -&gt; ‘TreeNode’</cite>: Retrieves the node with the given name.</p></li>
+<li><p><cite>add_child(name: Optional[str] = None, payload: Optional[Any], *args, **kwargs) -&gt; ‘TreeNode’</cite>: Adds a child node to the tree.</p></li>
+<li><p><cite>root</cite>: Returns the root of the tree.</p></li>
+</ul>
+</section>
+</section>
+<section id="tree-api">
+<h2>Tree API<a class="headerlink" href="#tree-api" title="Link to this heading">¶</a></h2>
+<p>The <cite>TreeNode</cite> class also provides a tree API that allows manipulation and
+construction of tree. Unlike the <cite>FlatForestNode</cite> class, it is not backed by
+a dictionary. It is a recursive representation of a tree that has fewer
+restrictions on what kind of objects can be stored in, for instance, the
+<cite>payload</cite>.</p>
+</section>
+<section id="example-usage">
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;root_value&#39;</span><span class="p">)</span>
+<span class="n">child1</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;child1&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;child1_value&#39;</span><span class="p">)</span>
+<span class="n">child1_1</span> <span class="o">=</span> <span class="n">child1</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;child1_1&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;child1_1_value&#39;</span><span class="p">)</span>
+<span class="n">child2</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;child2&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;child2_value&#39;</span><span class="p">)</span>
+<span class="n">child2_1</span> <span class="o">=</span> <span class="n">child2</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;child2_1&#39;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s1">&#39;child2_1_value&#39;</span><span class="p">)</span>
+
+<span class="n">other</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;other&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;other_value&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">child1_1</span><span class="p">)</span>
+<span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;other2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;other2_value&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s1">&#39;child1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># Output: &#39;child1_value&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">child1_1</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>         <span class="c1"># Output: &#39;root&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TreeNode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#treenode-structure">TreeNode Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#attributes-and-methods">Attributes and Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-api">Tree API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#conclusion">Conclusion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="flat_forest.html" title="previous chapter">FlatForest</a></li>
+      <li>Next: <a href="tutorial.html" title="next chapter">AlgoTree: Comprehensive Tutorial</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/treenode.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

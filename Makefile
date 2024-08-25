@@ -32,8 +32,8 @@ clean:
 
 # Generate documentation
 docs:
-	sphinx-apidoc -o docs/source AlgoTree
-	sphinx-build -b html docs/source docs/build
+	sphinx-apidoc -o source AlgoTree
+	sphinx-build -b html source docs
 
 # Run test coverage
 coverage:
