@@ -26,11 +26,12 @@ yield the same result for both objects, as their memory addresses are the same.
 **Example:** In Python, two variables are considered identical if they point to
 the same object in memory:
   
-```python
-x = [1, 2, 3]
-y = x
-assert id(x) == id(y)  # True, x and y are identical
-```
+.. code-block:: python
+
+   x = [1, 2, 3]
+   y = x
+   assert id(x) == id(y)  # True, x and y are identical
+
 
 However, strict identity is often not what we are interested in when reasoning
 about data structures or values. In most cases, we want to compare objects based
