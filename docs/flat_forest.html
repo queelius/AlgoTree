@@ -1,45 +1,132 @@
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<html lang="en" data-content_root="./">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlatForest &mdash; AlgoTree 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
-    <title>FlatForest &#8212; AlgoTree 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=486e5634"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=486e5634"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="TreeNode" href="treenode.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
 
-  
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
 
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
           
+          
+          <a href="index.html" class="icon icon-home">
+            AlgoTree
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FlatForest</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tree-data-format">Tree Data Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#theoretical-background">Theoretical Background</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#proxy-objects-and-views">Proxy Objects and Views</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#flatforestnode-proxies"><cite>FlatForestNode</cite> Proxies</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#root-node">Root Node</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flatforest-class"><cite>FlatForest</cite> Class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-a-flattree">Initializing a FlatTree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualizing-the-tree">Visualizing the Tree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#text-visualization">Text Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#manipulating-the-tree">Manipulating the Tree</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#adding-a-child-node">Adding a Child Node</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#viewing-sub-trees">Viewing Sub-Trees</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#validating-the-tree">Validating the Tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#detaching-and-purging-nodes">Detaching and Purging Nodes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#purging-detached-nodes">Purging Detached Nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#handling-errors">Handling Errors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#invalid-parent-reference">Invalid Parent Reference</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cycle-detection">Cycle Detection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-conversions">Tree Conversions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#converting-to-treenode">Converting to <cite>TreeNode</cite></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
+</ul>
 
-          <div class="body" role="main">
-            
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AlgoTree</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FlatForest</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/flat_forest.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="flatforest">
-<h1>FlatForest<a class="headerlink" href="#flatforest" title="Link to this heading">¶</a></h1>
+<h1>FlatForest<a class="headerlink" href="#flatforest" title="Link to this heading"></a></h1>
 <p>The <cite>FlatForest</cite> class represents a forest (set of tree-like objects) using a
 flat dictionary structure where each node has a unique key and an optional
 ‘parent’ key to reference its parent node. This class provides a view adapter
 for dict/JSON data of a particular format.</p>
 <section id="tree-data-format">
-<h2>Tree Data Format<a class="headerlink" href="#tree-data-format" title="Link to this heading">¶</a></h2>
+<h2>Tree Data Format<a class="headerlink" href="#tree-data-format" title="Link to this heading"></a></h2>
 <p>A <cite>FlatForest</cite> is represented using a dictionary, where each key is a unique
 node identifier, and the value is another dictionary containing node data and
 an optional ‘parent’ key indicating the parent node.</p>
@@ -86,7 +173,7 @@ an optional ‘parent’ key indicating the parent node.</p>
 </div>
 </section>
 <section id="theoretical-background">
-<h2>Theoretical Background<a class="headerlink" href="#theoretical-background" title="Link to this heading">¶</a></h2>
+<h2>Theoretical Background<a class="headerlink" href="#theoretical-background" title="Link to this heading"></a></h2>
 <p>Trees are hierarchical data structures consisting of nodes, where
 each node has a parent and potentially many children. Trees are used in various
 domains such as databases, file systems, and network routing. They are
@@ -98,7 +185,7 @@ particularly useful for representing data with a nested or hierarchical nature.<
 <li><p><strong>Leaf:</strong> A node with no children.</p></li>
 </ul>
 <section id="proxy-objects-and-views">
-<h3>Proxy Objects and Views<a class="headerlink" href="#proxy-objects-and-views" title="Link to this heading">¶</a></h3>
+<h3>Proxy Objects and Views<a class="headerlink" href="#proxy-objects-and-views" title="Link to this heading"></a></h3>
 <p>In computer science, a proxy object is an object that acts as an intermediary
 for another object. The proxy can control access to the original object,
 providing additional functionality such as validation, lazy loading, or caching.
@@ -107,7 +194,7 @@ This is a common design pattern used to create a level of indirection.</p>
 or representation of the underlying data. For example, a view can present a flat
 dictionary as a hierarchical tree structure.</p>
 <section id="flatforestnode-proxies">
-<h4><cite>FlatForestNode</cite> Proxies<a class="headerlink" href="#flatforestnode-proxies" title="Link to this heading">¶</a></h4>
+<h4><cite>FlatForestNode</cite> Proxies<a class="headerlink" href="#flatforestnode-proxies" title="Link to this heading"></a></h4>
 <p>The <cite>FlatForestNode</cite> is a proxy class for providing a node-centric view of <cite>FlatForest</cite>
 objects. It allows you to treat nodes as first-class objects while maintaining
 the underlying flat dictionary structure. You do not even need to be aware
@@ -123,7 +210,7 @@ be accessed if needed using the <cite>forest</cite> attribute.</p>
 </section>
 </section>
 <section id="root-node">
-<h3>Root Node<a class="headerlink" href="#root-node" title="Link to this heading">¶</a></h3>
+<h3>Root Node<a class="headerlink" href="#root-node" title="Link to this heading"></a></h3>
 <p>In <cite>FlatForest</cite>, there can be multiple roots (multiple trees). These roots are
 the nodes that have no parent. They can be accessed with the <cite>roots</cite> and
 <cite>root_names</cite> attributes.</p>
@@ -136,11 +223,11 @@ for all nodes in the forest.</p>
 </section>
 </section>
 <section id="flatforest-class">
-<h2><cite>FlatForest</cite> Class<a class="headerlink" href="#flatforest-class" title="Link to this heading">¶</a></h2>
+<h2><cite>FlatForest</cite> Class<a class="headerlink" href="#flatforest-class" title="Link to this heading"></a></h2>
 <p>The <cite>FlatForest</cite> class provides a flexible way to work with tree structures
 using a flat dictionary format. It offers various methods for manipulating and visualizing trees.</p>
 <section id="initializing-a-flattree">
-<h3>Initializing a FlatTree<a class="headerlink" href="#initializing-a-flattree" title="Link to this heading">¶</a></h3>
+<h3>Initializing a FlatTree<a class="headerlink" href="#initializing-a-flattree" title="Link to this heading"></a></h3>
 <p>You can initialize a <cite>FlatForest</cite> with a dictionary representing the tree data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">AlgoTree</span>
 
@@ -196,10 +283,10 @@ using a flat dictionary format. It offers various methods for manipulating and v
 </div>
 </section>
 <section id="visualizing-the-tree">
-<h3>Visualizing the Tree<a class="headerlink" href="#visualizing-the-tree" title="Link to this heading">¶</a></h3>
+<h3>Visualizing the Tree<a class="headerlink" href="#visualizing-the-tree" title="Link to this heading"></a></h3>
 <p>You can visualize the tree using the <cite>PrettyTree</cite> class.</p>
 <section id="text-visualization">
-<h4>Text Visualization<a class="headerlink" href="#text-visualization" title="Link to this heading">¶</a></h4>
+<h4>Text Visualization<a class="headerlink" href="#text-visualization" title="Link to this heading"></a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">AlgoTree.pretty_print</span> <span class="kn">import</span> <span class="n">pretty_print</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pretty_print</span><span class="p">(</span><span class="n">tree</span><span class="p">))</span>
 </pre></div>
@@ -215,9 +302,9 @@ using a flat dictionary format. It offers various methods for manipulating and v
 </section>
 </section>
 <section id="manipulating-the-tree">
-<h3>Manipulating the Tree<a class="headerlink" href="#manipulating-the-tree" title="Link to this heading">¶</a></h3>
+<h3>Manipulating the Tree<a class="headerlink" href="#manipulating-the-tree" title="Link to this heading"></a></h3>
 <section id="adding-a-child-node">
-<h4>Adding a Child Node<a class="headerlink" href="#adding-a-child-node" title="Link to this heading">¶</a></h4>
+<h4>Adding a Child Node<a class="headerlink" href="#adding-a-child-node" title="Link to this heading"></a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">child</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;node36&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;Some data for node36&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
 </pre></div>
@@ -229,7 +316,7 @@ using a flat dictionary format. It offers various methods for manipulating and v
 </section>
 </section>
 <section id="viewing-sub-trees">
-<h3>Viewing Sub-Trees<a class="headerlink" href="#viewing-sub-trees" title="Link to this heading">¶</a></h3>
+<h3>Viewing Sub-Trees<a class="headerlink" href="#viewing-sub-trees" title="Link to this heading"></a></h3>
 <p>You can work with sub-trees rooted at any node.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">pretty_tree</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="s2">&quot;node3&quot;</span><span class="p">)))</span>
 </pre></div>
@@ -242,28 +329,28 @@ using a flat dictionary format. It offers various methods for manipulating and v
 </div>
 </section>
 <section id="validating-the-tree">
-<h3>Validating the Tree<a class="headerlink" href="#validating-the-tree" title="Link to this heading">¶</a></h3>
+<h3>Validating the Tree<a class="headerlink" href="#validating-the-tree" title="Link to this heading"></a></h3>
 <p>Ensures that all keys are unique and that parent references are valid.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">check_valid</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
 <section id="detaching-and-purging-nodes">
-<h3>Detaching and Purging Nodes<a class="headerlink" href="#detaching-and-purging-nodes" title="Link to this heading">¶</a></h3>
+<h3>Detaching and Purging Nodes<a class="headerlink" href="#detaching-and-purging-nodes" title="Link to this heading"></a></h3>
 <p>You can detach nodes, which sets their parent to a special key indicating they
 are detached, and purge detached nodes to remove them from the underlying
 dictionary.</p>
 <section id="purging-detached-nodes">
-<h4>Purging Detached Nodes<a class="headerlink" href="#purging-detached-nodes" title="Link to this heading">¶</a></h4>
+<h4>Purging Detached Nodes<a class="headerlink" href="#purging-detached-nodes" title="Link to this heading"></a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span><span class="o">.</span><span class="n">purge</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
 </section>
 <section id="handling-errors">
-<h3>Handling Errors<a class="headerlink" href="#handling-errors" title="Link to this heading">¶</a></h3>
+<h3>Handling Errors<a class="headerlink" href="#handling-errors" title="Link to this heading"></a></h3>
 <section id="invalid-parent-reference">
-<h4>Invalid Parent Reference<a class="headerlink" href="#invalid-parent-reference" title="Link to this heading">¶</a></h4>
+<h4>Invalid Parent Reference<a class="headerlink" href="#invalid-parent-reference" title="Link to this heading"></a></h4>
 <p>Attempting to create a tree with an invalid parent reference will raise an error.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">invalid_tree</span> <span class="o">=</span> <span class="n">AlgoTree</span><span class="o">.</span><span class="n">FlatForest</span><span class="p">({</span>
@@ -282,7 +369,7 @@ dictionary.</p>
 </div>
 </section>
 <section id="cycle-detection">
-<h4>Cycle Detection<a class="headerlink" href="#cycle-detection" title="Link to this heading">¶</a></h4>
+<h4>Cycle Detection<a class="headerlink" href="#cycle-detection" title="Link to this heading"></a></h4>
 <p>The <cite>FlatForest</cite> class checks for cycles in the forest and raises an error if a cycle is detected.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="n">cycle_tree_data</span> <span class="o">=</span> <span class="p">{</span>
@@ -306,12 +393,12 @@ dictionary.</p>
 </section>
 </section>
 <section id="tree-conversions">
-<h2>Tree Conversions<a class="headerlink" href="#tree-conversions" title="Link to this heading">¶</a></h2>
+<h2>Tree Conversions<a class="headerlink" href="#tree-conversions" title="Link to this heading"></a></h2>
 <p>You can convert between different tree representations, as long as they
 expose an API like <cite>children</cite> property or <cite>parent</cite>. We provide a
 <cite>TreeConverter</cite> class to facilitate these conversions.</p>
 <section id="converting-to-treenode">
-<h3>Converting to <cite>TreeNode</cite><a class="headerlink" href="#converting-to-treenode" title="Link to this heading">¶</a></h3>
+<h3>Converting to <cite>TreeNode</cite><a class="headerlink" href="#converting-to-treenode" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">AlgoTree.tree_converter</span> <span class="k">as</span> <span class="nn">tc</span>
 <span class="n">new_tree</span> <span class="o">=</span> <span class="n">tc</span><span class="o">.</span><span class="n">TreeConverter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="n">AlgoTree</span><span class="o">.</span><span class="n">TreeNode</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">new_tree</span><span class="p">))</span>
@@ -324,7 +411,7 @@ expose an API like <cite>children</cite> property or <cite>parent</cite>. We pro
 </section>
 </section>
 <section id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h2>
 <p>The <cite>FlatForest</cite> class provides a flexible and powerful way to represent and
 manipulate tree structures using a flat dictionary format. With methods for
 adding, detaching, pruning, and visualizing nodes, <cite>FlatForest</cite> can handle
@@ -336,89 +423,34 @@ advanced usage of the class, demonstrating its capabilities and versatility.</p>
 </section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="treenode.html" class="btn btn-neutral float-right" title="TreeNode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Towell.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">AlgoTree</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">FlatForest</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#tree-data-format">Tree Data Format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#theoretical-background">Theoretical Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#flatforest-class"><cite>FlatForest</cite> Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tree-conversions">Tree Conversions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#self-evaluating-trees">Self-Evaluating Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html#conclusion">Conclusion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="identity.html">Identity and Equality</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
-      <li>Next: <a href="treenode.html" title="next chapter">TreeNode</a></li>
-  </ul></li>
-</ul>
-</div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &#169;2024, Alex Towell.
-      
-      |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
-      
-      |
-      <a href="_sources/flat_forest.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

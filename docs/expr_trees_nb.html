@@ -1,39 +1,102 @@
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<html lang="en" data-content_root="./">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expression Trees and Evaluation &mdash; AlgoTree 0.8.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
-    <title>Expression Trees and Evaluation &#8212; AlgoTree 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=486e5634"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=486e5634"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Identity and Equality" href="identity.html" />
-    <link rel="prev" title="FlatForest Notebook" href="flat_forest_nb.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
+    <link rel="prev" title="FlatForest Notebook" href="flat_forest_nb.html" /> 
+</head>
 
-  
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
 
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
           
+          
+          <a href="index.html" class="icon icon-home">
+            AlgoTree
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Expression Trees and Evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#visualizing-the-tree-structure">Visualizing the Tree Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-order-traversal">Post-order Traversal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#expression-tree-evaluator">Expression Tree Evaluator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#self-evaluating-trees">Self-Evaluating Trees</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#converting-to-flatforest">Converting to FlatForest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-undefined-variables">Handling Undefined Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#post-order-vs-pre-order-traversal">Post-order vs. Pre-order Traversal</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="identity.html">Identity and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
+</ul>
 
-          <div class="body" role="main">
-            
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AlgoTree</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Expression Trees and Evaluation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/expr_trees_nb.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="expression-trees-and-evaluation">
-<h1>Expression Trees and Evaluation<a class="headerlink" href="#expression-trees-and-evaluation" title="Link to this heading">¶</a></h1>
+<h1>Expression Trees and Evaluation<a class="headerlink" href="#expression-trees-and-evaluation" title="Link to this heading"></a></h1>
 <p>We are going to explore the idea of expression trees and how they relate
 to our tree structures, namely <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code>, and to evaluate the
 expression trees by rewriting the nodes in post-order traversal.</p>
@@ -192,7 +255,7 @@ expression trees by rewriting the nodes in post-order traversal.</p>
 </pre></div>
 </div>
 <section id="visualizing-the-tree-structure">
-<h2>Visualizing the Tree Structure<a class="headerlink" href="#visualizing-the-tree-structure" title="Link to this heading">¶</a></h2>
+<h2>Visualizing the Tree Structure<a class="headerlink" href="#visualizing-the-tree-structure" title="Link to this heading"></a></h2>
 <p>We can use the class <code class="docutils literal notranslate"><span class="pre">PrettyTree</span></code> (and a standalone <code class="docutils literal notranslate"><span class="pre">pretty_tree</span></code>
 function based on that class) to visualize the tree structure in a more
 human-readable way.</p>
@@ -219,7 +282,7 @@ human-readable way.</p>
 </div>
 </section>
 <section id="post-order-traversal">
-<h2>Post-order Traversal<a class="headerlink" href="#post-order-traversal" title="Link to this heading">¶</a></h2>
+<h2>Post-order Traversal<a class="headerlink" href="#post-order-traversal" title="Link to this heading"></a></h2>
 <p>As a tree structure, <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code> implements an interface that permits
 tree traversal algorithms like depth-first pre-order and post-order
 traversals.</p>
@@ -261,7 +324,7 @@ applying it to the children. Pre-order may be useful for tasks such as
 rewriting the tree in a different form, like algebraic simplification.</p>
 </section>
 <section id="expression-tree-evaluator">
-<h2>Expression Tree Evaluator<a class="headerlink" href="#expression-tree-evaluator" title="Link to this heading">¶</a></h2>
+<h2>Expression Tree Evaluator<a class="headerlink" href="#expression-tree-evaluator" title="Link to this heading"></a></h2>
 <p>We will now design a simple expression tree evaluator, <code class="docutils literal notranslate"><span class="pre">Eval</span></code>.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Eval</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -340,10 +403,8 @@ define the operations and provide closures over the variables.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
 </pre></div>
 </div>
-</section>
-</section>
 <section id="self-evaluating-trees">
-<h1>Self-Evaluating Trees<a class="headerlink" href="#self-evaluating-trees" title="Link to this heading">¶</a></h1>
+<h3>Self-Evaluating Trees<a class="headerlink" href="#self-evaluating-trees" title="Link to this heading"></a></h3>
 <p>We see that we get the expected result, <code class="docutils literal notranslate"><span class="pre">9</span></code>. Note that it is still a
 tree, but it has been transformed into a so-called self-evaluating tree
 expression, which in this case is a single node with no children.</p>
@@ -355,8 +416,10 @@ the result of running the program.</p>
 <span class="k">assert</span> <span class="n">Eval</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">result</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">payload</span> <span class="o">==</span> <span class="n">result</span><span class="o">.</span><span class="n">payload</span>
 </pre></div>
 </div>
+</section>
+</section>
 <section id="converting-to-flatforest">
-<h2>Converting to FlatForest<a class="headerlink" href="#converting-to-flatforest" title="Link to this heading">¶</a></h2>
+<h2>Converting to FlatForest<a class="headerlink" href="#converting-to-flatforest" title="Link to this heading"></a></h2>
 <p>Let’s convert the tree to a <code class="docutils literal notranslate"><span class="pre">FlatForest</span></code> and perform the same
 evaluation.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">AlgoTree.flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
@@ -397,7 +460,7 @@ default it exposes a single root node (preferred root) for convenience,
 which is by default the first root node encountered.</p>
 </section>
 <section id="handling-undefined-variables">
-<h2>Handling Undefined Variables<a class="headerlink" href="#handling-undefined-variables" title="Link to this heading">¶</a></h2>
+<h2>Handling Undefined Variables<a class="headerlink" href="#handling-undefined-variables" title="Link to this heading"></a></h2>
 <p>What happens when we change the context so that not every variable is
 defined?</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define an incomplete context with missing variable values</span>
@@ -434,7 +497,7 @@ non-<code class="docutils literal notranslate"><span class="pre">const</span></c
 defined for them.</p>
 </section>
 <section id="post-order-vs-pre-order-traversal">
-<h2>Post-order vs. Pre-order Traversal<a class="headerlink" href="#post-order-vs-pre-order-traversal" title="Link to this heading">¶</a></h2>
+<h2>Post-order vs. Pre-order Traversal<a class="headerlink" href="#post-order-vs-pre-order-traversal" title="Link to this heading"></a></h2>
 <p>Post-order traversal is good for things like evaluating expressions,
 where you need to evaluate the children before you can evaluate the
 parent.</p>
@@ -454,10 +517,8 @@ rules. Or, the compiler could be an optimizing compiler that rewrites
 the tree into a form that is more efficient to evaluate, like replacing
 a multiplication by a power of two with a shift or getting rid of no-op
 operations like adding zero.</p>
-</section>
-</section>
 <section id="alternative-way-to-construct-expression-trees">
-<h1>Alternative Way To Construct Expression Trees<a class="headerlink" href="#alternative-way-to-construct-expression-trees" title="Link to this heading">¶</a></h1>
+<h3>Alternative Way To Construct Expression Trees<a class="headerlink" href="#alternative-way-to-construct-expression-trees" title="Link to this heading"></a></h3>
 <p>We imported from a <code class="docutils literal notranslate"><span class="pre">dict</span></code> (or JSON) representation of the expression
 tree. This is a common way to construct trees from data, and it is also
 a common way to serialize trees to disk or to send them over the
@@ -488,7 +549,7 @@ previous expression tree.</p>
 </div>
 </section>
 <section id="conclusion">
-<h1>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h1>
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h3>
 <p>We have explored the idea of expression trees and how they relate to our
 tree structures, namely <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code> and <code class="docutils literal notranslate"><span class="pre">FlatForestNode</span></code>, and how to
 evaluate the expression trees by rewriting the nodes in post-order
@@ -498,94 +559,38 @@ fast and efficient for these kinds of operations. The <code class="docutils lite
 structure is a more specialized structure that is more convenient for
 relatively flatter data, like conversation logs.</p>
 </section>
+</section>
+</section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="flat_forest_nb.html" class="btn btn-neutral float-left" title="FlatForest Notebook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="identity.html" class="btn btn-neutral float-right" title="Identity and Equality" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Alex Towell.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">AlgoTree</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
-<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Expression Trees and Evaluation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#visualizing-the-tree-structure">Visualizing the Tree Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#post-order-traversal">Post-order Traversal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#expression-tree-evaluator">Expression Tree Evaluator</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#self-evaluating-trees">Self-Evaluating Trees</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#converting-to-flatforest">Converting to FlatForest</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#handling-undefined-variables">Handling Undefined Variables</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#post-order-vs-pre-order-traversal">Post-order vs. Pre-order Traversal</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#alternative-way-to-construct-expression-trees">Alternative Way To Construct Expression Trees</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#conclusion">Conclusion</a></li>
-<li class="toctree-l1"><a class="reference internal" href="identity.html">Identity and Equality</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="flat_forest_nb.html" title="previous chapter"><code class="docutils literal notranslate"><span class="pre">FlatForest</span> <span class="pre">Notebook</span></code></a></li>
-      <li>Next: <a href="identity.html" title="next chapter">Identity and Equality</a></li>
-  </ul></li>
-</ul>
-</div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &#169;2024, Alex Towell.
-      
-      |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
-      
-      |
-      <a href="_sources/expr_trees_nb.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

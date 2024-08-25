@@ -1,5 +1,5 @@
 Expression Trees and Evaluation
--------------------------------
+===============================
 
 We are going to explore the idea of expression trees and how they relate
 to our tree structures, namely ``TreeNode``, and to evaluate the
