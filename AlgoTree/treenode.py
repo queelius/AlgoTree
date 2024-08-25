@@ -82,8 +82,10 @@ class TreeNode(dict):
 
         if payload is not None:
             self.payload = payload
-        else:
+        elif args or kwargs:
             self.payload = dict(*args, **kwargs)
+        else:
+            self.payload = None
 
 
     @property

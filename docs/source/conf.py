@@ -19,7 +19,7 @@ author = "Alex Towell"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-release = '0.1.0'
+release = '0.8.0'
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -34,6 +34,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = 'alabaster'
 html_static_path = ['_static', 'images']
 
-source_suffix = ['.rst', '.ipynb']
+#source_suffix = ['.rst', '.ipynb']
 
 

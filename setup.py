@@ -6,7 +6,7 @@ setup(
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="A algorithmic tookit for working with trees in Python",
-    long_description=open("README.rst").read(),
+    #long_description=open("README.rst").read(),
     #long_description_content_type="text/markdown",
     long_description_content_type="text/x-rst",
     packages=find_packages(),

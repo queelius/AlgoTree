@@ -3,7 +3,8 @@ from .flat_forest_node import FlatForestNode
 from .tree_converter import TreeConverter
 from .treenode_api import TreeNodeApi
 from .pretty_tree import PrettyTree, pretty_tree
-from .node_hash import NodeHash
+from .node_hasher import NodeHasher
+from .tree_hasher import TreeHasher
 from .treenode import TreeNode
 from .utils import (
     map, visit, descendants, ancestors, siblings, leaves, height, depth,
