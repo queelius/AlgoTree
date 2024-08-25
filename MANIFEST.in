@@ -1,0 +1,4 @@
+include README.md
+include LICENSE
+include bin/jt
+recursive-include AlgoTree *.py

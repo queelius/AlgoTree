@@ -1,4 +1,5 @@
 .vscode
+.pypi-api-token
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
