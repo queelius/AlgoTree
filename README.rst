@@ -7,14 +7,14 @@ AlgoTree
 .. image:: https://img.shields.io/pypi/l/AlgoTree.svg
    :target: https://pypi.org/project/AlgoTree/
 
-```AlgoTree``` is a Python package for working with tree structures, including
+``AlgoTree`` is a Python package for working with tree structures, including
 FlatForest and TreeNode representations.
 
 
 Introduction
 ------------
 
-Welcome to the documentation for the ```AlgoTree``` package. This package provides a
+Welcome to the documentation for the ``AlgoTree`` package. This package provides a
 suite of utilities for working with tree-like data structures in Python. It
 supports various tree representations, including:
 
