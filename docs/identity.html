@@ -1,16 +1,19 @@
+
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>Understanding Equality in Trees and Nodes &#8212; AlgoTree 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=486e5634"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="jt Command-Line Tool" href="jt.html" />
@@ -18,9 +21,8 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-
   
-  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
   
@@ -33,14 +35,14 @@
           <div class="body" role="main">
             
   <section id="understanding-equality-in-trees-and-nodes">
-<h1>Understanding Equality in Trees and Nodes<a class="headerlink" href="#understanding-equality-in-trees-and-nodes" title="Link to this heading">¶</a></h1>
+<h1>Understanding Equality in Trees and Nodes<a class="headerlink" href="#understanding-equality-in-trees-and-nodes" title="Permalink to this heading">¶</a></h1>
 <p>Identity and equality are foundational concepts that help us reason about
 relationships between objects. While identity implies strict sameness, equality
 often refers to contextual similarities between objects. In this document, we
 will define identity in a strict sense and then explore different ways to define
 and use equality.</p>
 <section id="identity-the-strict-definition">
-<h2>Identity: The Strict Definition<a class="headerlink" href="#identity-the-strict-definition" title="Link to this heading">¶</a></h2>
+<h2>Identity: The Strict Definition<a class="headerlink" href="#identity-the-strict-definition" title="Permalink to this heading">¶</a></h2>
 <p>In philosophy, <strong>Leibniz’s Law</strong> (or the <em>Indiscernibility of Identicals</em>)
 states that two objects, <cite>x</cite> and <cite>y</cite>, are identical if and only if for all
 predicates <cite>p</cite>, <cite>p(x) = p(y)</cite>. In other words, two objects are identical if
@@ -66,7 +68,7 @@ us to the concept of <strong>equality</strong>, which can be defined in various 
 depending on the context.</p>
 </section>
 <section id="equality-intrinsic-and-extrinsic-properties">
-<h2>Equality: Intrinsic and Extrinsic Properties<a class="headerlink" href="#equality-intrinsic-and-extrinsic-properties" title="Link to this heading">¶</a></h2>
+<h2>Equality: Intrinsic and Extrinsic Properties<a class="headerlink" href="#equality-intrinsic-and-extrinsic-properties" title="Permalink to this heading">¶</a></h2>
 <p>When defining equality, we must consider whether we are comparing the
 <em>intrinsic</em> properties of an object or its <em>extrinsic</em> properties:</p>
 <p>1. <strong>Intrinsic Properties:</strong>: These are the properties that belong to the object
@@ -79,7 +81,7 @@ properties of an object might include its position within a structure, its
 relationships to other objects, or its role within a larger context.</p>
 </section>
 <section id="equality-in-trees-and-nodes">
-<h2>Equality in Trees and Nodes<a class="headerlink" href="#equality-in-trees-and-nodes" title="Link to this heading">¶</a></h2>
+<h2>Equality in Trees and Nodes<a class="headerlink" href="#equality-in-trees-and-nodes" title="Permalink to this heading">¶</a></h2>
 <p>Now that we have discussed identity and equality at a high level, we can turn
 our attention to how these concepts apply specifically to trees and nodes.
 Trees, being hierarchical data structures, bring particular concerns about how
@@ -120,7 +122,7 @@ strictly on its structure.</p>
 </ol>
 </section>
 <section id="hashing-and-equality">
-<h2>Hashing and Equality<a class="headerlink" href="#hashing-and-equality" title="Link to this heading">¶</a></h2>
+<h2>Hashing and Equality<a class="headerlink" href="#hashing-and-equality" title="Permalink to this heading">¶</a></h2>
 <p>Hashing is a technique used to map data of arbitrary size to fixed-size values.
 It has a wide range of applications, but here we are interested in how it can be
 used to implement different forms of equality. It is not necessarily the most
@@ -207,7 +209,7 @@ necessarily the same data or labels.</p>
 </li>
 </ol>
 <section id="explanation-of-hash-collisions">
-<h3>Explanation of Hash Collisions<a class="headerlink" href="#explanation-of-hash-collisions" title="Link to this heading">¶</a></h3>
+<h3>Explanation of Hash Collisions<a class="headerlink" href="#explanation-of-hash-collisions" title="Permalink to this heading">¶</a></h3>
 <p>It’s important to note that hashing functions, while efficient for comparisons,
 have a small probability of producing hash collisions—situations where two
 different objects produce the same hash value. This is because the space of
@@ -218,7 +220,7 @@ collision, but this would be rare assuming a good hash function.</p>
 </section>
 </section>
 <section id="philosophical-perspective-the-ship-of-theseus">
-<h2>Philosophical Perspective: The Ship of Theseus<a class="headerlink" href="#philosophical-perspective-the-ship-of-theseus" title="Link to this heading">¶</a></h2>
+<h2>Philosophical Perspective: The Ship of Theseus<a class="headerlink" href="#philosophical-perspective-the-ship-of-theseus" title="Permalink to this heading">¶</a></h2>
 <p>The <strong>Ship of Theseus</strong> is a famous philosophical thought experiment that raises
 questions about identity and persistence over time. The thought experiment asks:
 if all the parts of a ship are gradually replaced, piece by piece, is it still
@@ -233,7 +235,7 @@ a node’s identity might be tied to its position within the tree, and changing
 that position might alter its identity.</p>
 </section>
 <section id="conclusion">
-<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">¶</a></h2>
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
 <p>Identity and equality are distinct but related concepts. <strong>Identity</strong> in its
 strictest sense, as defined by Leibniz’s Law, implies complete
 indistinguishability and is typically realized in computer science through
@@ -295,7 +297,7 @@ structures.</p>
   </ul></li>
 </ul>
 </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -303,7 +305,7 @@ structures.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 
 
@@ -318,11 +320,11 @@ structures.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2024, Alex Towell.
+      &copy;2024, Alex Towell.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/identity.rst.txt"
