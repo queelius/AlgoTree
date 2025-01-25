@@ -95,7 +95,7 @@ class PrettyTree:
                 s += style["payload_connector"]
                 s += style["spacer"]
                 s += str(node_details(cur))
-            if cur.name in marked_nodes:
+            if node_name(cur) in marked_nodes:
                 s += style["spacer"]
                 s += PrettyTree.mark(str(node_name(cur)), markers)
             s += "\n"
