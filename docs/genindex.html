@@ -41,6 +41,7 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -50,19 +51,58 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.add_child">add_child() (AlgoTree.node.Node method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.add_child">add_child() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.add_child">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
 </li>
+        <li><a href="AlgoTree.html#AlgoTree.Node.add_child">(AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.add_child">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.add_child">(AlgoTree.node.Node method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.add_child">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.dsl
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.dsl">module</a>
+</li>
+      </ul></li>
       <li>
     AlgoTree.exporters
 
       <ul>
         <li><a href="AlgoTree.html#module-AlgoTree.exporters">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.flat_forest
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.flat_forest">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.flat_forest_node
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.flat_forest_node">module</a>
 </li>
       </ul></li>
       <li>
@@ -77,6 +117,13 @@
 
       <ul>
         <li><a href="AlgoTree.html#module-AlgoTree.node">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.node_hasher
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.node_hasher">module</a>
 </li>
       </ul></li>
       <li>
@@ -96,6 +143,27 @@
 </li>
       </ul></li>
       <li>
+    AlgoTree.serialization
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.serialization">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.tree_converter
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.tree_converter">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.tree_hasher
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.tree_hasher">module</a>
+</li>
+      </ul></li>
+      <li>
     AlgoTree.tree_shaper
 
       <ul>
@@ -109,7 +177,38 @@
         <li><a href="AlgoTree.html#module-AlgoTree.tree_transformer">module</a>
 </li>
       </ul></li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.attributes">attributes (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      <li>
+    AlgoTree.treenode
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.treenode">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.treenode_api
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.treenode_api">module</a>
+</li>
+      </ul></li>
+      <li>
+    AlgoTree.utils
+
+      <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree.utils">module</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.ancestors">ancestors() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.as_tree">as_tree() (AlgoTree.flat_forest.FlatForest method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.attributes">attributes (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.attributes">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.attributes">(AlgoTree.pattern_matcher.Pattern attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.average_distance">average_distance() (in module AlgoTree.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -117,82 +216,258 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.build">build() (AlgoTree.fluent.TreeBuilder method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.breadth_first">breadth_first() (in module AlgoTree.utils)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.breadth_first_undirected">breadth_first_undirected() (in module AlgoTree.utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.build">build() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.build">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.build">[1]</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.treenode_api.TreeNodeApi.check">check() (AlgoTree.treenode_api.TreeNodeApi static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.check_valid">check_valid() (AlgoTree.flat_forest.FlatForest static method)</a>
+</li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.child">child() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.child">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.child">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.children">children (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.child_names">child_names() (AlgoTree.flat_forest.FlatForest method)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.children">children (AlgoTree.flat_forest.FlatForest property)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.children">(AlgoTree.flat_forest_node.FlatForestNode property)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.Pattern.children">(AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.children">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.children">(AlgoTree.pattern_matcher.Pattern attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.children">children() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.children">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.children">[1]</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.children">children() (AlgoTree.fluent.FluentNode method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.clone">clone() (AlgoTree.flat_forest_node.FlatForestNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.Node.clone">(AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.clone">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.clone">clone() (AlgoTree.node.Node method)</a>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.clone">(AlgoTree.node.Node method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.clone">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.contains">contains() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.contains">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter.convert">convert() (AlgoTree.tree_converter.TreeConverter static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter.copy_under">copy_under() (AlgoTree.tree_converter.TreeConverter static method)</a>
 </li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.count">count() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.count">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.count">[1]</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter.default_extract">default_extract() (AlgoTree.tree_converter.TreeConverter static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter.default_node_name">default_node_name() (AlgoTree.tree_converter.TreeConverter static method)</a>
+</li>
       <li><a href="AlgoTree.html#AlgoTree.pretty_tree.PrettyTree.default_style">default_style (AlgoTree.pretty_tree.PrettyTree attribute)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.PrettyTree.default_style">(AlgoTree.PrettyTree attribute)</a>, <a href="api_reference.html#AlgoTree.PrettyTree.default_style">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.depth">depth() (in module AlgoTree.utils)</a>
 </li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.descendants">descendants() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.descendants">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.descendants">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotannotate">dotannotate() (in module AlgoTree.tree_transformer)</a>
+        <li><a href="AlgoTree.html#AlgoTree.utils.descendants">(in module AlgoTree.utils)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotcollect">dotcollect() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.detach">detach() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.detach">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotcount">dotcount() (in module AlgoTree.pattern_matcher)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.detached">detached (AlgoTree.flat_forest.FlatForest property)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotexists">dotexists() (in module AlgoTree.pattern_matcher)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.DETACHED_KEY">DETACHED_KEY (AlgoTree.flat_forest.FlatForest attribute)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotextract">dotextract() (in module AlgoTree.tree_shaper)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.distance">distance() (in module AlgoTree.utils)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotfilter">dotfilter() (in module AlgoTree.pattern_matcher)</a>
+      <li><a href="AlgoTree.html#AlgoTree.dotannotate">dotannotate() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotannotate">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotannotate">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotflatten">dotflatten() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotcollect">dotcollect() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotcollect">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotcollect">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotgraft">dotgraft() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotcount">dotcount() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotcount">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotcount">(in module AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotgroup">dotgroup() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotexists">dotexists() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotexists">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotexists">(in module AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmap">dotmap() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotextract">dotextract() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotextract">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotextract">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotfilter">dotfilter() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotfilter">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotfilter">(in module AlgoTree.pattern_matcher)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotflatten">dotflatten() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotflatten">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotflatten">(in module AlgoTree.tree_transformer)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotgraft">dotgraft() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotgraft">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotgraft">(in module AlgoTree.tree_transformer)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotmatch">dotmatch() (in module AlgoTree.pattern_matcher)</a>
+      <li><a href="AlgoTree.html#AlgoTree.dotgroup">dotgroup() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotgroup">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotgroup">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmerge">dotmerge() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotmap">dotmap() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotmap">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmap">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmod">dotmod() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotmatch">dotmatch() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotmatch">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotmatch">(in module AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotnormalize">dotnormalize() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotmerge">dotmerge() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotmerge">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmerge">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotpartition">dotpartition() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotmod">dotmod() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotmod">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotmod">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotpipe">dotpipe() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotnormalize">dotnormalize() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotnormalize">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotnormalize">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotpluck">dotpluck() (in module AlgoTree.pattern_matcher)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotpartition">dotpartition() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotpartition">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotpartition">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotproject">dotproject() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotpipe">dotpipe() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotpipe">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotpipe">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotprune">dotprune() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotpluck">dotpluck() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotpluck">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.dotpluck">(in module AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotreduce">dotreduce() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotproject">dotproject() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotproject">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.dotproject">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotsplit">dotsplit() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotprune">dotprune() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotprune">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotprune">(in module AlgoTree.tree_transformer)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotvalidate">dotvalidate() (in module AlgoTree.tree_transformer)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotreduce">dotreduce() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotreduce">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotreduce">(in module AlgoTree.tree_transformer)</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotsplit">dotsplit() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotsplit">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotsplit">(in module AlgoTree.tree_transformer)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dotvalidate">dotvalidate() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.dotvalidate">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_transformer.dotvalidate">(in module AlgoTree.tree_transformer)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.dumps">dumps() (in module AlgoTree)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.serialization.dumps">(in module AlgoTree.serialization)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -200,13 +475,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.each">each() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.each">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.each">[1]</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.MatchType.EXACT">EXACT (AlgoTree.MatchType attribute)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.EXACT">(AlgoTree.pattern_matcher.MatchType attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.EXACT">EXACT (AlgoTree.pattern_matcher.MatchType attribute)</a>
+      <li><a href="AlgoTree.html#AlgoTree.export_tree">export_tree() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.export_tree">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.exporters.export_tree">(in module AlgoTree.exporters)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.exporters.export_tree">export_tree() (in module AlgoTree.exporters)</a>
-</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -214,38 +501,100 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.filter">filter() (AlgoTree.fluent.FluentNode method)</a>
-</li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.find">find() (AlgoTree.node.Node method)</a>
-</li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.find_all">find_all() (AlgoTree.node.Node method)</a>
 
       <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.filter">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.filter">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.find">find() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.find">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.find">(AlgoTree.node.Node method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.find_all">find_all() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.find_all">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.find_all">(AlgoTree.node.Node method)</a>
+</li>
         <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher.find_all">(AlgoTree.pattern_matcher.PatternMatcher method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.PatternMatcher.find_all">(AlgoTree.PatternMatcher method)</a>, <a href="api_reference.html#AlgoTree.PatternMatcher.find_all">[1]</a>
 </li>
       </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher.find_first">find_first() (AlgoTree.pattern_matcher.PatternMatcher method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.first">first() (AlgoTree.fluent.FluentNode method)</a>
-</li>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode">FluentNode (class in AlgoTree.fluent)</a>
-</li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.from_dict">from_dict() (AlgoTree.node.Node class method)</a>
 
       <ul>
-        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.from_dict">(AlgoTree.pattern_matcher.Pattern static method)</a>
+        <li><a href="AlgoTree.html#AlgoTree.PatternMatcher.find_first">(AlgoTree.PatternMatcher method)</a>, <a href="api_reference.html#AlgoTree.PatternMatcher.find_first">[1]</a>
 </li>
       </ul></li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.from_string">from_string() (AlgoTree.pattern_matcher.Pattern static method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.find_node">find_node() (in module AlgoTree.utils)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.find_nodes">find_nodes() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.find_path">find_path() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.first">first() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.first">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.first">[1]</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest">FlatForest (class in AlgoTree.flat_forest)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode">FlatForestNode (class in AlgoTree.flat_forest_node)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.FluentNode">FluentNode (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.FluentNode">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode">(class in AlgoTree.fluent)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.forest">forest (AlgoTree.flat_forest_node.FlatForestNode property)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.from_dict">from_dict() (AlgoTree.Node class method)</a>, <a href="api_reference.html#AlgoTree.Node.from_dict">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.from_dict">(AlgoTree.node.Node class method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.Pattern.from_dict">(AlgoTree.Pattern static method)</a>, <a href="api_reference.html#AlgoTree.Pattern.from_dict">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.from_dict">(AlgoTree.pattern_matcher.Pattern static method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.from_dict">(AlgoTree.treenode.TreeNode static method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.from_parquet">from_parquet() (in module AlgoTree.serialization)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.from_pickle">from_pickle() (in module AlgoTree.serialization)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.from_string">from_string() (AlgoTree.Pattern static method)</a>, <a href="api_reference.html#AlgoTree.Pattern.from_string">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.from_string">(AlgoTree.pattern_matcher.Pattern static method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.get_path">get_path() (AlgoTree.node.Node method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.Node.get_path">get_path() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.get_path">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.get_path">(AlgoTree.node.Node method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.utils.height">height() (in module AlgoTree.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -253,15 +602,53 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.is_deep_wildcard">is_deep_wildcard (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.interior_node_names">interior_node_names() (AlgoTree.flat_forest.FlatForest method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.is_leaf">is_leaf (AlgoTree.node.Node property)</a>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.is_deep_wildcard">is_deep_wildcard (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.is_deep_wildcard">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.is_deep_wildcard">(AlgoTree.pattern_matcher.Pattern attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.is_internal">is_internal() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.is_isomorphic">is_isomorphic() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.is_leaf">is_leaf (AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.is_leaf">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.is_leaf">(AlgoTree.node.Node property)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.is_leaf">is_leaf() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.is_root">is_root (AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.is_root">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.is_root">(AlgoTree.node.Node property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.is_root">is_root (AlgoTree.node.Node property)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.is_root">is_root() (in module AlgoTree.utils)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.is_wildcard">is_wildcard (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.is_valid">is_valid() (AlgoTree.flat_forest.FlatForest static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.is_valid">(AlgoTree.treenode.TreeNode static method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode_api.TreeNodeApi.is_valid">(AlgoTree.treenode_api.TreeNodeApi static method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.is_wildcard">is_wildcard (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.is_wildcard">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.is_wildcard">(AlgoTree.pattern_matcher.Pattern attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_hasher.TreeHasher.isomorphic">isomorphic() (AlgoTree.tree_hasher.TreeHasher static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.iter_nodes">iter_nodes() (in module AlgoTree.serialization)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -269,11 +656,37 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.leaves">leaves() (AlgoTree.fluent.FluentNode method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.lca">lca() (in module AlgoTree.utils)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.leaves">leaves() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.leaves">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.leaves">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.utils.leaves">(in module AlgoTree.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.level">level (AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.level">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.level">(AlgoTree.node.Node property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.level">level (AlgoTree.node.Node property)</a>
+      <li><a href="AlgoTree.html#AlgoTree.load">load() (in module AlgoTree)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.serialization.load">(in module AlgoTree.serialization)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.loads">loads() (in module AlgoTree)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.serialization.loads">(in module AlgoTree.serialization)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.logical_root_names">logical_root_names() (AlgoTree.flat_forest.FlatForest method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -282,40 +695,88 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.map">map() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.map">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.map">[1]</a>
 </li>
+        <li><a href="AlgoTree.html#AlgoTree.utils.map">(in module AlgoTree.utils)</a>
+</li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.pretty_tree.PrettyTree.mark">mark() (AlgoTree.pretty_tree.PrettyTree static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.PrettyTree.mark">(AlgoTree.PrettyTree static method)</a>, <a href="api_reference.html#AlgoTree.PrettyTree.mark">[1]</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.match">match() (AlgoTree.fluent.FluentNode method)</a>
 
       <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.match">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.match">[1]</a>
+</li>
         <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher.match">(AlgoTree.pattern_matcher.PatternMatcher method)</a>
 </li>
+        <li><a href="AlgoTree.html#AlgoTree.PatternMatcher.match">(AlgoTree.PatternMatcher method)</a>, <a href="api_reference.html#AlgoTree.PatternMatcher.match">[1]</a>
+</li>
       </ul></li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType">MatchType (class in AlgoTree.pattern_matcher)</a>
+      <li><a href="AlgoTree.html#AlgoTree.MatchType">MatchType (class in AlgoTree)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType">(class in AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.max_children">max_children (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.max_children">max_children (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.max_children">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.max_children">(AlgoTree.pattern_matcher.Pattern attribute)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.min_children">min_children (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.min_children">min_children (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.min_children">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.min_children">(AlgoTree.pattern_matcher.Pattern attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.treenode_api.TreeNodeApi.missing">missing() (AlgoTree.treenode_api.TreeNodeApi static method)</a>
+</li>
       <li>
     module
 
       <ul>
+        <li><a href="AlgoTree.html#module-AlgoTree">AlgoTree</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.dsl">AlgoTree.dsl</a>
+</li>
         <li><a href="AlgoTree.html#module-AlgoTree.exporters">AlgoTree.exporters</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.flat_forest">AlgoTree.flat_forest</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.flat_forest_node">AlgoTree.flat_forest_node</a>
 </li>
         <li><a href="AlgoTree.html#module-AlgoTree.fluent">AlgoTree.fluent</a>
 </li>
         <li><a href="AlgoTree.html#module-AlgoTree.node">AlgoTree.node</a>
 </li>
+        <li><a href="AlgoTree.html#module-AlgoTree.node_hasher">AlgoTree.node_hasher</a>
+</li>
         <li><a href="AlgoTree.html#module-AlgoTree.pattern_matcher">AlgoTree.pattern_matcher</a>
 </li>
         <li><a href="AlgoTree.html#module-AlgoTree.pretty_tree">AlgoTree.pretty_tree</a>
 </li>
+        <li><a href="AlgoTree.html#module-AlgoTree.serialization">AlgoTree.serialization</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.tree_converter">AlgoTree.tree_converter</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.tree_hasher">AlgoTree.tree_hasher</a>
+</li>
         <li><a href="AlgoTree.html#module-AlgoTree.tree_shaper">AlgoTree.tree_shaper</a>
 </li>
         <li><a href="AlgoTree.html#module-AlgoTree.tree_transformer">AlgoTree.tree_transformer</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.treenode">AlgoTree.treenode</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.treenode_api">AlgoTree.treenode_api</a>
+</li>
+        <li><a href="AlgoTree.html#module-AlgoTree.utils">AlgoTree.utils</a>
 </li>
       </ul></li>
   </ul></td>
@@ -324,37 +785,157 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.name">name (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.name">name (AlgoTree.flat_forest.FlatForest property)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.name">(AlgoTree.flat_forest_node.FlatForestNode property)</a>
 </li>
+        <li><a href="AlgoTree.html#AlgoTree.Pattern.name">(AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.name">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.name">(AlgoTree.pattern_matcher.Pattern attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.node_hasher.NodeHasher.name">name() (AlgoTree.node_hasher.NodeHasher static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Node">Node (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.Node">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node">(class in AlgoTree.node)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.node">node() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.node">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.node_hasher.NodeHasher.node">(AlgoTree.node_hasher.NodeHasher static method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.node">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node">Node (class in AlgoTree.node)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.node_names">node_names() (AlgoTree.flat_forest.FlatForest method)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.node_stats">node_stats() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.node_to_leaf_paths">node_to_leaf_paths() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.node_hasher.NodeHasher">NodeHasher (class in AlgoTree.node_hasher)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.nodes">nodes() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.nodes">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.parent">parent (AlgoTree.node.Node property)</a>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.parent">parent (AlgoTree.flat_forest.FlatForest property)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.parent">(AlgoTree.flat_forest_node.FlatForestNode property)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.PARTIAL">PARTIAL (AlgoTree.pattern_matcher.MatchType attribute)</a>
+        <li><a href="AlgoTree.html#AlgoTree.Node.parent">(AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.parent">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern">Pattern (class in AlgoTree.pattern_matcher)</a>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.parent">(AlgoTree.node.Node property)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.pattern_match">pattern_match() (in module AlgoTree.pattern_matcher)</a>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.parent">(AlgoTree.treenode.TreeNode property)</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.PARENT_KEY">PARENT_KEY (AlgoTree.flat_forest.FlatForest attribute)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.dsl.TreeDSL.parse">parse() (AlgoTree.dsl.TreeDSL static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeDSL.parse">(AlgoTree.TreeDSL static method)</a>, <a href="api_reference.html#AlgoTree.TreeDSL.parse">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.parse_tree">parse_tree() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.parse_tree">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.dsl.parse_tree">(in module AlgoTree.dsl)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.MatchType.PARTIAL">PARTIAL (AlgoTree.MatchType attribute)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.PARTIAL">(AlgoTree.pattern_matcher.MatchType attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.node_hasher.NodeHasher.path">path() (AlgoTree.node_hasher.NodeHasher static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.utils.path">(in module AlgoTree.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.paths_to_tree">paths_to_tree() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern">Pattern (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.Pattern">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern">(class in AlgoTree.pattern_matcher)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.pattern_match">pattern_match() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.pattern_match">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.pattern_match">(in module AlgoTree.pattern_matcher)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher">PatternMatcher (class in AlgoTree.pattern_matcher)</a>
+      <li><a href="AlgoTree.html#AlgoTree.PatternMatcher">PatternMatcher (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.PatternMatcher">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher">(class in AlgoTree.pattern_matcher)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.predicate">predicate (AlgoTree.pattern_matcher.Pattern attribute)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.payload">payload (AlgoTree.flat_forest.FlatForest property)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.payload">(AlgoTree.flat_forest_node.FlatForestNode property)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pretty_tree.pretty_tree">pretty_tree() (in module AlgoTree.pretty_tree)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.node_hasher.NodeHasher.payload">payload() (AlgoTree.node_hasher.NodeHasher static method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.pretty_tree.PrettyTree">PrettyTree (class in AlgoTree.pretty_tree)</a>
+      <li><a href="AlgoTree.html#AlgoTree.Pattern.predicate">predicate (AlgoTree.Pattern attribute)</a>, <a href="api_reference.html#AlgoTree.Pattern.predicate">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.Pattern.predicate">(AlgoTree.pattern_matcher.Pattern attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.preferred_root">preferred_root (AlgoTree.flat_forest.FlatForest property)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.pretty_tree">pretty_tree() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.pretty_tree">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pretty_tree.pretty_tree">(in module AlgoTree.pretty_tree)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.PrettyTree">PrettyTree (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.PrettyTree">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pretty_tree.PrettyTree">(class in AlgoTree.pretty_tree)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.treenode_api.TreeNodeApi.properties">properties (AlgoTree.treenode_api.TreeNodeApi attribute)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.proxy">proxy() (AlgoTree.flat_forest_node.FlatForestNode static method)</a>
 </li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.prune">prune() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.prune">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.prune">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.utils.prune">(in module AlgoTree.utils)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.purge">purge() (AlgoTree.flat_forest.FlatForest method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -362,17 +943,51 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.remove_child">remove_child() (AlgoTree.node.Node method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.register_json_encoder">register_json_encoder() (in module AlgoTree.serialization)</a>
 </li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.remove_child">remove_child() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.remove_child">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.remove_child">(AlgoTree.node.Node method)</a>
+</li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.PatternMatcher.replace">replace() (AlgoTree.pattern_matcher.PatternMatcher method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.PatternMatcher.replace">(AlgoTree.PatternMatcher method)</a>, <a href="api_reference.html#AlgoTree.PatternMatcher.replace">[1]</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.replace_matches">replace_matches() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.replace_matches">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.replace_matches">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.root">root (AlgoTree.flat_forest.FlatForest property)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.root">(AlgoTree.flat_forest_node.FlatForestNode property)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.Node.root">(AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.root">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.root">(AlgoTree.node.Node property)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.root">(AlgoTree.treenode.TreeNode property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.replace_matches">replace_matches() (AlgoTree.fluent.FluentNode method)</a>
-</li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.root">root (AlgoTree.node.Node property)</a>
-</li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.root">root() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.root">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.root">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.root_key">root_key() (AlgoTree.flat_forest.FlatForest method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.root_names">root_names (AlgoTree.flat_forest.FlatForest property)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.roots">roots (AlgoTree.flat_forest.FlatForest property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -380,15 +995,57 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.exporters.save_tree">save_tree() (in module AlgoTree.exporters)</a>
+      <li><a href="AlgoTree.html#AlgoTree.save">save() (in module AlgoTree)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.serialization.save">(in module AlgoTree.serialization)</a>
 </li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.save_tree">save_tree() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.save_tree">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.exporters.save_tree">(in module AlgoTree.exporters)</a>
+</li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.sibling">sibling() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.sibling">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.sibling">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.siblings">siblings (AlgoTree.Node property)</a>, <a href="api_reference.html#AlgoTree.Node.siblings">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.siblings">(AlgoTree.node.Node property)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.siblings">siblings() (in module AlgoTree.utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.siblings">siblings (AlgoTree.node.Node property)</a>
+      <li><a href="AlgoTree.html#AlgoTree.utils.size">size() (in module AlgoTree.utils)</a>
 </li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.sort">sort() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.sort">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.sort">[1]</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.spec">spec() (AlgoTree.flat_forest.FlatForest static method)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.stream_writer">stream_writer() (in module AlgoTree.serialization)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.subtree">subtree() (AlgoTree.flat_forest.FlatForest method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.subtree">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.subtree">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.subtree_centered_at">subtree_centered_at() (in module AlgoTree.utils)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.utils.subtree_rooted_at">subtree_rooted_at() (in module AlgoTree.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -396,65 +1053,191 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_adjacency_list">to_adjacency_list() (in module AlgoTree.tree_shaper)</a>
+      <li><a href="AlgoTree.html#AlgoTree.to_adjacency_list">to_adjacency_list() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_adjacency_list">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_adjacency_list">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_ascii">to_ascii() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_ascii">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_ascii">[1]</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_dict">to_dict() (AlgoTree.exporters.TreeExporter static method)</a>
 
       <ul>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.to_dict">(AlgoTree.flat_forest.FlatForest method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.flat_forest_node.FlatForestNode.to_dict">(AlgoTree.flat_forest_node.FlatForestNode method)</a>
+</li>
         <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.to_dict">(AlgoTree.fluent.FluentNode method)</a>
 </li>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.to_dict">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.to_dict">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.Node.to_dict">(AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.to_dict">[1]</a>
+</li>
         <li><a href="AlgoTree.html#AlgoTree.node.Node.to_dict">(AlgoTree.node.Node method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter.to_dict">(AlgoTree.tree_converter.TreeConverter static method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_dict">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_dict">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode.to_dict">(AlgoTree.treenode.TreeNode method)</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.to_dict">(in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_dict">[1]</a>
 </li>
         <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_dict">(in module AlgoTree.tree_shaper)</a>
 </li>
       </ul></li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_edge_list">to_edge_list() (in module AlgoTree.tree_shaper)</a>
+      <li><a href="AlgoTree.html#AlgoTree.to_edge_list">to_edge_list() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_edge_list">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_edge_list">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_graphviz">to_graphviz() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_graphviz">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_graphviz">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_graphviz_data">to_graphviz_data() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.to_graphviz_data">to_graphviz_data() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_graphviz_data">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_graphviz_data">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_html">to_html() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_html">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_html">[1]</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_json">to_json() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_json">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_json">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_json_schema">to_json_schema() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.to_json_schema">to_json_schema() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_json_schema">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_json_schema">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.to_list">to_list() (AlgoTree.fluent.FluentNode method)</a>
 
       <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.to_list">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.to_list">[1]</a>
+</li>
+        <li><a href="AlgoTree.html#AlgoTree.to_list">(in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_list">[1]</a>
+</li>
         <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_list">(in module AlgoTree.tree_shaper)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_mermaid">to_mermaid() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_mermaid">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_mermaid">[1]</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_mermaid">to_mermaid() (AlgoTree.exporters.TreeExporter static method)</a>
+      <li><a href="AlgoTree.html#AlgoTree.to_nested_lists">to_nested_lists() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_nested_lists">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_nested_lists">(in module AlgoTree.tree_shaper)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_nested_lists">to_nested_lists() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.to_parquet">to_parquet() (in module AlgoTree.serialization)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_paths">to_paths() (in module AlgoTree.tree_shaper)</a>
+      <li><a href="AlgoTree.html#AlgoTree.to_paths">to_paths() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_paths">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_paths">(in module AlgoTree.tree_shaper)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.to_pickle">to_pickle() (in module AlgoTree.serialization)</a>
 </li>
       <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.to_root">to_root() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.to_root">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.to_root">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_table">to_table() (in module AlgoTree.tree_shaper)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.to_table">to_table() (in module AlgoTree)</a>, <a href="api_reference.html#AlgoTree.to_table">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.tree_shaper.to_table">(in module AlgoTree.tree_shaper)</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_unicode">to_unicode() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_unicode">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_unicode">[1]</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_xml">to_xml() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_xml">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_xml">[1]</a>
 </li>
+      </ul></li>
       <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter.to_yaml">to_yaml() (AlgoTree.exporters.TreeExporter static method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeExporter.to_yaml">(AlgoTree.TreeExporter static method)</a>, <a href="api_reference.html#AlgoTree.TreeExporter.to_yaml">[1]</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_levelorder">traverse_levelorder() (AlgoTree.node.Node method)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.traverse_levelorder">traverse_levelorder() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.traverse_levelorder">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_levelorder">(AlgoTree.node.Node method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_postorder">traverse_postorder() (AlgoTree.node.Node method)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.traverse_postorder">traverse_postorder() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.traverse_postorder">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_postorder">(AlgoTree.node.Node method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_preorder">traverse_preorder() (AlgoTree.node.Node method)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.Node.traverse_preorder">traverse_preorder() (AlgoTree.Node method)</a>, <a href="api_reference.html#AlgoTree.Node.traverse_preorder">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.node.Node.traverse_preorder">(AlgoTree.node.Node method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder">TreeBuilder (class in AlgoTree.fluent)</a>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_hasher.TreeHasher.tree">tree() (AlgoTree.tree_hasher.TreeHasher static method)</a>
 </li>
-      <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter">TreeExporter (class in AlgoTree.exporters)</a>
+      <li><a href="AlgoTree.html#AlgoTree.TreeBuilder">TreeBuilder (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder">(class in AlgoTree.fluent)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_converter.TreeConverter">TreeConverter (class in AlgoTree.tree_converter)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.TreeDSL">TreeDSL (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.TreeDSL">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.dsl.TreeDSL">(class in AlgoTree.dsl)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.TreeExporter">TreeExporter (class in AlgoTree)</a>, <a href="api_reference.html#AlgoTree.TreeExporter">[1]</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.exporters.TreeExporter">(class in AlgoTree.exporters)</a>
+</li>
+      </ul></li>
+      <li><a href="AlgoTree.html#AlgoTree.tree_hasher.TreeHasher">TreeHasher (class in AlgoTree.tree_hasher)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.treenode.TreeNode">TreeNode (class in AlgoTree.treenode)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.treenode_api.TreeNodeApi">TreeNodeApi (class in AlgoTree.treenode_api)</a>
+</li>
+      <li><a href="AlgoTree.html#AlgoTree.flat_forest.FlatForest.trees">trees (AlgoTree.flat_forest.FlatForest property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -463,6 +1246,22 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="AlgoTree.html#AlgoTree.fluent.TreeBuilder.up">up() (AlgoTree.fluent.TreeBuilder method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.TreeBuilder.up">(AlgoTree.TreeBuilder method)</a>, <a href="api_reference.html#AlgoTree.TreeBuilder.up">[1]</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.serialization.upgrade_legacy_format">upgrade_legacy_format() (in module AlgoTree.serialization)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="AlgoTree.html#AlgoTree.utils.visit">visit() (in module AlgoTree.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -471,11 +1270,19 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="AlgoTree.html#AlgoTree.fluent.FluentNode.where">where() (AlgoTree.fluent.FluentNode method)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.FluentNode.where">(AlgoTree.FluentNode method)</a>, <a href="api_reference.html#AlgoTree.FluentNode.where">[1]</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.WILDCARD">WILDCARD (AlgoTree.pattern_matcher.MatchType attribute)</a>
+      <li><a href="AlgoTree.html#AlgoTree.MatchType.WILDCARD">WILDCARD (AlgoTree.MatchType attribute)</a>
+
+      <ul>
+        <li><a href="AlgoTree.html#AlgoTree.pattern_matcher.MatchType.WILDCARD">(AlgoTree.pattern_matcher.MatchType attribute)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
