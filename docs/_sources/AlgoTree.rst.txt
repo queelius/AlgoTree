@@ -1,14 +1,6 @@
 AlgoTree package
 ================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   AlgoTree.integrations
-
 Submodules
 ----------
 
