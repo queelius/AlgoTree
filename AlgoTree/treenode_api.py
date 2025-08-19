@@ -1,4 +1,5 @@
-from typing import Any
+from typing import Any, List, Optional
+
 
 class TreeNodeApi:
     """
@@ -11,10 +12,10 @@ class TreeNodeApi:
         accessed and modified.
 
     - **parent** property
-    
+
         Represents the parent node of the current node that can be accessed
-        and modified. 
-        
+        and modified.
+
         Suppose we have the subtree `G` at node `G`::
 
                 B (root)
@@ -32,7 +33,7 @@ class TreeNodeApi:
                 ├── D
                 │   └── G (current node)
                 └── E
-        
+
         This also changes the view of the sub-tree, since we changed the
         underlying tree structure. However, the same nodes are still accessible
         from the sub-tree.
@@ -68,10 +69,10 @@ class TreeNodeApi:
                 |       └── G
                 └── C
                     └── F
-        
+
         If we get node `F`, `t.node(F)`, then the sub-tree `t` remains the same,
         but the current node is now `F`::
-        
+
                 A (root)
                 ├── B
                 │   ├── D
@@ -85,7 +86,7 @@ class TreeNodeApi:
         Returns a view of another sub-tree rooted at `node` where `node` is
         contained in the original sub-tree view. If `node` is `None`, the method
         will return the sub-tree rooted at the current node.
-        
+
         `subtree` is a *partial function* over the the nodes in the sub-tree,
         which means it is only well-defined when `node` is a descendant of
         the root of the sub-tree. We do not specify how to deal with the case
@@ -109,11 +110,11 @@ class TreeNodeApi:
                 ├── D
                 └── E
                     └── G
-        
+
     - **root** property
 
         An immutable property that represents the root node of the sub-tree.
-        
+
         Suppose we have the subtree `G` at node `G`::
 
                 B (root)
@@ -142,22 +143,31 @@ class TreeNodeApi:
         otherwise `False`.
     """
 
-    properties = ["name", "root", "children", "parent", "node", "subtree", "payload", "contains"]
+    properties: List[str] = [
+        "name",
+        "root",
+        "children",
+        "parent",
+        "node",
+        "subtree",
+        "payload",
+        "contains",
+    ]
 
     @staticmethod
-    def missing(node, require_props = properties):
+    def missing(node: Any, require_props: List[str] = properties) -> List[str]:
 
         if node is None:
             raise ValueError("node must not be None")
-        
+
         missing_props = []
         for prop in require_props:
             if not hasattr(node, prop):
                 missing_props.append(prop)
         return missing_props
-        
+
     @staticmethod
-    def check(node, require_props = properties) -> Any:
+    def check(node: Any, require_props: List[str] = properties) -> Any:
 
         missing_prop = TreeNodeApi.missing(node, require_props)
         if len(missing_prop) > 0:
@@ -165,7 +175,7 @@ class TreeNodeApi:
         return node
 
     @staticmethod
-    def is_valid(value, require_props = properties) -> bool:
+    def is_valid(value: Any, require_props: List[str] = properties) -> bool:
         try:
             TreeNodeApi.check(value, require_props)
         except ValueError:

@@ -3,8 +3,9 @@ from AlgoTree.pretty_tree import PrettyTree, pretty_tree
 from AlgoTree.flat_forest import FlatForest
 from AlgoTree.flat_forest_node import FlatForestNode
 
+
 class TestTreePrettyPrinter(unittest.TestCase):
-    
+
     def setUp(self):
         # Create a flat tree
         #
@@ -50,7 +51,7 @@ class TestTreePrettyPrinter(unittest.TestCase):
             "       └───── h\n"
         )
         self.assertEqual(out, expected_output, msg="Tree not displayed correctly")
-    
+
     def test_pretty_print_marks(self):
         printer = PrettyTree()
         out = printer(self.flat_tree.subtree("a"), mark=["d", "f"], markers=["(?)"])
@@ -80,6 +81,7 @@ class TestTreePrettyPrinter(unittest.TestCase):
             "└───── e\n"
         )
         self.assertEqual(out, expected_output, msg="Tree not displayed correctly")
+
 
 if __name__ == "__main__":
     unittest.main()

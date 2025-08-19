@@ -2,6 +2,7 @@ import unittest
 
 from AlgoTree.treenode import TreeNode
 
+
 class TestTreeNode(unittest.TestCase):
     def test_constructor_with_name_and_value(self):
         node = TreeNode(name="root", value=10)
@@ -39,6 +40,7 @@ class TestTreeNode(unittest.TestCase):
         root = TreeNode(name="root", value=10)
         with self.assertRaises(KeyError):
             root.node("non_existent")
+
 
 if __name__ == "__main__":
     unittest.main()

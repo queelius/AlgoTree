@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Dict, Any, List
 
-#from AlgoTree.treenode_api import TreeNodeApi
+# from AlgoTree.treenode_api import TreeNodeApi
+
 
 class PrettyTree:
     """
@@ -14,15 +15,17 @@ class PrettyTree:
         "markers": ["🔵", "🔴", "🟢", "🟣", "🟠", "🟡", "🟤", "⚫", "⚪", "⭕", "🔘"],
         "spacer": " ",
         "child_connector": "├",
-        "payload_connector": "◄"
+        "payload_connector": "◄",
     }
 
-    def __init__(self,
-                 style: Optional[Dict[str, str]] = None,
-                 node_name: Callable[[Any], str] = lambda node: node.name,
-                 indent: int = 7,
-                 mark: Optional[List[str]] = None,
-                 node_details: Optional[Callable[[Any], Any]] = None):
+    def __init__(
+        self,
+        style: Optional[Dict[str, str]] = None,
+        node_name: Callable[[Any], str] = lambda node: node.name,
+        indent: int = 7,
+        mark: Optional[List[str]] = None,
+        node_details: Optional[Callable[[Any], Any]] = None,
+    ):
         """
         Initialize the PrettyTree object. If a node name is not provided, the default
         node name is the `name` property of the node. If a node detail is not provided,
@@ -71,7 +74,7 @@ class PrettyTree:
         node_name = kwargs.get("node_name", self.node_name)
         node_details = kwargs.get("node_details", self.node_details)
         indent = kwargs.get("indent", self.indent)
-        markers = kwargs.get("markers", style['markers'])
+        markers = kwargs.get("markers", style["markers"])
 
         def _build(cur, ind, bar_levels, is_last):
             s = ""
@@ -87,7 +90,7 @@ class PrettyTree:
                 else:
                     s += style["child_connector"]
                 s += style["horizontal"] * (indent - 2)
-                s += style["spacer"] 
+                s += style["spacer"]
 
             s += str(node_name(cur))
             if node_details is not None:

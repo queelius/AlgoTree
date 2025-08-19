@@ -1,12 +1,14 @@
-from typing import Any
+from typing import Any, Optional, Callable
 import AlgoTree.utils as utils
 from AlgoTree.tree_converter import TreeConverter
+
 
 class NodeHasher:
     """
     A class providing various hash functions for tree nodes.
     """
-    def __init__(self, hash_fn=None):
+
+    def __init__(self, hash_fn: Optional[Callable[[Any], int]] = None) -> None:
         """
         Initialize the NodeHasher with a specified hash function.
 
@@ -37,7 +39,7 @@ class NodeHasher:
         :param node: The node for which to compute the hash.
         :return: The hash value for the node's name.
         """
-        if node is None or not hasattr(node, 'name'):
+        if node is None or not hasattr(node, "name"):
             raise ValueError("Node must have a 'name' attribute")
         return hash(str(node.name))
 
@@ -55,10 +57,10 @@ class NodeHasher:
         :param node: The node for which to compute the hash.
         :return: The hash value for the node's payload.
         """
-        if node is None or not hasattr(node, 'payload'):
+        if node is None or not hasattr(node, "payload"):
             raise ValueError("Node must have a 'payload' attribute")
         return hash(str(node.payload))
-    
+
     @staticmethod
     def node(node: Any) -> int:
         """
@@ -74,9 +76,9 @@ class NodeHasher:
         :param node: The node for which to compute the hash.
         :return: The hash value for the node's name and payload.
         """
-        if node is None or not hasattr(node, 'name') or not hasattr(node, 'payload'):
+        if node is None or not hasattr(node, "name") or not hasattr(node, "payload"):
             raise ValueError("Node must have 'name' and 'payload' attributes")
-        
+
         return hash(str((node.name, node.payload)))
 
     @staticmethod

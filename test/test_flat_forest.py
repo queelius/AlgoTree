@@ -2,6 +2,7 @@ import unittest
 
 from AlgoTree.flat_forest import FlatForest
 
+
 class TestFlatTree(unittest.TestCase):
     def setUp(self):
         self.tree_data = {

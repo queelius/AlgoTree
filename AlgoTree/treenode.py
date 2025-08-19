@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, Any
 import copy
 import uuid
 
+
 class TreeNode(dict):
     """
     A tree node class. This class stores a nested
@@ -20,8 +21,7 @@ class TreeNode(dict):
         """
 
         def _from_dict(data, parent):
-            node = TreeNode(parent=parent, payload=None,
-                            name=data.pop("name", None))
+            node = TreeNode(parent=parent, payload=None, name=data.pop("name", None))
             node.payload = data.pop("payload", {})
             for k, v in data.items():
                 if k == "children":
@@ -30,7 +30,7 @@ class TreeNode(dict):
                 else:
                     node.payload[k] = v
             return node
-        
+
         return _from_dict(copy.deepcopy(data), None)
 
     def clone(self) -> "TreeNode":
@@ -39,14 +39,15 @@ class TreeNode(dict):
 
         :return: A new TreeNode object with the same data as the current node.
         """
+
         def _clone(node, parent):
-            new_node = TreeNode(parent=parent,
-                                name=node.name,
-                                payload=copy.deepcopy(node.payload))
+            new_node = TreeNode(
+                parent=parent, name=node.name, payload=copy.deepcopy(node.payload)
+            )
             for child in node.children:
                 _clone(child, new_node)
             return new_node
-        
+
         return _clone(self, None)
 
     def __init__(
@@ -54,7 +55,9 @@ class TreeNode(dict):
         parent: Optional["TreeNode"] = None,
         name: Optional[str] = None,
         payload: Optional[Any] = None,
-        *args, **kwargs):
+        *args,
+        **kwargs,
+    ):
         """
         Initialize a TreeNode. The parent of the node is set to the given parent
         node. If the parent is None, the node is the root of the tree. The name
@@ -86,7 +89,6 @@ class TreeNode(dict):
         else:
             self.payload = None
 
-
     @property
     def parent(self) -> Optional["TreeNode"]:
         """
@@ -105,11 +107,11 @@ class TreeNode(dict):
         """
         if parent is not None and not isinstance(parent, TreeNode):
             raise ValueError("Parent must be a TreeNode object")
-        
+
         # remove the node from the parent's children
         if self._parent is not None:
             self._parent.children.remove(self)
-            #self._parent.children = [child for child in self._parent.children if child != self]
+            # self._parent.children = [child for child in self._parent.children if child != self]
 
         self._parent = parent
 
@@ -128,7 +130,7 @@ class TreeNode(dict):
         while node.parent is not None:
             node = node.parent
         return node
-    
+
     def nodes(self) -> List["TreeNode"]:
         """
         Get all the nodes in the current sub-tree.
@@ -140,7 +142,7 @@ class TreeNode(dict):
             nodes.extend(child.nodes())
         nodes.append(self)
         return nodes
-    
+
     def subtree(self, name: str) -> "TreeNode":
         """
         Get the subtree rooted at the node with the given name. This is not
@@ -153,10 +155,11 @@ class TreeNode(dict):
         :return: The subtree rooted at the node with the given name.
         """
         from copy import deepcopy
+
         node = deepcopy(self.node(name))
         node.parent = None
         return node
-    
+
     def node(self, name: str) -> "TreeNode":
         """
         Get the node with the given name in the current sub-tree. The sub-tree
@@ -175,26 +178,26 @@ class TreeNode(dict):
                 if result is not None:
                     return result
             return None
-        
+
         def _ascend(node, name):
             if node.name == name:
                 return node
             if node.parent is not None:
                 return _ascend(node.parent, name)
             return None
-        
+
         asc_node = _ascend(self, name)
         if asc_node is not None:
             return asc_node
-        dsc_node =_descend(self, name)
+        dsc_node = _descend(self, name)
         if dsc_node is not None:
             return dsc_node
-        
+
         raise KeyError(f"Node with name {name} not found")
 
-    def add_child(self, name: Optional[str] = None,
-                  payload: Optional[Any] = None,
-                  *args, **kwargs) -> "TreeNode":
+    def add_child(
+        self, name: Optional[str] = None, payload: Optional[Any] = None, *args, **kwargs
+    ) -> "TreeNode":
         """
         Add a child node to the tree. Just invokes `__init__`. See `__init__` for
         details.
@@ -212,7 +215,7 @@ class TreeNode(dict):
         result += f", payload={self.payload}"
         result += f", len(children)={len(self.children)})"
         return result
-    
+
     @staticmethod
     def is_valid(data) -> bool:
         """
@@ -229,15 +232,16 @@ class TreeNode(dict):
             for child in data["children"]:
                 if not TreeNode.is_valid(child):
                     return False
-        
+
         return True
-    
+
     def to_dict(self):
         """
         Convert the subtree rooted at `node` to a dictionary.
 
         :return: A dictionary representation of the subtree.
         """
+
         def _convert(node):
             node_dict = {}
             node_dict["name"] = node.name
@@ -246,7 +250,7 @@ class TreeNode(dict):
             return node_dict
 
         return _convert(self)
-    
+
     def __eq__(self, other) -> bool:
         """
         Check if the current node is equal to the given node.
@@ -256,9 +260,9 @@ class TreeNode(dict):
         """
         if not isinstance(other, TreeNode):
             return False
-        
+
         return hash(self) == hash(other)
-    
+
     def __hash__(self) -> int:
         """
         Compute the hash of the current node.
@@ -266,7 +270,7 @@ class TreeNode(dict):
         :return: The hash of the node.
         """
         return id(self)
-    
+
     def __contains__(self, key) -> bool:
         """
         Check if the node's payload contains the given key.

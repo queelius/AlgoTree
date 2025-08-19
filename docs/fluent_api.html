@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>AlgoTree Fluent API Guide &#8212; AlgoTree 0.8.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AlgoTree: Comprehensive Tutorial" href="tutorial.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="algotree-fluent-api-guide">
+<h1>AlgoTree Fluent API Guide<a class="headerlink" href="#algotree-fluent-api-guide" title="Link to this heading">¶</a></h1>
+<p>The new fluent API provides a modern, intuitive way to work with trees in Python. This guide covers the new features added to AlgoTree.</p>
+<nav class="contents local" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#modern-node-class" id="id1">Modern Node Class</a></p>
+<ul>
+<li><p><a class="reference internal" href="#key-features" id="id2">Key Features</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#treebuilder-fluent-tree-construction" id="id3">TreeBuilder - Fluent Tree Construction</a></p>
+<ul>
+<li><p><a class="reference internal" href="#navigation-methods" id="id4">Navigation Methods</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#fluentnode-chainable-operations" id="id5">FluentNode - Chainable Operations</a></p>
+<ul>
+<li><p><a class="reference internal" href="#available-operations" id="id6">Available Operations</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#tree-dsl-multiple-format-support" id="id7">Tree DSL - Multiple Format Support</a></p>
+<ul>
+<li><p><a class="reference internal" href="#visual-format" id="id8">Visual Format</a></p></li>
+<li><p><a class="reference internal" href="#indent-format-yaml-like" id="id9">Indent Format (YAML-like)</a></p></li>
+<li><p><a class="reference internal" href="#s-expression-format" id="id10">S-Expression Format</a></p></li>
+<li><p><a class="reference internal" href="#auto-detection" id="id11">Auto-detection</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#complete-examples" id="id12">Complete Examples</a></p>
+<ul>
+<li><p><a class="reference internal" href="#example-1-building-and-analyzing-an-org-chart" id="id13">Example 1: Building and Analyzing an Org Chart</a></p></li>
+<li><p><a class="reference internal" href="#example-2-file-system-processing" id="id14">Example 2: File System Processing</a></p></li>
+<li><p><a class="reference internal" href="#example-3-data-pipeline" id="id15">Example 3: Data Pipeline</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#migration-from-dict-based-api" id="id16">Migration from Dict-based API</a></p>
+<ul>
+<li><p><a class="reference internal" href="#old-way-dict-based" id="id17">Old Way (Dict-based)</a></p></li>
+<li><p><a class="reference internal" href="#new-way-node-class" id="id18">New Way (Node class)</a></p></li>
+<li><p><a class="reference internal" href="#compatibility" id="id19">Compatibility</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#best-practices" id="id20">Best Practices</a></p></li>
+<li><p><a class="reference internal" href="#performance-considerations" id="id21">Performance Considerations</a></p></li>
+<li><p><a class="reference internal" href="#next-steps" id="id22">Next Steps</a></p></li>
+</ul>
+</nav>
+<section id="modern-node-class">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Modern Node Class</a><a class="headerlink" href="#modern-node-class" title="Link to this heading">¶</a></h2>
+<p>The new <code class="docutils literal notranslate"><span class="pre">Node</span></code> class provides a clean, object-oriented approach to tree structures:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+
+<span class="c1"># Create nodes</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;folder&quot;</span><span class="p">)</span>
+<span class="n">child1</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;child1&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">child2</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;child2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">75</span><span class="p">)</span>
+
+<span class="c1"># Access properties</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">is_root</span><span class="p">)</span>        <span class="c1"># True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">child1</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>        <span class="c1"># 1</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">child2</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># &quot;root&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">)</span>        <span class="c1"># False</span>
+
+<span class="c1"># Traverse the tree</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">traverse_preorder</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find nodes</span>
+<span class="n">high_value</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">60</span><span class="p">)</span>
+<span class="n">all_children</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="key-features">
+<h3><a class="toc-backref" href="#id2" role="doc-backlink">Key Features</a><a class="headerlink" href="#key-features" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Clean API</strong>: <code class="docutils literal notranslate"><span class="pre">node.parent</span></code> instead of <code class="docutils literal notranslate"><span class="pre">node['parent']</span></code></p></li>
+<li><p><strong>Built-in traversal</strong>: preorder, postorder, level-order</p></li>
+<li><p><strong>Rich properties</strong>: <code class="docutils literal notranslate"><span class="pre">is_root</span></code>, <code class="docutils literal notranslate"><span class="pre">is_leaf</span></code>, <code class="docutils literal notranslate"><span class="pre">level</span></code>, <code class="docutils literal notranslate"><span class="pre">siblings</span></code></p></li>
+<li><p><strong>Find operations</strong>: <code class="docutils literal notranslate"><span class="pre">find()</span></code> and <code class="docutils literal notranslate"><span class="pre">find_all()</span></code> with predicates</p></li>
+</ul>
+</section>
+</section>
+<section id="treebuilder-fluent-tree-construction">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">TreeBuilder - Fluent Tree Construction</a><a class="headerlink" href="#treebuilder-fluent-tree-construction" title="Link to this heading">¶</a></h2>
+<p>Build complex trees with intuitive method chaining:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeBuilder</span>
+
+<span class="c1"># Build a company org chart</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="p">(</span><span class="n">TreeBuilder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="s2">&quot;TechCorp&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">founded</span><span class="o">=</span><span class="mi">2010</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Engineering&quot;</span><span class="p">,</span> <span class="n">head</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">450</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Frontend&quot;</span><span class="p">,</span> <span class="n">lead</span><span class="o">=</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;React Team&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Vue Team&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Mobile Team&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">up</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Backend&quot;</span><span class="p">,</span> <span class="n">lead</span><span class="o">=</span><span class="s2">&quot;Charlie&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;API Team&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Database Team&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">up</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;DevOps&quot;</span><span class="p">,</span> <span class="n">lead</span><span class="o">=</span><span class="s2">&quot;Dana&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Go up 2 levels to Engineering&#39;s parent</span>
+    <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Sales&quot;</span><span class="p">,</span> <span class="n">head</span><span class="o">=</span><span class="s2">&quot;Eve&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;North America&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Europe&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Asia&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">up</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;HR&quot;</span><span class="p">,</span> <span class="n">head</span><span class="o">=</span><span class="s2">&quot;Frank&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">())</span>
+
+<span class="c1"># The tree is a regular Node object</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Company: </span><span class="si">{</span><span class="n">tree</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total departments: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">traverse_preorder</span><span class="p">()))</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="navigation-methods">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Navigation Methods</a><a class="headerlink" href="#navigation-methods" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.child(name,</span> <span class="pre">**data)</span></code> - Add child and move to it</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.sibling(name,</span> <span class="pre">**data)</span></code> - Add sibling node</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.up(levels=1)</span></code> - Move up by N levels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.to_root()</span></code> - Jump back to root</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.build()</span></code> - Get the constructed tree</p></li>
+</ul>
+</section>
+</section>
+<section id="fluentnode-chainable-operations">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">FluentNode - Chainable Operations</a><a class="headerlink" href="#fluentnode-chainable-operations" title="Link to this heading">¶</a></h2>
+<p>Perform complex tree operations with method chaining:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">FluentNode</span><span class="p">,</span> <span class="n">Node</span>
+
+<span class="c1"># Create a sample file system tree</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;folder&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;src&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;folder&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">src</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;main.py&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">src</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;utils.py&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+<span class="n">src</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test.py&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2048</span><span class="p">)</span>
+<span class="n">docs</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;docs&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;folder&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">docs</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;README.md&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
+
+<span class="c1"># Chain operations</span>
+<span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">descendants</span><span class="p">()</span>                           <span class="c1"># Get all descendants</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;file&quot;</span><span class="p">)</span>  <span class="c1"># Filter files only</span>
+    <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;size_kb&quot;</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">})</span>  <span class="c1"># Convert to KB</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size_kb&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Files &gt; 1KB</span>
+    <span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s1">&#39;size_kb&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> KB&quot;</span><span class="p">)</span>
+
+<span class="c1"># More operations</span>
+<span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">children</span><span class="p">()</span>                              <span class="c1"># Direct children only</span>
+    <span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>             <span class="c1"># Sort alphabetically</span>
+    <span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)))</span>  <span class="c1"># Process each</span>
+
+<span class="c1"># Prune empty folders</span>
+<span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">prune</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;folder&quot;</span> <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">))</span>
+</pre></div>
+</div>
+<section id="available-operations">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Available Operations</a><a class="headerlink" href="#available-operations" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Filtering</strong>: <code class="docutils literal notranslate"><span class="pre">.filter()</span></code>, <code class="docutils literal notranslate"><span class="pre">.where()</span></code>, <code class="docutils literal notranslate"><span class="pre">.leaves()</span></code></p></li>
+<li><p><strong>Traversal</strong>: <code class="docutils literal notranslate"><span class="pre">.children()</span></code>, <code class="docutils literal notranslate"><span class="pre">.descendants()</span></code></p></li>
+<li><p><strong>Transformation</strong>: <code class="docutils literal notranslate"><span class="pre">.map()</span></code>, <code class="docutils literal notranslate"><span class="pre">.sort()</span></code>, <code class="docutils literal notranslate"><span class="pre">.prune()</span></code></p></li>
+<li><p><strong>Execution</strong>: <code class="docutils literal notranslate"><span class="pre">.each()</span></code>, <code class="docutils literal notranslate"><span class="pre">.to_list()</span></code>, <code class="docutils literal notranslate"><span class="pre">.to_dict()</span></code>, <code class="docutils literal notranslate"><span class="pre">.first()</span></code>, <code class="docutils literal notranslate"><span class="pre">.count()</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="tree-dsl-multiple-format-support">
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Tree DSL - Multiple Format Support</a><a class="headerlink" href="#tree-dsl-multiple-format-support" title="Link to this heading">¶</a></h2>
+<p>Parse trees from various text formats:</p>
+<section id="visual-format">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Visual Format</a><a class="headerlink" href="#visual-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_tree</span>
+
+<span class="c1"># Unicode tree representation</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">filesystem[type:root]</span>
+<span class="s2">├── home[type:folder,owner:alice]</span>
+<span class="s2">│   ├── documents[type:folder]</span>
+<span class="s2">│   │   ├── report.pdf[size:2048]</span>
+<span class="s2">│   │   └── notes.txt[size:512]</span>
+<span class="s2">│   └── pictures[type:folder]</span>
+<span class="s2">│       └── vacation.jpg[size:4096]</span>
+<span class="s2">└── etc[type:folder,owner:root]</span>
+<span class="s2">    └── config.ini[size:128]</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># &quot;filesystem&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">])</span>  <span class="c1"># &quot;alice&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="indent-format-yaml-like">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Indent Format (YAML-like)</a><a class="headerlink" href="#indent-format-yaml-like" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">company: {revenue: 10M, employees: 100}</span>
+<span class="s2">  engineering: {head: Alice, size: 45}</span>
+<span class="s2">    frontend: {lead: Bob, size: 20}</span>
+<span class="s2">    backend: {lead: Charlie, size: 25}</span>
+<span class="s2">  sales: {head: David, size: 30}</span>
+<span class="s2">    domestic: </span><span class="si">{size: 20}</span>
+<span class="s2">    international: </span><span class="si">{size: 10}</span>
+<span class="s2">  hr: {head: Eve, size: 25}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;indent&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="s-expression-format">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">S-Expression Format</a><a class="headerlink" href="#s-expression-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tree</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">(company :revenue 10M :employees 100</span>
+<span class="s2">  (engineering :head Alice :size 45</span>
+<span class="s2">    (frontend :lead Bob :size 20)</span>
+<span class="s2">    (backend :lead Charlie :size 25))</span>
+<span class="s2">  (sales :head David :size 30</span>
+<span class="s2">    (domestic :size 20)</span>
+<span class="s2">    (international :size 10))</span>
+<span class="s2">  (hr :head Eve :size 25))</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;sexpr&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="auto-detection">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Auto-detection</a><a class="headerlink" href="#auto-detection" title="Link to this heading">¶</a></h3>
+<p>The parser automatically detects the format:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Detects visual format from tree characters</span>
+<span class="n">tree1</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;root</span><span class="se">\n</span><span class="s2">├── child1</span><span class="se">\n</span><span class="s2">└── child2&quot;</span><span class="p">)</span>
+
+<span class="c1"># Detects S-expression from parentheses</span>
+<span class="n">tree2</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;(root (child1) (child2))&quot;</span><span class="p">)</span>
+
+<span class="c1"># Defaults to indent format</span>
+<span class="n">tree3</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;root</span><span class="se">\n</span><span class="s2">  child1</span><span class="se">\n</span><span class="s2">  child2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="complete-examples">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Complete Examples</a><a class="headerlink" href="#complete-examples" title="Link to this heading">¶</a></h2>
+<section id="example-1-building-and-analyzing-an-org-chart">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Example 1: Building and Analyzing an Org Chart</a><a class="headerlink" href="#example-1-building-and-analyzing-an-org-chart" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeBuilder</span><span class="p">,</span> <span class="n">FluentNode</span>
+
+<span class="c1"># Build the organization</span>
+<span class="n">org</span> <span class="o">=</span> <span class="p">(</span><span class="n">TreeBuilder</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">root</span><span class="p">(</span><span class="s2">&quot;GlobalTech&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Engineering&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Platform&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Product&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">700</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Infrastructure&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">up</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Sales&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;Americas&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">700</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;EMEA&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;APAC&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">up</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">sibling</span><span class="p">(</span><span class="s2">&quot;Operations&quot;</span><span class="p">,</span> <span class="n">employees</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">())</span>
+
+<span class="c1"># Analyze the organization</span>
+<span class="n">large_depts</span> <span class="o">=</span> <span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">org</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">descendants</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;employees&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">600</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Departments with &gt;600 employees: </span><span class="si">{</span><span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">large_depts</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate total by region</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">org</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">parent</span> <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Sales&quot;</span><span class="p">))</span>
+
+<span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;employees&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total sales employees: </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-2-file-system-processing">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Example 2: File System Processing</a><a class="headerlink" href="#example-2-file-system-processing" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_tree</span><span class="p">,</span> <span class="n">FluentNode</span>
+
+<span class="c1"># Parse a file system structure</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="n">parse_tree</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">project[type:dir]</span>
+<span class="s2">├── src[type:dir]</span>
+<span class="s2">│   ├── main.py[type:file,lines:200]</span>
+<span class="s2">│   ├── utils.py[type:file,lines:150]</span>
+<span class="s2">│   └── tests[type:dir]</span>
+<span class="s2">│       ├── test_main.py[type:file,lines:100]</span>
+<span class="s2">│       └── test_utils.py[type:file,lines:80]</span>
+<span class="s2">├── docs[type:dir]</span>
+<span class="s2">│   └── README.md[type:file,lines:50]</span>
+<span class="s2">└── setup.py[type:file,lines:30]</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find all Python files</span>
+<span class="n">py_files</span> <span class="o">=</span> <span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">descendants</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+
+<span class="c1"># Calculate total lines of code</span>
+<span class="n">total_lines</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">py_files</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total Python lines: </span><span class="si">{</span><span class="n">total_lines</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find test files</span>
+<span class="n">test_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">py_files</span> <span class="k">if</span> <span class="s2">&quot;test&quot;</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test files: </span><span class="si">{</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">test_files</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="example-3-data-pipeline">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Example 3: Data Pipeline</a><a class="headerlink" href="#example-3-data-pipeline" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span><span class="p">,</span> <span class="n">FluentNode</span>
+
+<span class="c1"># Create a data processing pipeline tree</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;pipeline&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;ready&quot;</span><span class="p">)</span>
+<span class="n">extract</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;extract&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">extract</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;read_db&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">extract</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;read_api&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">transform</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">transform</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;normalize&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;running&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">transform</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;aggregate&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;pending&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">load</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;pending&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">load</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;validate&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;pending&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">load</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;write_db&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;pending&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Analyze pipeline status</span>
+<span class="n">status_summary</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">traverse_preorder</span><span class="p">():</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)</span>
+    <span class="n">status_summary</span><span class="p">[</span><span class="n">status</span><span class="p">]</span> <span class="o">=</span> <span class="n">status_summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pipeline Status:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">status</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">status_summary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find bottlenecks (completed tasks with high duration)</span>
+<span class="n">bottlenecks</span> <span class="o">=</span> <span class="p">(</span><span class="n">FluentNode</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">descendants</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;complete&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="k">lambda</span> <span class="n">n</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Bottlenecks (duration &gt;= 5): </span><span class="si">{</span><span class="p">[</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">bottlenecks</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="migration-from-dict-based-api">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">Migration from Dict-based API</a><a class="headerlink" href="#migration-from-dict-based-api" title="Link to this heading">¶</a></h2>
+<p>If you’re currently using the dict-based FlatForest or TreeNode classes, here’s how to migrate:</p>
+<section id="old-way-dict-based">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">Old Way (Dict-based)</a><a class="headerlink" href="#old-way-dict-based" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeNode</span>
+
+<span class="n">node</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+<span class="n">child</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="new-way-node-class">
+<h3><a class="toc-backref" href="#id18" role="doc-backlink">New Way (Node class)</a><a class="headerlink" href="#new-way-node-class" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+
+<span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">child</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="compatibility">
+<h3><a class="toc-backref" href="#id19" role="doc-backlink">Compatibility</a><a class="headerlink" href="#compatibility" title="Link to this heading">¶</a></h3>
+<p>The new Node class provides <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> and <code class="docutils literal notranslate"><span class="pre">from_dict()</span></code> methods for JSON compatibility:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Export to JSON-compatible dict</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+<span class="c1"># Import from dict</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="n">Node</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="best-practices">
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">Best Practices</a><a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Use TreeBuilder for complex structures</strong> - It’s more readable than manual node creation</p></li>
+<li><p><strong>Leverage FluentNode for data processing</strong> - Chain operations instead of nested loops</p></li>
+<li><p><strong>Choose the right DSL format</strong> - Visual for documentation, indent for hand-writing, S-expr for generation</p></li>
+<li><p><strong>Keep predicates simple</strong> - Complex logic should be extracted to named functions</p></li>
+<li><p><strong>Use meaningful node names</strong> - They’re your primary identifiers</p></li>
+</ol>
+</section>
+<section id="performance-considerations">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">Performance Considerations</a><a class="headerlink" href="#performance-considerations" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>Node class</strong> is optimized for tree operations, not storage efficiency</p></li>
+<li><p><strong>FluentNode operations</strong> create new wrappers but don’t copy nodes</p></li>
+<li><p><strong>DSL parsing</strong> is meant for small to medium trees (&lt; 10,000 nodes)</p></li>
+<li><p>For very large trees, consider using FlatForest with careful memory management</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h2><a class="toc-backref" href="#id22" role="doc-backlink">Next Steps</a><a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>See the <a class="reference internal" href="AlgoTree.html"><span class="doc">AlgoTree package</span></a> for complete API documentation</p></li>
+<li><p>Check out the <a class="reference internal" href="tutorial.html"><span class="doc">AlgoTree: Comprehensive Tutorial</span></a> for more patterns and recipes</p></li>
+<li><p>Read about traditional APIs in <a class="reference internal" href="treenode.html"><span class="doc">TreeNode</span></a> and <a class="reference internal" href="flat_forest.html"><span class="doc">FlatForest</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AlgoTree Fluent API Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#modern-node-class">Modern Node Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#treebuilder-fluent-tree-construction">TreeBuilder - Fluent Tree Construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fluentnode-chainable-operations">FluentNode - Chainable Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-dsl-multiple-format-support">Tree DSL - Multiple Format Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#complete-examples">Complete Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#migration-from-dict-based-api">Migration from Dict-based API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-considerations">Performance Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html">FlatForest Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="tutorial.html" title="next chapter">AlgoTree: Comprehensive Tutorial</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/fluent_api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

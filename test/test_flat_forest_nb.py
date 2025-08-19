@@ -35,20 +35,16 @@ class TestFlatTree(unittest.TestCase):
         self.flat_tree = FlatForest(self.tree_data)
 
     def test_parent(self):
-        #self.assertEqual(self.flat_tree.root.parent, None)
+        # self.assertEqual(self.flat_tree.root.parent, None)
         self.assertEqual(
             self.flat_tree.node("node3").parent,
             self.flat_tree.node("node1"),
         )
-        #self.assertEqual(self.flat_tree.subtree("node3").parent, None)
+        # self.assertEqual(self.flat_tree.subtree("node3").parent, None)
 
     def test_initialization(self):
-        self.assertEqual(
-            self.flat_tree["node1"]["data"], "Some data for node1"
-        )
-        self.assertEqual(
-            self.flat_tree["node2"]["data"], "Some data for node2"
-        )
+        self.assertEqual(self.flat_tree["node1"]["data"], "Some data for node1")
+        self.assertEqual(self.flat_tree["node2"]["data"], "Some data for node2")
         self.assertEqual(self.flat_tree["node3"]["parent"], "node1")
 
     def test_node_names(self):
@@ -64,17 +60,13 @@ class TestFlatTree(unittest.TestCase):
         self.assertCountEqual(unique_keys, expected_keys)
 
     def test_child_names(self):
-        self.assertCountEqual(self.flat_tree.child_names("node1"), ["node2","node3"])
-        self.assertEqual(
-            self.flat_tree.child_names("node3"), ["node4", "node5"]
-        )
+        self.assertCountEqual(self.flat_tree.child_names("node1"), ["node2", "node3"])
+        self.assertEqual(self.flat_tree.child_names("node3"), ["node4", "node5"])
         self.assertEqual(self.flat_tree.child_names("node2"), [])
 
     def test_detach(self):
         detached_node = self.flat_tree.detach("node3")
-        self.assertEqual(
-            self.flat_tree["node3"]["parent"], FlatForest.DETACHED_KEY
-        )
+        self.assertEqual(self.flat_tree["node3"]["parent"], FlatForest.DETACHED_KEY)
         self.assertEqual(detached_node._key, "node3")
 
     def test_purge(self):
@@ -158,9 +150,7 @@ class TestFlatTreeNode(unittest.TestCase):
     def test_detach(self):
         detached_node = self.node3.detach()
         self.assertEqual(detached_node._key, "node3")
-        self.assertEqual(
-            self.flat_tree["node3"]["parent"], FlatForest.DETACHED_KEY
-        )
+        self.assertEqual(self.flat_tree["node3"]["parent"], FlatForest.DETACHED_KEY)
 
     def test_getitem_setitem_delitem(self):
         self.node1["key1"] = "value1"
@@ -187,6 +177,7 @@ class TestFlatTreeNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.node3.parent = node6
             FlatForest.check_valid(self.flat_tree)
+
 
 if __name__ == "__main__":
     unittest.main()

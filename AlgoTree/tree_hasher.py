@@ -1,16 +1,16 @@
-
-from typing import Any
+from typing import Any, Optional, Callable
 from AlgoTree.tree_converter import TreeConverter
+
 
 class TreeHasher:
     """
     A class that provides various hash functions for trees, with a default hashing strategy.
     """
 
-    def __init__(self, hash_fn=None):
+    def __init__(self, hash_fn: Optional[Callable[[Any], int]] = None) -> None:
         """
         Initialize the TreeHasher with a specified hash function.
-        
+
         :param hash_function: A hash function to use for trees. If None, defaults to `self.tree`.
         """
         self.hash_fn = hash_fn or self.tree
@@ -18,7 +18,7 @@ class TreeHasher:
     def __call__(self, tree: Any) -> int:
         """
         Make TreeHasher callable, using the default hash function.
-        
+
         :param tree: The tree to hash.
         :return: The hash value for the tree.
         """
@@ -34,7 +34,7 @@ class TreeHasher:
         """
         if tree is None:
             raise ValueError("Tree cannot be None")
-        
+
         return hash(str(TreeConverter.to_dict(tree)))
 
     @staticmethod
@@ -43,7 +43,7 @@ class TreeHasher:
         if tree is None:
             raise ValueError("Tree cannot be None")
 
-        def build(node):            
+        def build(node: Any) -> list:
             child_nums = [TreeHasher.isomorphic(child) for child in tree.children]
             return [len(node.children), child_nums]
 

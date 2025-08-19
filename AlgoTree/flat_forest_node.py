@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 from copy import deepcopy
 from AlgoTree.flat_forest import FlatForest
 
+
 class FlatForestNode(collections.abc.MutableMapping):
     __slots__ = ("_forest", "_key", "_root_key")
 
@@ -22,7 +23,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         new_node._key = self._key
         new_node._root_key = self._root_key
         return new_node
-      
+
     def clone(self, parent=None, clone_children=False) -> "FlatForestNode":
         """
         Clone the node and, optionally, its children. If you want to
@@ -35,7 +36,9 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
         new_node = FlatForestNode.__new__(FlatForestNode)
         if parent is None:
-            new_node._forest = FlatForest({ self._key: deepcopy(self._forest[self._key]) })
+            new_node._forest = FlatForest(
+                {self._key: deepcopy(self._forest[self._key])}
+            )
             new_node._root_key = self._key
         else:
             if self._key in parent._forest:
@@ -79,7 +82,7 @@ class FlatForestNode(collections.abc.MutableMapping):
     def __init__(
         self,
         name: Optional[str] = None,
-        parent: Optional[Union["FlatForestNode",str]] = None,
+        parent: Optional[Union["FlatForestNode", str]] = None,
         forest: Optional[FlatForest] = None,
         payload: Optional[Dict] = None,
         *args,
@@ -135,7 +138,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         :return: The unique name of the node.
         """
         return self._key
-    
+
     @name.setter
     def name(self, name: str) -> None:
         """
@@ -155,7 +158,7 @@ class FlatForestNode(collections.abc.MutableMapping):
                 self._forest[child_key][FlatForest.PARENT_KEY] = name
         self._forest[name] = self._forest.pop(self._key)
         self._key = name
-    
+
     @property
     def root(self) -> "FlatForestNode":
         """
@@ -166,7 +169,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         return FlatForestNode.proxy(
             forest=self._forest, node_key=self._root_key, root_key=self._root_key
         )
-        
+
     @property
     def parent(self) -> Optional["FlatForestNode"]:
         """
@@ -179,9 +182,8 @@ class FlatForestNode(collections.abc.MutableMapping):
 
         # we do it this way in case for instance it's a logical root like
         # the root of the detached nodes.
-        par_key = self._forest[self._key].get(
-            FlatForest.PARENT_KEY, self._root_key)
-        
+        par_key = self._forest[self._key].get(FlatForest.PARENT_KEY, self._root_key)
+
         return FlatForestNode.proxy(
             forest=self._forest, node_key=par_key, root_key=self._root_key
         )
@@ -292,7 +294,9 @@ class FlatForestNode(collections.abc.MutableMapping):
     def __len__(self) -> int:
         return len(self.payload)
 
-    def add_child(self, name: Optional[str] = None, *args, **kwargs) -> "FlatForestNode":
+    def add_child(
+        self, name: Optional[str] = None, *args, **kwargs
+    ) -> "FlatForestNode":
         """
         Add a child node. See `__init__` for details on the arguments.
 
@@ -300,7 +304,7 @@ class FlatForestNode(collections.abc.MutableMapping):
                  contains the parent.
         """
         return FlatForestNode(name=name, parent=self, *args, **kwargs)
-    
+
     @property
     def children(self) -> List["FlatForestNode"]:
         """
@@ -346,7 +350,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         :return: True if the nodes are equal, False otherwise.
         """
         return hash(self) == hash(other)
-    
+
     def node(self, name: str) -> "FlatForestNode":
         """
         Get an ancestor node with the given name.
@@ -354,7 +358,9 @@ class FlatForestNode(collections.abc.MutableMapping):
         :param name: The name of the node.
         :return: The node.
         """
-        return FlatForestNode.proxy(forest=self._forest, node_key=name, root_key=self._root_key)
+        return FlatForestNode.proxy(
+            forest=self._forest, node_key=name, root_key=self._root_key
+        )
 
     def subtree(self, name: Optional[str] = None) -> "FlatForestNode":
         """
@@ -369,7 +375,7 @@ class FlatForestNode(collections.abc.MutableMapping):
             name = self.name
 
         return FlatForestNode.proxy(forest=self._forest, node_key=name, root_key=name)
-    
+
     def contains(self, name) -> bool:
         """
         Check if the the subtree rooted at the node contains any children
@@ -380,8 +386,9 @@ class FlatForestNode(collections.abc.MutableMapping):
         """
 
         from .utils import is_ancestor
+
         return is_ancestor(self, self.node(name))
-        
+
     def __contains__(self, key) -> bool:
         """
         Check if the node's payload contains the given key.
@@ -390,7 +397,7 @@ class FlatForestNode(collections.abc.MutableMapping):
         :return: True if the key is present in the payload, False otherwise.
         """
         return key in self.payload
-    
+
     def to_dict(self):
         """
         Convert the subtree rooted at `node` to a dictionary.
@@ -398,14 +405,16 @@ class FlatForestNode(collections.abc.MutableMapping):
         :return: A dictionary representation of the subtree.
         """
         from .tree_converter import TreeConverter
+
         return TreeConverter.convert(self, FlatForestNode).forest
-    
+
     def __hash__(self) -> int:
         """
         Get the hash of the node.
 
         :return: The hash of the node.
         """
-        
+
         from .node_hasher import NodeHasher
+
         return NodeHasher.path(self)

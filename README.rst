@@ -7,8 +7,26 @@ AlgoTree
 .. image:: https://img.shields.io/pypi/l/AlgoTree.svg
    :target: https://pypi.org/project/AlgoTree/
 
-``AlgoTree`` is a Python package for working with tree structures, including
-FlatForest and TreeNode representations.
+``AlgoTree`` is a Python package for working with tree structures. It provides
+a modern fluent API for tree construction and manipulation.
+
+⚠️ **BREAKING CHANGES in v1.0.0** ⚠️
+--------------------------------------
+
+**Version 1.0.0 introduces a completely new API that is NOT backward compatible.**
+
+- The old ``TreeNode`` and ``FlatForest`` dict-based classes have been replaced
+- New modern ``Node`` class with clean OOP design
+- New fluent API with ``TreeBuilder`` and ``FluentNode``
+- Tree DSL for parsing trees from text
+
+**If you need the old API:**
+
+.. code-block:: shell
+
+   pip install "AlgoTree<1.0.0"
+
+For migration guide and old documentation, see the `v0.8 branch <https://github.com/queelius/AlgoTree/tree/v0.8>`_.
 
 
 Introduction
@@ -16,7 +34,16 @@ Introduction
 
 Welcome to the documentation for the ``AlgoTree`` package. This package provides a
 suite of utilities for working with tree-like data structures in Python. It
-supports various tree representations, including:
+supports various tree representations and APIs:
+
+**New Fluent API (Recommended)**:
+
+- ``Node`` - Modern tree node class with clean OOP design
+- ``TreeBuilder`` - Fluent API for building trees with method chaining
+- ``FluentNode`` - Chainable operations for filtering, mapping, and transforming trees
+- ``parse_tree`` - DSL parser supporting visual, indent, and S-expression formats
+
+**Traditional API**:
 
 - ``FlatForest`` and ``FlatForestNode`` for working with flat forest and tree structures
 - ``TreeNode`` for recursive tree structures
@@ -39,7 +66,44 @@ To install the ``AlgoTree`` package, you can use pip:
    pip install AlgoTree
 
 Once installed, you can start using the various tree structures and utilities
-provided by the package. Here is a quick example to get you started:
+provided by the package. 
+
+Quick Start with the Fluent API (Recommended)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   from AlgoTree import TreeBuilder, parse_tree, FluentNode
+   
+   # Method 1: Build with fluent API
+   tree = (TreeBuilder()
+       .root("company")
+       .child("engineering")
+           .child("frontend")
+           .sibling("backend")
+           .up()
+       .sibling("sales")
+       .build())
+   
+   # Method 2: Parse from text DSL
+   tree = parse_tree("""
+   company
+   ├── engineering
+   │   ├── frontend
+   │   └── backend
+   └── sales
+   """)
+   
+   # Process with chainable operations
+   (FluentNode(tree)
+       .descendants()
+       .where(lambda n: "end" in n.name)
+       .each(lambda n: print(n.name)))  # Prints: frontend, backend
+
+For detailed examples, see the `Fluent API Guide <https://queelius.github.io/AlgoTree/fluent_api.html>`_ in the documentation.
+
+Traditional API Example
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -49,7 +113,6 @@ provided by the package. Here is a quick example to get you started:
    node1 = FlatForestNode(name="node1", parent=root, data=1)
    node2 = FlatForestNode(name="node2", parent=root, data=2)
    node3 = FlatForestNode(name="node3", parent=node2, data=3)
-   node4 = FlatForestNode(name="node4", parent=node3, data=4)
 
    pretty_tree(root)
 
@@ -59,10 +122,6 @@ This produces the output::
    ├── node1
    └── node2
        └── node3
-           └── node4
-
-This code creates a simple tree with a root node and two child nodes. It then
-pretty-prints the tree.
 
 The ``AlgoTree`` package provides a wide range of tree structures and utilities
 to help you work with tree-like data structures in Python. You can explore the
@@ -71,179 +130,38 @@ documentation to learn more about the available features and how to use them.
 Features
 --------
 
-- Flexible tree structures with ``FlatForest``, ``FlatForestNode``, and ``TreeNode``
-- Utility functions for common tree operations such as traversal, searching, and manipulation
-- Conversion utilities to easily convert between different tree representations
-- Integration with visualization tools to visualize tree structures
+**New in v0.9+ (Fluent API)**:
+
+- **Modern Node class** - Clean OOP design without dict inheritance
+- **TreeBuilder** - Intuitive tree construction with method chaining
+- **FluentNode** - Powerful chainable operations (filter, map, prune, sort)
+- **Tree DSL** - Parse trees from visual, indent, or S-expression formats
+- **Rich traversal** - Built-in preorder, postorder, and level-order traversal
+
+**Core Features**:
+
+- Clean, intuitive API with the modern ``Node`` class
+- Powerful operations for traversal, searching, and manipulation
+- Multiple tree construction methods (programmatic, fluent, DSL)
+- Pretty printing and visualization
+- Command-line tool ``jt`` for tree manipulation from the terminal
 
 
-Node-Centric API
-----------------
+Modern API Design
+-----------------
 
-We implement two tree data structures:
+AlgoTree v1.0 provides a clean, modern API built around the ``Node`` class,
+which represents tree nodes as proper Python objects rather than dictionaries.
 
-- ``FlatForest`` for working with flat tree structures with
-      "pointers" to parent nodes. It uses a proxy object ``FlatForestNode`` to
-      provide a node-centric API.
-- ``TreeNode`` for recursive tree structures, in which each node is a dictionary
-      with an optional list of child nodes.
+Key properties and methods:
 
-Each representation has its own strengths and weaknesses. The key design point
-for ``FlatForest`` and ``TreeNode`` is that they are both also ``dict`` objects, i.e.,
-they provide a *view* of dictionaries as tree-like structures, as long as the
-dictionaries are structured in a certain way. We document that structure
-elsewhere.
+- ``parent`` - Parent node reference
+- ``children`` - List of child nodes  
+- ``is_root``, ``is_leaf`` - Node type checks
+- ``level`` - Depth in tree
+- ``add_child()`` - Add a child node
+- ``traverse_*()`` - Various traversal methods
+- ``find()``, ``find_all()`` - Search with predicates
+- ``to_dict()``, ``from_dict()`` - JSON compatibility
 
-Each tree data structure models the *concept* of a tree node so that the
-underlying implementations can be decoupled from any algorithms
-or operations that we may want to perform on the tree.
-
-The tree node concept is defined as follows:
-
-- **children** property
-
-      Represents a list of child nodes for the current node that can be
-      accessed and modified[1_].
-
-- **parent** property
-
-      Represents the parent node of the current node that can be accessed
-      and modified[2_]. 
-      
-      Suppose we have the subtree ``G`` at node ``G``::
-
-            B (root)
-            ├── D
-            └── E (parent)
-                └── G (current node)
-
-      Then, ``G.parent`` should refer node ``E``. ``G.root.parent`` should be None
-      since ``root`` is the root node of subtree ``G`` and the root node has no parent.
-      This is true even if subtree ``G`` is a subtree view of a larger tree.
-
-      If we set ``G.parent = D``, then the tree structure changes to::
-
-            B (root)
-            ├── D
-            │   └── G (current node)
-            └── E
-      
-      This also changes the view of the sub-tree, since we changed the
-      underlying tree structure. However, the same nodes are still accessible
-      from the sub-tree.
-
-      If we had set ``G.parent = X`` where ``X`` is not in the subtree ``G``, then
-      we would have an invalid subtree view even if is is a well-defined
-      operation on the underlying tree structure. It is undefined
-      behavior to set a parent that is not in the subtree, but leave it
-      up to each implementation to decide how to handle such cases.
-
-- **node(name: str) -> NodeType** method.
-
-      Returns a node in the current subtree that the
-      current node belongs to. The returned node should be the node with the
-      given name, if it exists. If the node does not exist, it should raise
-      a ``KeyError``.
-
-      The node-centric view of the returned node should be consistent with the
-      view of the current node, i.e., if the current node belongs to a specific sub-tree
-      rooted at some other node, the returned node should also belong to the
-      same sub-tree (i.e., with the same root), just pointing to the new node,
-      but it should be possible to use ``parent`` and ``children`` to go up and down
-      the sub-tree to reach the same nodes. Any node that is an ancestor of the
-      root of the sub-tree remains inaccessible.
-
-      Example: Suppose we have the sub-tree ``t`` rooted at ``A`` and the current node
-      is ``B``::
-
-            A (root)
-            ├── B (current node)
-            │   ├── D
-            │   └── E
-            |       └── G
-            └── C
-                └── F
-      
-      If we get node ``F``, ``t.node(F)``, then the sub-tree ``t`` remains the same,
-      but the current node is now ``F``::
-    
-            A (root)
-            ├── B
-            │   ├── D
-            │   └── E
-            |       └── G
-            └── C
-                └── F (current node)
-
-- **subtree(name: Optional[str] = None) -> NodeType** method.
-
-      This is an optional method that may not be implemented by all tree
-      structures. ``FlatForestNode`` implements this method, but ``TreeNode`` does
-      not.
-
-      Returns a view of another sub-tree rooted at ``node`` where ``node`` is
-      contained in the original sub-tree view. If ``node`` is ``None``, the method
-      will return the sub-tree rooted at the current node.
-
-      As a view, the subtree represents a way of looking at the tree structure
-      from a different perspective. If you modify the sub-tree, you are also
-      modifying the underlying tree structure. The sub-tree should be a
-      consistent view of the tree, i.e., it should be possible to use ``parent``
-      and ``children`` to navigate between the nodes in the sub-tree and the
-      nodes in the original tree.
-      
-      ``subtree`` is a *partial function* over the the nodes in the sub-tree,
-      which means it is only well-defined when ``node`` is a descendant of
-      the root of the sub-tree. We do not specify how to deal with the case
-      when this condition is not met, but one approach would be to raise an
-      exception.
-
-      Example: Suppose we have the sub-tree `t` rooted at `A` and the current node
-      is `C`::
-
-            A (root)
-            ├── B
-            │   ├── D
-            │   └── E
-            |       └── G
-            └── C (current node)
-                └── F
-
-      The subtree `t.subtree(B)` returns a new subtree::
-
-            B (root, current node)
-            ├── D
-            └── E
-                └── G
-
-- **root** property
-
-      An immutable property that represents the root node of the (sub)tree.
-      
-      Suppose we have the subtree ``G`` at node ``G``::
-
-            B (root)
-            ├── D
-            └── E
-                └── G (current node)
-
-      Then, `G.root` should refer node `B`.
-
-- **payload** property
-
-      Returns the payload of the current node. The payload
-      is the data associated with the node but not with the structure of the
-      tree, e.g., it does not include the ``parent`` or ``children`` of the node.
-
-- **name** property
-
-      Returns the name of the current node. The name is
-      an identifier for the node within the tree. It is not necessarily unique,
-      and nor is it necessarily even a meaningful identifier, e.g., a random
-      UUID.
-      
-      In ``TreeNode``, for instance, if the name is not set, a UUID is generated.
-
-.. [1] Modifying this property may change the **parent** property of other nodes.
-
-.. [2] Modifying this property may change the **children** property of other nodes.
+See the `API documentation <https://queelius.github.io/AlgoTree/fluent_api.html>`_ for complete details.

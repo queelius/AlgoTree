@@ -20,12 +20,8 @@ class TestTreeNodeAdvanced(unittest.TestCase):
             └── child2_1
         """
         self.root = TreeNode(name="root", value="root_value")
-        self.child1 = TreeNode(
-            name="child1", parent=self.root, value="child1_value"
-        )
-        self.child2 = TreeNode(
-            name="child2", parent=self.root, value="child2_value"
-        )
+        self.child1 = TreeNode(name="child1", parent=self.root, value="child1_value")
+        self.child2 = TreeNode(name="child2", parent=self.root, value="child2_value")
         self.child1_1 = TreeNode(
             name="child1_1", parent=self.child1, value="child1_1_value"
         )

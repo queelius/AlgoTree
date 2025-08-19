@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlgoTree.flat_forest &#8212; AlgoTree 0.8.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=4f649999" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=039e1c02" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=6a14807c"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=486e5634"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -29,13 +31,16 @@
           <div class="body" role="main">
             
   <h1>Source code for AlgoTree.flat_forest</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
 
-<div class="viewcode-block" id="FlatForest"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest">[docs]</a><span class="k">class</span> <span class="nc">FlatForest</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+
+<div class="viewcode-block" id="FlatForest">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FlatForest</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A forest class that is also a standard dictionary.</span>
 
@@ -73,11 +78,13 @@
 <span class="sd">    detached.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="FlatForest.spec"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.spec">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<div class="viewcode-block" id="FlatForest.spec">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.spec">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spec</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the JSON specification of the FlatForest data structure.</span>
-<span class="sd">        </span>
+
 <span class="sd">        This method returns a dictionary representing the structure of the</span>
 <span class="sd">        FlatForest. This is useful for documentation purposes and for</span>
 <span class="sd">        understanding the structure of the data. The structure is as follows::</span>
@@ -90,19 +97,22 @@
                 <span class="s2">&quot;parent | None&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;parent_key&gt; | None&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;...&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span>
+                <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span><span class="p">,</span>
             <span class="p">},</span>
             <span class="s2">&quot;...&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
             <span class="s2">&quot;&lt;node_key&gt;&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;parent | None&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;parent_key&gt; | None&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;...&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span>
-            <span class="p">}</span>
+                <span class="s2">&quot;&lt;any_key&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;any_value&gt;&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
         <span class="p">}</span></div>
-    
-<div class="viewcode-block" id="FlatForest.is_valid"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.is_valid">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">is_valid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+
+<div class="viewcode-block" id="FlatForest.is_valid">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.is_valid">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the given data is a valid FlatForest.</span>
 
@@ -115,7 +125,8 @@
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize a FlatForest.</span>
 
@@ -147,7 +158,9 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_root</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="FlatForest.logical_root_names"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.logical_root_names">[docs]</a>    <span class="k">def</span> <span class="nf">logical_root_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<div class="viewcode-block" id="FlatForest.logical_root_names">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.logical_root_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">logical_root_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the logical nodes of the forest. These occur when a node has a parent</span>
 <span class="sd">        that is not in the forest. A special case for this is the `DETACHED_KEY`</span>
@@ -156,15 +169,21 @@
 
 <span class="sd">        :return: List of logical root names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="p">[</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span>
-                   <span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">and</span> <span class="n">v</span><span class="p">[</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
-        <span class="c1">#print(parents)</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">v</span><span class="p">[</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">and</span> <span class="n">v</span><span class="p">[</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">]</span>
+        <span class="c1"># print(parents)</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">parents</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">DETACHED_KEY</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
             <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DETACHED_KEY</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">keys</span></div>
 
-<div class="viewcode-block" id="FlatForest.interior_node_names"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.interior_node_names">[docs]</a>    <span class="k">def</span> <span class="nf">interior_node_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="FlatForest.interior_node_names">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.interior_node_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interior_node_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get interior node names, i.e., nodes that are not root nodes or logical</span>
 <span class="sd">        nodes.</span>
@@ -172,8 +191,11 @@
 <span class="sd">        :return: List of interior node names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span></div>
-    
-<div class="viewcode-block" id="FlatForest.node_names"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.node_names">[docs]</a>    <span class="k">def</span> <span class="nf">node_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+
+
+<div class="viewcode-block" id="FlatForest.node_names">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.node_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the unique names in the tree, even if they are not nodes in the tree</span>
 <span class="sd">        but only parent names without corresponding nodes.</span>
@@ -182,7 +204,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">logical_root_names</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FlatForest.child_names"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.child_names">[docs]</a>    <span class="k">def</span> <span class="nf">child_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="FlatForest.child_names">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.child_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">child_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the children names of a node with the given name.</span>
 
@@ -194,8 +219,11 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node name not found: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span></div>
-    
-<div class="viewcode-block" id="FlatForest.detach"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.detach">[docs]</a>    <span class="k">def</span> <span class="nf">detach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+
+
+<div class="viewcode-block" id="FlatForest.detach">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.detach">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detach subtree rooted at node with the given name by setting its parent</span>
 <span class="sd">        to `FlatForest.DETACHED_KEY`, which denotes a special name (key) that we</span>
@@ -207,17 +235,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node not found: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        
+
         <span class="c1"># let&#39;s make sure it&#39;s not already detached by being an ancestor of a</span>
         <span class="c1"># detached node</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detached</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is already detached&quot;</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">FlatForest</span><span class="o">.</span><span class="n">DETACHED_KEY</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FlatForest.check_valid"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.check_valid">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">check_valid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.check_valid">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.check_valid">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_valid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Validate the forest structure to ensure the structural integrity of the</span>
 <span class="sd">        trees.</span>
@@ -236,8 +267,8 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data is not a dictionary: </span><span class="si">{</span><span class="n">data</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-        
-        <span class="k">def</span> <span class="nf">_check_cycle</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_check_cycle</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cycle detected: </span><span class="si">{</span><span class="n">visited</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -248,35 +279,45 @@
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Node </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> does not have a payload dictionary: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;Node </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2"> does not have a payload dictionary: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
             <span class="n">par_key</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">par_key</span> <span class="o">==</span> <span class="n">FlatForest</span><span class="o">.</span><span class="n">DETACHED_KEY</span><span class="p">:</span>
                 <span class="k">continue</span>
 
-            <span class="k">if</span> <span class="n">par_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">par_key</span> <span class="o">!=</span> <span class="n">FlatForest</span><span class="o">.</span><span class="n">DETACHED_KEY</span> <span class="ow">and</span> <span class="n">par_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Parent </span><span class="si">{</span><span class="n">par_key</span><span class="si">!r}</span><span class="s2"> not in forest for node </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">par_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">par_key</span> <span class="o">!=</span> <span class="n">FlatForest</span><span class="o">.</span><span class="n">DETACHED_KEY</span>
+                <span class="ow">and</span> <span class="n">par_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parent </span><span class="si">{</span><span class="n">par_key</span><span class="si">!r}</span><span class="s2"> not in forest for node </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">_check_cycle</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="FlatForest.as_tree"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.as_tree">[docs]</a>    <span class="k">def</span> <span class="nf">as_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_name</span> <span class="o">=</span> <span class="s2">&quot;__ROOT__&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.as_tree">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.as_tree">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_name</span><span class="o">=</span><span class="s2">&quot;__ROOT__&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the forest as a single tree rooted at a logical root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="kn">from</span> <span class="nn">.flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
-        
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
+
         <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">new_dict</span><span class="p">[</span><span class="n">root_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="c1">#new_dict[key] = copy.deepcopy(self[key])</span>
+            <span class="c1"># new_dict[key] = copy.deepcopy(self[key])</span>
             <span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">root_name</span>
         <span class="k">return</span> <span class="n">FlatForestNode</span><span class="p">(</span><span class="n">forest</span><span class="o">=</span><span class="n">FlatForest</span><span class="p">(</span><span class="n">new_dict</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">root_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FlatForest.root_key"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.root_key">[docs]</a>    <span class="k">def</span> <span class="nf">root_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.root_key">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.root_key">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the root key of the node with given name.</span>
 
@@ -286,7 +327,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node name not found: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logical_root_names</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">name</span>
 
@@ -294,17 +335,18 @@
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">name</span></div>
 
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">trees</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trees</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the trees in the forest.</span>
 
 <span class="sd">        :return: The trees in the forest.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">(</span><span class="n">root_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">root_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_names</span><span class="p">]</span>
-    
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">root_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the names of the root nodes. These are the nodes that have no</span>
 <span class="sd">        parent.</span>
@@ -313,21 +355,25 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">PARENT_KEY</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">keys</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">logical_root_names</span><span class="p">()</span>
-        
-<div class="viewcode-block" id="FlatForest.purge"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.purge">[docs]</a>    <span class="k">def</span> <span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.purge">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.purge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">purge</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Purge detached nodes (tree rooted at `FlatForest.DETACHED_KEY`).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">_purge</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_purge</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
                 <span class="n">_purge</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
             <span class="k">del</span> <span class="bp">self</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
-        
+
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detached</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
             <span class="n">_purge</span><span class="p">(</span><span class="n">child</span><span class="p">)</span></div>
 
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">detached</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">detached</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the detached tree. This is a special tree for which detached</span>
 <span class="sd">        nodes are rooted at a logical node with the name `FlatForest.DETACHED_KEY`.</span>
@@ -336,10 +382,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">(</span><span class="n">FlatForest</span><span class="o">.</span><span class="n">DETACHED_KEY</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;FlatForest(</span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;FlatForest(root_names=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root_names</span><span class="si">}</span><span class="s2">)&quot;</span>
 
     <span class="c1">#### implementation of node-centric methods, we treat the forest as a tree</span>
@@ -347,15 +393,19 @@
     <span class="c1">#### root node if that is desired.</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">children</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the children of the preferred root node.</span>
 
 <span class="sd">        :return: The children of the preferred root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">children</span>
-    
-<div class="viewcode-block" id="FlatForest.add_child"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.add_child">[docs]</a>    <span class="k">def</span> <span class="nf">add_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.add_child">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.add_child">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_child</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a child node to the preferred root node.</span>
 
@@ -364,17 +414,18 @@
 <span class="sd">        :return: The child node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-    
+
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the parent of the preferred root node. This is always None</span>
 <span class="sd">        since the preferred root node is a root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span>
-    
+
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">roots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">roots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the root nodes of the forest.</span>
 
@@ -383,7 +434,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_names</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">preferred_root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preferred_root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the preferred root node of the forest.</span>
 
@@ -397,9 +448,9 @@
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No root nodes and no explicit preferred root set&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        
+
     <span class="nd">@preferred_root</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">preferred_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">preferred_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the preferred root node of the forest.</span>
 
@@ -409,46 +460,52 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_root</span> <span class="o">=</span> <span class="n">name</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the forest is equal to another forest.</span>
 
 <span class="sd">        :param other: The other forest to compare to.</span>
 <span class="sd">        :return: True if the forests are equal, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1">#return isinstance(other, FlatForest) and dict(self) == dict(other)</span>
+        <span class="c1"># return isinstance(other, FlatForest) and dict(self) == dict(other)</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">())</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">subtree</span><span class="p">())</span>
-    
-<div class="viewcode-block" id="FlatForest.nodes"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.nodes">[docs]</a>    <span class="k">def</span> <span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="FlatForest.nodes">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.nodes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;FlatForestNode&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get all the nodes in the forest.</span>
 
 <span class="sd">        :return: A list of all the nodes in the forest.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">FlatForestNode</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">forest</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">root_key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">()]</span></div>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">FlatForestNode</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">forest</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">root_key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">()</span>
+        <span class="p">]</span></div>
+
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the tree rooted at the preferred root node.</span>
 
 <span class="sd">        :return: The root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">root</span>
-    
-    <span class="nd">@property</span>    
-    <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the payload of the preferred root node.</span>
 
 <span class="sd">        :return: The payload of the preferred root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">payload</span>
-    
 
     <span class="nd">@payload</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the payload of the preferred root node.</span>
 
@@ -458,7 +515,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">payload</span> <span class="o">=</span> <span class="n">data</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the name of the preferred root node. This is just</span>
 <span class="sd">        self.preferred_root.</span>
@@ -466,9 +523,9 @@
 <span class="sd">        :return: The name of the preferred root node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">preferred_root</span>
-    
+
     <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the name of the preferred root node.</span>
 
@@ -477,20 +534,26 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_preferred_root</span> <span class="o">=</span> <span class="n">name</span>
-    
-<div class="viewcode-block" id="FlatForest.node"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.node">[docs]</a>    <span class="k">def</span> <span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.node">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get an ancestor node with the given name under the preferred root node.</span>
 
 <span class="sd">        :param name: The name of the node.</span>
 <span class="sd">        :return: The node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
 
-        <span class="k">return</span> <span class="n">FlatForestNode</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">forest</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                                    <span class="n">root_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">root_key</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">FlatForestNode</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span>
+            <span class="n">forest</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">root_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">root_key</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="p">)</span></div>
 
-<div class="viewcode-block" id="FlatForest.subtree"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.subtree">[docs]</a>    <span class="k">def</span> <span class="nf">subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.subtree">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.subtree">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subtree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FlatForestNode&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get sub-tree rooted at the node with the name `name` with the current</span>
 <span class="sd">        node also set to that node. If `name` is None, the preferred root node</span>
@@ -509,17 +572,20 @@
 <span class="sd">        :param name: The unique name of the node.</span>
 <span class="sd">        :return: FlatForestNode proxy representing the node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.flat_forest_node</span> <span class="kn">import</span> <span class="n">FlatForestNode</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preferred_root</span>
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_names</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node name not found: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        
+
         <span class="k">return</span> <span class="n">FlatForestNode</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">forest</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">root_key</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FlatForest.contains"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+<div class="viewcode-block" id="FlatForest.contains">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.contains">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the tree rooted at the preferred root node contains a node</span>
 <span class="sd">        with the given name.</span>
@@ -528,8 +594,11 @@
 <span class="sd">        :return: True if the node is in the forest, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">()</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
-    
-<div class="viewcode-block" id="FlatForest.to_dict"><a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+
+
+<div class="viewcode-block" id="FlatForest.to_dict">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.flat_forest.FlatForest.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the forest to a dictionary. Note this since this is already</span>
 <span class="sd">        a dictionary, we just return a copy of the dictionary.</span>
@@ -537,16 +606,18 @@
 <span class="sd">        :return: A dictionary representation of the forest.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
-    
-    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtree</span><span class="p">())</span></div>
+
 </pre></div>
 
           </div>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="../../index.html">AlgoTree</a></h1>
 
@@ -557,7 +628,16 @@
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
@@ -580,16 +660,6 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -603,11 +673,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2024, Alex Towell.
+      &#169;2024, Alex Towell.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
 

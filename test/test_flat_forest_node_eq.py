@@ -3,8 +3,9 @@ from AlgoTree.pretty_tree import PrettyTree, pretty_tree
 from AlgoTree.flat_forest import FlatForest
 from AlgoTree.flat_forest_node import FlatForestNode
 
+
 class TestFlatTreeNodeEq(unittest.TestCase):
-    
+
     def setUp(self):
         """
         Create a sample tree for testing, denoted by `t`.
@@ -75,7 +76,6 @@ class TestFlatTreeNodeEq(unittest.TestCase):
         self.flat_tree = FlatForest(self.tree_data)
         self.root_b_node_d = self.flat_tree.subtree("b").node("d")
 
-
     def test_eq(self):
         root_logical_node_d = self.flat_tree.node("d")
         self.assertNotEqual(root_logical_node_d, self.root_b_node_d)
@@ -85,4 +85,6 @@ class TestFlatTreeNodeEq(unittest.TestCase):
         self.assertNotEqual(self.flat_tree.node("b"), self.flat_tree.node("e"))
         self.assertNotEqual(self.flat_tree.node("d"), self.flat_tree.node("e"))
         self.assertEqual(self.flat_tree.subtree("b").node("d"), self.root_b_node_d)
-        self.assertEqual(self.flat_tree.subtree("b").node("i"), self.flat_tree.subtree("b").node("i"))
+        self.assertEqual(
+            self.flat_tree.subtree("b").node("i"), self.flat_tree.subtree("b").node("i")
+        )

@@ -3,14 +3,15 @@ from AlgoTree.utils import node_to_leaf_paths, prune
 from AlgoTree.treenode import TreeNode
 from AlgoTree.flat_forest_node import FlatForestNode
 
+
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
         """
         Create a sample tree for testing
-        
+
         Here is what the tree looks like:
-        
+
             A
             ├── B
             │   ├── E
@@ -18,7 +19,7 @@ class TestUtils(unittest.TestCase):
             |       └── H
             ├── C
             │   └── G
-            └── D            
+            └── D
         """
 
         # Create a sample tree for testing
@@ -49,11 +50,10 @@ class TestUtils(unittest.TestCase):
             [self.node_a, self.node_b, self.node_e],
             [self.node_a, self.node_b, self.node_f, self.node_h],
             [self.node_a, self.node_c, self.node_g],
-            [self.node_a, self.node_d]
+            [self.node_a, self.node_d],
         ]
         result = node_to_leaf_paths(self.node_a)
         self.assertEqual(result, expected_paths)
-
 
     def test_prune(self):
         def pred(node):
@@ -66,6 +66,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(pruned_tree.children[0].name, "C")
         self.assertEqual(len(pruned_tree.children[0].children), 1)
         self.assertEqual(pruned_tree.children[0].children[0].name, "G")
+
 
 if __name__ == "__main__":
     unittest.main()

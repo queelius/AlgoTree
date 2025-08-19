@@ -1,12 +1,15 @@
 from collections import deque
-from typing import Any, Callable, Deque, List, Tuple, Type
+from typing import Any, Callable, Deque, List, Tuple, Type, Optional, Dict, Union
 from AlgoTree.treenode_api import TreeNodeApi
 
-def visit(node: Any,
-          func: Callable[[Any], bool],
-          order: str = "post",
-          max_hops: int = float("inf"),
-          **kwargs) -> bool:
+
+def visit(
+    node: Any,
+    func: Callable[[Any], bool],
+    order: str = "post",
+    max_hops: int = float("inf"),
+    **kwargs,
+) -> bool:
     """
     Visit the nodes in the tree rooted at `node` in a pre-order or post-order
     traversal. The procedure `proc` should have a side-effect you want to
@@ -36,7 +39,7 @@ def visit(node: Any,
 
     if not callable(func):
         raise TypeError("func must be callable")
-    
+
     if node is None:
         raise ValueError("Node must not be None")
 
@@ -66,10 +69,8 @@ def visit(node: Any,
 
     return False
 
-def map(node: Any,
-        func: Callable[[Any], Any],
-        order: str = "post",
-        **kwargs) -> Any:
+
+def map(node: Any, func: Callable[[Any], Any], order: str = "post", **kwargs) -> Any:
     """
     Map a function over the nodes in the tree rooted at `node`. It is a map
     operation over trees. In particular, the function `func`, of type::
@@ -100,7 +101,7 @@ def map(node: Any,
 
     if not callable(func):
         raise TypeError("`func` must be callable")
-    
+
     if node is None:
         return None
 
@@ -117,8 +118,11 @@ def map(node: Any,
         return None
 
     if hasattr(node, "children"):
-        node.children = [c for c in [map(c, func, order, **kwargs) for c in
-                         node.children] if c is not None]
+        node.children = [
+            c
+            for c in [map(c, func, order, **kwargs) for c in node.children]
+            if c is not None
+        ]
 
     if order == "post":
         node = func(node, **kwargs)
@@ -126,7 +130,7 @@ def map(node: Any,
     return node
 
 
-def descendants(node) -> List:
+def descendants(node: Any) -> List[Any]:
     """
     Get the descendants of a node.
 
@@ -141,7 +145,7 @@ def descendants(node) -> List:
     return results[1:]
 
 
-def siblings(node) -> List:
+def siblings(node: Any) -> List[Any]:
     """
     Get the siblings of a node.
 
@@ -152,12 +156,13 @@ def siblings(node) -> List:
         raise ValueError("Node must not be None")
 
     if node.parent is None:
-        return []   
+        return []
     sibs = [c for c in node.parent.children]
     sibs.remove(node)
     return sibs
 
-def leaves(node) -> List:
+
+def leaves(node: Any) -> List[Any]:
     """
     Get the leaves of a node.
 
@@ -190,7 +195,7 @@ def height(node) -> int:
 
     def _height(n):
         return 0 if is_leaf(n) else 1 + max(_height(c) for c in n.children)
-    
+
     return _height(node)
 
 
@@ -241,10 +246,9 @@ def is_internal(node) -> bool:
     return len(node.children) > 0
 
 
-def breadth_first(node: Any,
-                  func: Callable[[Any], bool],
-                  max_lvl = None,
-                  **kwargs) -> bool:
+def breadth_first(
+    node: Any, func: Callable[[Any], bool], max_lvl: Optional[int] = None, **kwargs
+) -> bool:
     """
     Traverse the tree in breadth-first order. The function `func` is called on
     each node and level. The function should have a side-effect you want to
@@ -279,7 +283,7 @@ def breadth_first(node: Any,
     """
     if not callable(func):
         raise TypeError("func must be callable")
-    
+
     if node is None:
         raise ValueError("Node must not be None")
 
@@ -300,7 +304,8 @@ def breadth_first(node: Any,
             q.append((child, lvl + 1))
     return False
 
-def breadth_first_undirected(node, max_hops = float("inf")):
+
+def breadth_first_undirected(node: Any, max_hops: Union[int, float] = float("inf")) -> List[Any]:
     """
     Traverse the tree in breadth-first order. It treats the tree as an
     undirected graph, where each node is connected to its parent and children.
@@ -310,13 +315,13 @@ def breadth_first_undirected(node, max_hops = float("inf")):
         raise ValueError("Node must not be None")
 
     within_hops = []
-    q : Deque[Tuple[Any, int]] = deque([(node, 0)])
+    q: Deque[Tuple[Any, int]] = deque([(node, 0)])
     visited = []
     while q:
         cur, depth = q.popleft()
         if depth > max_hops:
             continue
-        if cur not in visited:            
+        if cur not in visited:
             visited.append(cur)
             within_hops.append(cur)
             for child in cur.children:
@@ -324,7 +329,6 @@ def breadth_first_undirected(node, max_hops = float("inf")):
             if cur.parent is not None:
                 q.append((cur.parent, depth + 1))
     return within_hops
-
 
 
 def find_nodes(node: Any, pred: Callable[[Any], bool], **kwargs) -> List[Any]:
@@ -338,8 +342,7 @@ def find_nodes(node: Any, pred: Callable[[Any], bool], **kwargs) -> List[Any]:
     nodes: List[Any] = []
     visit(
         node,
-        lambda n, **kwargs: (nodes.append(n) or False
-                             if pred(n, **kwargs) else False),
+        lambda n, **kwargs: (nodes.append(n) or False if pred(n, **kwargs) else False),
         order="pre",
     )
     return nodes
@@ -354,7 +357,7 @@ def find_node(node: Any, pred: Callable[[Any], bool], **kwargs) -> Any:
     it up to each implementation to define which among these nodes to return.
     Use `find_nodes` if you want to return all nodes that satisfy the condition
     (return all the nodes in the partial order).
-    
+
     The predicate function `pred` should return True if the node satisfies the
     condition. It can also accept
     any additional keyword arguments, which are passed to the predicate. Note
@@ -368,6 +371,7 @@ def find_node(node: Any, pred: Callable[[Any], bool], **kwargs) -> Any:
     :return: The node that satisfies the predicate.
     """
     result = None
+
     def _func(n, **kwargs):
         nonlocal result
         if pred(n, **kwargs):
@@ -393,13 +397,15 @@ def prune(node: Any, pred: Callable[[Any], bool], **kwargs) -> Any:
     :param kwargs: Additional keyword arguments to pass to `pred`.
     :return: The pruned tree.
     """
-    return map(node=node,
-               func=lambda n, **kwargs: None if pred(n, **kwargs) else n,
-               order="pre",
-               **kwargs)
+    return map(
+        node=node,
+        func=lambda n, **kwargs: None if pred(n, **kwargs) else n,
+        order="pre",
+        **kwargs,
+    )
 
 
-def node_to_leaf_paths(node: Any) -> List:
+def node_to_leaf_paths(node: Any) -> List[List[Any]]:
     """
     List all node-to-leaf paths in a tree. Each path is a list of nodes from the
     current node `node` to a leaf node.
@@ -412,16 +418,17 @@ def node_to_leaf_paths(node: Any) -> List:
         │   └── E
         └── C
             └── F
-    
+
     Invoking `node_to_leaf_paths(A)` enumerates the following list of paths::
 
         [[A, B, D], [A, B, E], [A, C, F]]
-    
+
     :param node: The current node.
     :return: List of paths in the tree under the current node.
     """
 
     paths = []
+
     def _find_paths(n, path):
         if is_leaf(n):
             paths.append(path + [n])
@@ -432,7 +439,8 @@ def node_to_leaf_paths(node: Any) -> List:
     _find_paths(node, [])
     return paths
 
-def find_path(source: Any, dest: Any, bidirectional: bool = False) -> List:
+
+def find_path(source: Any, dest: Any, bidirectional: bool = False) -> List[Any]:
     """
     Find the path from a source node to a destination node.
 
@@ -457,9 +465,9 @@ def find_path(source: Any, dest: Any, bidirectional: bool = False) -> List:
     if found_path is None and bidirectional:
         found_path = _find(source, [], dest)
     return found_path
-    
 
-def ancestors(node) -> List:
+
+def ancestors(node: Any) -> List[Any]:
     """
     Get the ancestors of a node.
 
@@ -475,8 +483,8 @@ def ancestors(node) -> List:
     :return: List of ancestor nodes.
     """
     anc = []
+
     def _ancestors(n):
-        nonlocal anc
         if not is_root(n):
             anc.append(n.parent)
             _ancestors(n.parent)
@@ -484,7 +492,8 @@ def ancestors(node) -> List:
     _ancestors(node)
     return anc
 
-def path(node: Any) -> List:
+
+def path(node: Any) -> List[Any]:
     """
     Get the path from the root node to the given node.
 
@@ -493,6 +502,7 @@ def path(node: Any) -> List:
     """
     anc = ancestors(node)
     return [node] + anc[::-1]
+
 
 def size(node: Any) -> int:
     """
@@ -503,7 +513,8 @@ def size(node: Any) -> int:
     """
     return len(descendants(node)) + 1
 
-def lca(node1, node2, hash_fn=None) -> Any:
+
+def lca(node1: Any, node2: Any, hash_fn: Optional[Callable[[Any], int]] = None) -> Any:
     """
     Find the lowest common ancestor of two nodes.
 
@@ -522,13 +533,14 @@ def lca(node1, node2, hash_fn=None) -> Any:
     while node1 is not None:
         ancestors.add(hash_fn(node1))
         node1 = node1.parent
-    
+
     while node2 is not None:
         if hash_fn(node2) in ancestors:
             return node2
         node2 = node2.parent
-    
+
     return None
+
 
 def distance(node1: Any, node2: Any) -> int:
     """
@@ -540,11 +552,12 @@ def distance(node1: Any, node2: Any) -> int:
     """
     if node1 is None or node2 is None:
         raise ValueError("Nodes must not be None")
-    
+
     lca_node = lca(node1, node2)
     if lca_node is None:
         raise ValueError("Nodes must be in the same tree")
     return depth(node1) + depth(node2) - 2 * depth(lca_node)
+
 
 def subtree_rooted_at(node: Any, max_lvl: int) -> Any:
     """
@@ -555,21 +568,23 @@ def subtree_rooted_at(node: Any, max_lvl: int) -> Any:
     :param node: The node.
     :return: The subtree centered at the node.
     """
-    
+
     within_hops = []
+
     def _helper(node, **kwargs):
         within_hops.append(node)
         return False
+
     breadth_first(node, _helper, max_lvl)
 
     def _build(n, par):
-        #new_node = type(n)(name=n.name, payload=n.payload, parent=par)
+        # new_node = type(n)(name=n.name, payload=n.payload, parent=par)
         new_node = n.clone(par)
         for c in n.children:
             if c in within_hops:
                 _build(c, new_node)
         return new_node
-    
+
     return _build(node, None)
 
 
@@ -583,7 +598,7 @@ def subtree_centered_at(node: Any, max_hops: int) -> Any:
     :param node: The node.
     :return: The subtree centered at the node.
     """
-    
+
     within_hops = breadth_first_undirected(node, max_hops)
     root = node
     while root.parent is not None:
@@ -592,13 +607,14 @@ def subtree_centered_at(node: Any, max_hops: int) -> Any:
 
     def _build(n, par):
         new_node = n.clone(par)
-        #new_node = type(n)(name=n.name, payload=n.payload, parent=par)
+        # new_node = type(n)(name=n.name, payload=n.payload, parent=par)
         for c in n.children:
             if c in within_hops:
                 _build(c, new_node)
         return new_node
-    
+
     return _build(root, None)
+
 
 def average_distance(node: Any) -> float:
     """
@@ -610,15 +626,19 @@ def average_distance(node: Any) -> float:
     """
     from itertools import combinations
     from statistics import mean
+
     distances = []
     nodes = descendants(node) + [node]
     for n1, n2 in combinations(nodes, 2):
         distances.append(distance(n1, n2))
     return mean(distances)
 
-def node_stats(node,
-               node_name: Callable = lambda node: node.name,
-               payload: Callable = lambda node: node.payload) -> dict:
+
+def node_stats(
+    node: Any,
+    node_name: Callable[[Any], str] = lambda node: node.name,
+    payload: Callable[[Any], Any] = lambda node: node.payload,
+) -> Dict[str, Any]:
     """
     Gather statistics about the current node and its subtree.
 
@@ -631,6 +651,7 @@ def node_stats(node,
     """
 
     from AlgoTree.treenode_api import TreeNodeApi
+
     if not TreeNodeApi.is_valid(node):
         raise ValueError("Node must be a valid TreeNode")
 
@@ -652,13 +673,11 @@ def node_stats(node,
         "root_distance": distance(node.root, node),
         "leaves_under": [node_name(n) for n in leaves(node)],
         "subtree_size": size(node),
-        "average_distance": average_distance(node)
+        "average_distance": average_distance(node),
     }
 
 
-def paths_to_tree(paths: List,
-                  type: Type,
-                  max_tries: int = 1000) -> type:
+def paths_to_tree(paths: List[List[str]], type: Type, max_tries: int = 1000) -> Any:
     """
     Convert a list of paths to a tree structure. Each path is a list of nodes
     from the root to a leaf node. (A tree can be uniquely identified by
@@ -692,7 +711,7 @@ def paths_to_tree(paths: List,
     :param max_tries: The maximum number of tries to create a node with a
                       unique name.
     """
-    nodes = { }
+    nodes = {}
     for p in paths:
         parent = None
         path = []
@@ -715,7 +734,8 @@ def paths_to_tree(paths: List,
             parent = nodes[path_tuple]
     return parent.root
 
-def is_isomorphic(node1, node2):
+
+def is_isomorphic(node1: Any, node2: Any) -> bool:
     """
     Check if two (sub)trees are isomorphic. To check if two trees are isomorphic,
     just pass in the root nodes of the trees.
@@ -723,7 +743,7 @@ def is_isomorphic(node1, node2):
     This is another kind of equivalence: two nodes are equivalent if they have
     the same substructure (extensic relations), but the names and payloads of
     the nodes (intrinsic relations) can be different.
-    
+
     We ignore the parents of the nodes in this comparison. If we also included
     the parents, this would be the  same as calling `is_isomorphic` on the
     root nodes of the trees.

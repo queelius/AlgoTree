@@ -41,9 +41,7 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         node7 = FlatForestNode(name="node7", data=7, parent=node3)
         node3.children = [node4, node5, node7]
         updated_children_names = [child.name for child in node3.children]
-        self.assertCountEqual(
-            updated_children_names, ["node4", "node5", "node7"]
-        )
+        self.assertCountEqual(updated_children_names, ["node4", "node5", "node7"])
 
     def test_detach_and_purge(self):
         # Create nodes
@@ -55,9 +53,7 @@ class TestFlatTreeNodeAPI(unittest.TestCase):
         # Detach node3
         detached_node3 = node3.detach()
         self.assertEqual(self.tree["node3"]["parent"], FlatForest.DETACHED_KEY)
-        detached_children_names = [
-            child.name for child in detached_node3.children
-        ]
+        detached_children_names = [child.name for child in detached_node3.children]
         self.assertCountEqual(detached_children_names, ["node4", "node5"])
 
         # Prune detached node3

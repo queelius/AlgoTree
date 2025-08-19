@@ -4,6 +4,7 @@ from copy import deepcopy
 if TYPE_CHECKING:
     from flat_forest_node import FlatForestNode
 
+
 class FlatForest(dict):
     """
     A forest class that is also a standard dictionary.
@@ -46,7 +47,7 @@ class FlatForest(dict):
     def spec() -> dict:
         """
         Get the JSON specification of the FlatForest data structure.
-        
+
         This method returns a dictionary representing the structure of the
         FlatForest. This is useful for documentation purposes and for
         understanding the structure of the data. The structure is as follows::
@@ -59,17 +60,17 @@ class FlatForest(dict):
                 "parent | None": "<parent_key> | None",
                 "<any_key>": "<any_value>",
                 "...": "...",
-                "<any_key>": "<any_value>"
+                "<any_key>": "<any_value>",
             },
             "...": "...",
             "<node_key>": {
                 "parent | None": "<parent_key> | None",
                 "<any_key>": "<any_value>",
                 "...": "...",
-                "<any_key>": "<any_value>"
-            }
+                "<any_key>": "<any_value>",
+            },
         }
-    
+
     @staticmethod
     def is_valid(data) -> bool:
         """
@@ -125,9 +126,12 @@ class FlatForest(dict):
 
         :return: List of logical root names.
         """
-        parents = [v[FlatForest.PARENT_KEY] for v in self.values() if
-                   FlatForest.PARENT_KEY in v and v[FlatForest.PARENT_KEY] is not None]
-        #print(parents)
+        parents = [
+            v[FlatForest.PARENT_KEY]
+            for v in self.values()
+            if FlatForest.PARENT_KEY in v and v[FlatForest.PARENT_KEY] is not None
+        ]
+        # print(parents)
         keys = [k for k in parents if k not in self.keys()]
         if self.DETACHED_KEY not in keys:
             keys.append(self.DETACHED_KEY)
@@ -141,7 +145,7 @@ class FlatForest(dict):
         :return: List of interior node names.
         """
         return [k for k in self.keys() if self[k][FlatForest.PARENT_KEY] is not None]
-    
+
     def node_names(self) -> List[str]:
         """
         Get the unique names in the tree, even if they are not nodes in the tree
@@ -163,7 +167,7 @@ class FlatForest(dict):
             raise KeyError(f"Node name not found: {name!r}")
 
         return [k for k, v in self.items() if v.get(FlatForest.PARENT_KEY) == name]
-    
+
     def detach(self, name: str) -> "FlatForestNode":
         """
         Detach subtree rooted at node with the given name by setting its parent
@@ -176,12 +180,12 @@ class FlatForest(dict):
         """
         if name not in self:
             raise KeyError(f"Node not found: {name!r}")
-        
+
         # let's make sure it's not already detached by being an ancestor of a
         # detached node
         if name in self.detached:
             raise KeyError(f"Node {name!r} is already detached")
-        
+
         self[name][FlatForest.PARENT_KEY] = FlatForest.DETACHED_KEY
         return self.subtree(name)
 
@@ -205,7 +209,7 @@ class FlatForest(dict):
 
         if not isinstance(data, dict):
             raise ValueError(f"Data is not a dictionary: {data=}")
-        
+
         def _check_cycle(key, visited):
             if key in visited:
                 raise ValueError(f"Cycle detected: {visited}")
@@ -217,29 +221,33 @@ class FlatForest(dict):
         for key, value in data.items():
             if not isinstance(value, dict):
                 raise ValueError(
-                    f"Node {key!r} does not have a payload dictionary: {value!r}")
+                    f"Node {key!r} does not have a payload dictionary: {value!r}"
+                )
 
             par_key = value.get(FlatForest.PARENT_KEY)
             if par_key == FlatForest.DETACHED_KEY:
                 continue
 
-            if par_key is not None and par_key != FlatForest.DETACHED_KEY and par_key not in data:
-                raise KeyError(
-                    f"Parent {par_key!r} not in forest for node {key!r}")
+            if (
+                par_key is not None
+                and par_key != FlatForest.DETACHED_KEY
+                and par_key not in data
+            ):
+                raise KeyError(f"Parent {par_key!r} not in forest for node {key!r}")
 
             _check_cycle(key, set())
 
-    def as_tree(self, root_name = "__ROOT__") -> "FlatForestNode":
+    def as_tree(self, root_name="__ROOT__") -> "FlatForestNode":
         """
         Retrieve the forest as a single tree rooted at a logical root node.
         """
 
         from .flat_forest_node import FlatForestNode
-        
+
         new_dict = {}
         new_dict[root_name] = {FlatForest.PARENT_KEY: None}
         for key in self.keys():
-            #new_dict[key] = copy.deepcopy(self[key])
+            # new_dict[key] = copy.deepcopy(self[key])
             new_dict[key] = self[key].copy()
             if self[key].get(FlatForest.PARENT_KEY) is None:
                 new_dict[key][FlatForest.PARENT_KEY] = root_name
@@ -255,7 +263,7 @@ class FlatForest(dict):
         """
         if name not in self.node_names():
             raise KeyError(f"Node name not found: {name!r}")
-        
+
         if name in self.logical_root_names():
             return name
 
@@ -271,7 +279,7 @@ class FlatForest(dict):
         :return: The trees in the forest.
         """
         return [self.subtree(root_name) for root_name in self.root_names]
-    
+
     @property
     def root_names(self) -> List[str]:
         """
@@ -282,16 +290,17 @@ class FlatForest(dict):
         """
         keys = [k for k, v in self.items() if v.get(FlatForest.PARENT_KEY) is None]
         return keys + self.logical_root_names()
-        
+
     def purge(self) -> None:
         """
         Purge detached nodes (tree rooted at `FlatForest.DETACHED_KEY`).
         """
+
         def _purge(node):
             for child in node.children:
                 _purge(child)
             del self[node.name]
-        
+
         for child in self.detached.children:
             _purge(child)
 
@@ -323,8 +332,10 @@ class FlatForest(dict):
         :return: The children of the preferred root node.
         """
         return self.subtree().children
-    
-    def add_child(self, name: Optional[str] = None, *args, **kwargs) -> "FlatForestNode":
+
+    def add_child(
+        self, name: Optional[str] = None, *args, **kwargs
+    ) -> "FlatForestNode":
         """
         Add a child node to the preferred root node.
 
@@ -333,7 +344,7 @@ class FlatForest(dict):
         :return: The child node.
         """
         return self.subtree().add_child(name=name, *args, **kwargs)
-    
+
     @property
     def parent(self) -> Optional["FlatForestNode"]:
         """
@@ -341,7 +352,7 @@ class FlatForest(dict):
         since the preferred root node is a root node.
         """
         return None
-    
+
     @property
     def roots(self) -> List["FlatForestNode"]:
         """
@@ -366,7 +377,7 @@ class FlatForest(dict):
             raise KeyError("No root nodes and no explicit preferred root set")
         else:
             return self.root_names[0]
-        
+
     @preferred_root.setter
     def preferred_root(self, name: Optional[str]) -> None:
         """
@@ -385,9 +396,9 @@ class FlatForest(dict):
         :param other: The other forest to compare to.
         :return: True if the forests are equal, False otherwise.
         """
-        #return isinstance(other, FlatForest) and dict(self) == dict(other)
+        # return isinstance(other, FlatForest) and dict(self) == dict(other)
         return hash(self.subtree()) == hash(other.subtree())
-    
+
     def nodes(self) -> List["FlatForestNode"]:
         """
         Get all the nodes in the forest.
@@ -395,7 +406,11 @@ class FlatForest(dict):
         :return: A list of all the nodes in the forest.
         """
         from .flat_forest_node import FlatForestNode
-        return [FlatForestNode.proxy(forest=self, node_key=key, root_key=key) for key in self.node_names()]
+
+        return [
+            FlatForestNode.proxy(forest=self, node_key=key, root_key=key)
+            for key in self.node_names()
+        ]
 
     @property
     def root(self) -> "FlatForestNode":
@@ -405,8 +420,8 @@ class FlatForest(dict):
         :return: The root node.
         """
         return self.subtree().root
-    
-    @property    
+
+    @property
     def payload(self) -> dict:
         """
         Get the payload of the preferred root node.
@@ -414,7 +429,6 @@ class FlatForest(dict):
         :return: The payload of the preferred root node.
         """
         return self.subtree().payload
-    
 
     @payload.setter
     def payload(self, data: Dict) -> None:
@@ -435,7 +449,7 @@ class FlatForest(dict):
         :return: The name of the preferred root node.
         """
         return self.preferred_root
-    
+
     @name.setter
     def name(self, name: str) -> None:
         """
@@ -446,7 +460,7 @@ class FlatForest(dict):
         """
         self.subtree().name = name
         self._preferred_root = name
-    
+
     def node(self, name: str) -> "FlatForestNode":
         """
         Get an ancestor node with the given name under the preferred root node.
@@ -456,8 +470,9 @@ class FlatForest(dict):
         """
         from .flat_forest_node import FlatForestNode
 
-        return FlatForestNode.proxy(forest=self, node_key=name,
-                                    root_key=self.root_key(name))
+        return FlatForestNode.proxy(
+            forest=self, node_key=name, root_key=self.root_key(name)
+        )
 
     def subtree(self, name: Optional[str] = None) -> "FlatForestNode":
         """
@@ -485,7 +500,7 @@ class FlatForest(dict):
 
         if name not in self.node_names():
             raise KeyError(f"Node name not found: {name!r}")
-        
+
         return FlatForestNode.proxy(forest=self, node_key=name, root_key=name)
 
     def contains(self, name: str) -> bool:
@@ -497,7 +512,7 @@ class FlatForest(dict):
         :return: True if the node is in the forest, False otherwise.
         """
         return self.subtree().contains(name)
-    
+
     def to_dict(self) -> dict:
         """
         Convert the forest to a dictionary. Note this since this is already
@@ -506,6 +521,6 @@ class FlatForest(dict):
         :return: A dictionary representation of the forest.
         """
         return deepcopy(self)
-    
+
     def __hash__(self) -> int:
         return hash(self.subtree())

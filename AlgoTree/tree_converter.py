@@ -1,6 +1,7 @@
 import uuid
 from copy import deepcopy
-from typing import Any, Callable, Type, Dict
+from typing import Any, Callable, Type, Dict, Optional
+
 
 class TreeConverter:
     """
@@ -8,7 +9,7 @@ class TreeConverter:
     """
 
     @staticmethod
-    def default_extract(node):
+    def default_extract(node: Any) -> Optional[Dict[str, Any]]:
         """
         Default extractor of relevant payload from a node.
 
@@ -18,7 +19,7 @@ class TreeConverter:
         return node.payload if hasattr(node, "payload") else None
 
     @staticmethod
-    def default_node_name(node):
+    def default_node_name(node: Any) -> str:
         """
         Default function to map nodes to unique keys. If the node has a
         `name` attribute, then it is used as the unique key. Otherwise,
@@ -29,14 +30,14 @@ class TreeConverter:
         """
         return node.name if hasattr(node, "name") else str(uuid.uuid4())
 
-
     @staticmethod
     def copy_under(
-        node,
-        under,
-        node_name: Callable = default_node_name,
-        extract: Callable = default_extract,
-        max_tries: int = 1000) -> Any:
+        node: Any,
+        under: Any,
+        node_name: Callable[[Any], str] = default_node_name,
+        extract: Callable[[Any], Optional[Dict[str, Any]]] = default_extract,
+        max_tries: int = 1000,
+    ) -> Any:
         """
         Copy the subtree rooted at `node` as a child of `under`, where
         the copy takes on the node type of `under`. It returns the subtree
@@ -56,6 +57,7 @@ class TreeConverter:
 
         node_type = type(under)
         tries: int = 0
+
         def build(cur, und):
             nonlocal tries
             data = deepcopy(extract(cur))
@@ -80,10 +82,11 @@ class TreeConverter:
 
     @staticmethod
     def convert(
-        source,
+        source: Any,
         target_type: Type,
-        node_name: Callable = default_node_name,
-        extract: Callable = default_extract) -> Any:
+        node_name: Callable[[Any], str] = default_node_name,
+        extract: Callable[[Any], Optional[Dict[str, Any]]] = default_extract,
+    ) -> Any:
         """
         Convert a tree rooted at `node` to a target tree type representation.
 
@@ -96,24 +99,24 @@ class TreeConverter:
 
         if source is None:
             return None
-        
+
         root = target_type(
-            name=node_name(source),
-            parent=None,
-            payload=deepcopy(extract(source)))
-        
+            name=node_name(source), parent=None, payload=deepcopy(extract(source))
+        )
+
         for child in source.children:
-            TreeConverter.copy_under(node=child,
-                                     under=root,
-                                     node_name=node_name,    
-                                     extract=extract)
+            TreeConverter.copy_under(
+                node=child, under=root, node_name=node_name, extract=extract
+            )
         return root
-        
+
     @staticmethod
-    def to_dict(node,
-                node_name: Callable = default_node_name,
-                extract: Callable  = default_extract,
-                **kwargs) -> Dict:
+    def to_dict(
+        node,
+        node_name: Callable = default_node_name,
+        extract: Callable = default_extract,
+        **kwargs,
+    ) -> Dict:
         """
         Convert the subtree rooted at `node` to a dictionary.
 
@@ -127,8 +130,7 @@ class TreeConverter:
             return {
                 "name": node_name(node),
                 "payload": extract(node, **kwargs),
-                "children": [_build(child, **kwargs) for child in node.children]
+                "children": [_build(child, **kwargs) for child in node.children],
             }
-        
-        return _build(node)
 
+        return _build(node)

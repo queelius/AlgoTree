@@ -8,17 +8,31 @@ Welcome to AlgoTree's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started:
 
    introduction
+   fluent_api
+   pattern_matching
+   transformations
+   tutorial
+   cookbook
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Traditional API:
+
    flat_forest
    treenode
-   tutorial
    flat_forest_nb
    expr_trees_nb
    identity
-   jt
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Tools & Reference:
+
+   jt
+   api_reference
    modules
 
 Indices and tables
