@@ -12,7 +12,10 @@ Welcome to AlgoTree's documentation!
 
    introduction
    fluent_api
+   pattern_matching
+   transformations
    tutorial
+   cookbook
 
 .. toctree::
    :maxdepth: 2
@@ -29,6 +32,7 @@ Welcome to AlgoTree's documentation!
    :caption: Tools & Reference:
 
    jt
+   api_reference
    modules
 
 Indices and tables

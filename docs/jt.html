@@ -5,16 +5,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>jt Command-Line Tool &#8212; AlgoTree 0.8.0 documentation</title>
+    <title>jt Command-Line Tool &#8212; AlgoTree 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
-    <script src="_static/documentation_options.js?v=486e5634"></script>
+    <script src="_static/documentation_options.js?v=8d563738"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="AlgoTree" href="modules.html" />
+    <link rel="next" title="API Reference" href="api_reference.html" />
     <link rel="prev" title="Understanding Equality in Trees and Nodes" href="identity.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -35,93 +35,321 @@
             
   <section id="jt-command-line-tool">
 <h1>jt Command-Line Tool<a class="headerlink" href="#jt-command-line-tool" title="Link to this heading">¶</a></h1>
-<p><cite>jt</cite> is a command-line tool for querying and manipulating tree structures represented in JSON format. It supports various operations such as finding nodes, calculating distances, pruning, and converting tree structures.</p>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<p>The <cite>jt</cite> program processes trees represented in JSON, supporting multiple tree formats such as <cite>FlatForest</cite> and <cite>TreeNode</cite>. It allows you to perform operations like finding the lowest common ancestor (LCA), calculating tree size, marking nodes, and more.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">jt</span></code> tool is a powerful command-line utility for manipulating tree structures.
+It supports pattern matching, transformations, and multiple export formats.
+Version 1.0 has been completely rewritten with the modern AlgoTree API.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">jt</span></code> tool is automatically installed with AlgoTree:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>AlgoTree
+jt<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should show 1.0.0</span>
+</pre></div>
+</div>
 </section>
-<section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
-<p>The basic usage is as follows:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>FILE<span class="o">]</span>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read from file</span>
+jt<span class="w"> </span>tree.json
+
+<span class="c1"># Read from stdin</span>
+cat<span class="w"> </span>tree.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jt
+
+<span class="c1"># Pretty print</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--pretty
+
+<span class="c1"># Get statistics</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--stats
 </pre></div>
 </div>
-<p>Where <cite>FILE</cite> is the path to a JSON file containing the tree structure. If no file is provided, <cite>jt</cite> reads from standard input.</p>
-<p>### Example Commands</p>
-<p>Here are a few example commands:</p>
-<ul>
-<li><p><strong>Check if a node exists:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>./example.json<span class="w"> </span>--has-node<span class="w"> </span>nodeName
-</pre></div>
-</div>
-</li>
-<li><p><strong>Get specific node details:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>./example.json<span class="w"> </span>--node<span class="w"> </span>nodeKey
-</pre></div>
-</div>
-</li>
-<li><p><strong>Show siblings of a node:</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>./example.json<span class="w"> </span>--siblings<span class="w"> </span>nodeName
-</pre></div>
-</div>
-</li>
-</ul>
 </section>
-<section id="arguments">
-<h2>Arguments<a class="headerlink" href="#arguments" title="Link to this heading">¶</a></h2>
-<p>The following arguments are supported by the <cite>jt</cite> tool:</p>
+<section id="input-formats">
+<h2>Input Formats<a class="headerlink" href="#input-formats" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">jt</span></code> can parse multiple input formats:</p>
+<section id="json-format">
+<h3>JSON Format<a class="headerlink" href="#json-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{&quot;name&quot;: &quot;root&quot;, &quot;children&quot;: [{&quot;name&quot;: &quot;child&quot;}]}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jt
+</pre></div>
+</div>
+</section>
+<section id="dsl-format-indent-based">
+<h3>DSL Format (Indent-based)<a class="headerlink" href="#dsl-format-indent-based" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;root</span>
+<span class="s2">  child1</span>
+<span class="s2">  child2&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--input-format<span class="w"> </span>dsl
+</pre></div>
+</div>
+</section>
+<section id="dsl-format-visual">
+<h3>DSL Format (Visual)<a class="headerlink" href="#dsl-format-visual" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | jt --input-format dsl</span>
+<span class="s">root</span>
+<span class="s">├── child1</span>
+<span class="s">└── child2</span>
+<span class="s">EOF</span>
+</pre></div>
+</div>
+</section>
+<section id="dsl-format-s-expression">
+<h3>DSL Format (S-expression)<a class="headerlink" href="#dsl-format-s-expression" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;(root (child1) (child2))&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--input-format<span class="w"> </span>dsl
+</pre></div>
+</div>
+</section>
+</section>
+<section id="output-formats">
+<h2>Output Formats<a class="headerlink" href="#output-formats" title="Link to this heading">¶</a></h2>
+<section id="json-output-default">
+<h3>JSON Output (default)<a class="headerlink" href="#json-output-default" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>tree.json<span class="w">  </span><span class="c1"># Default is JSON</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>json<span class="w"> </span>--indent<span class="w"> </span><span class="m">4</span><span class="w">  </span><span class="c1"># Custom indent</span>
+</pre></div>
+</div>
+</section>
+<section id="pretty-tree-output">
+<h3>Pretty Tree Output<a class="headerlink" href="#pretty-tree-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>tree.json<span class="w"> </span>--pretty
+<span class="c1"># Or</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>pretty
+</pre></div>
+</div>
+</section>
+<section id="dsl-output">
+<h3>DSL Output<a class="headerlink" href="#dsl-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Indent format (default)</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>dsl
+
+<span class="c1"># Visual format</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>dsl<span class="w"> </span>--dsl-format<span class="w"> </span>visual
+
+<span class="c1"># S-expression format</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>dsl<span class="w"> </span>--dsl-format<span class="w"> </span>sexpr
+</pre></div>
+</div>
+</section>
+</section>
+<section id="filtering-and-queries">
+<h2>Filtering and Queries<a class="headerlink" href="#filtering-and-queries" title="Link to this heading">¶</a></h2>
+<section id="filter-by-level">
+<h3>Filter by Level<a class="headerlink" href="#filter-by-level" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Nodes deeper than level 2</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;level &gt; 2&quot;</span>
+
+<span class="c1"># Nodes at level 1 or 0</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;level &lt; 2&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="filter-by-name">
+<h3>Filter by Name<a class="headerlink" href="#filter-by-name" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Nodes containing &quot;test&quot; in name</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;name contains test&quot;</span>
+
+<span class="c1"># Nodes with specific attribute</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;type = &#39;folder&#39;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-filter-expressions">
+<h3>Custom Filter Expressions<a class="headerlink" href="#custom-filter-expressions" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Lambda expressions</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;n.payload.get(&#39;size&#39;, 0) &gt; 100&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tree-navigation">
+<h2>Tree Navigation<a class="headerlink" href="#tree-navigation" title="Link to this heading">¶</a></h2>
+<section id="get-specific-node">
+<h3>Get Specific Node<a class="headerlink" href="#get-specific-node" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>tree.json<span class="w"> </span>--get<span class="w"> </span>node_name
+</pre></div>
+</div>
+</section>
+<section id="children-and-parents">
+<h3>Children and Parents<a class="headerlink" href="#children-and-parents" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get children of a node</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--children<span class="w"> </span>node_name
+
+<span class="c1"># Get parent of a node</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--parent<span class="w"> </span>node_name
+
+<span class="c1"># Get siblings</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--siblings<span class="w"> </span>node_name
+</pre></div>
+</div>
+</section>
+<section id="ancestors-and-descendants">
+<h3>Ancestors and Descendants<a class="headerlink" href="#ancestors-and-descendants" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># All ancestors up to root</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--ancestors<span class="w"> </span>node_name
+
+<span class="c1"># All descendants (subtree)</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--descendants<span class="w"> </span>node_name
+
+<span class="c1"># Path from root to node</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--path<span class="w"> </span>node_name
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tree-transformations">
+<h2>Tree Transformations<a class="headerlink" href="#tree-transformations" title="Link to this heading">¶</a></h2>
+<section id="map-operations">
+<h3>Map Operations<a class="headerlink" href="#map-operations" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Double all size values</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--map<span class="w"> </span><span class="s2">&quot;{&#39;size&#39;: n.payload.get(&#39;size&#39;, 0) * 2}&quot;</span>
+
+<span class="c1"># Add computed field</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--map<span class="w"> </span><span class="s2">&quot;{&#39;depth&#39;: n.level}&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="prune-operations">
+<h3>Prune Operations<a class="headerlink" href="#prune-operations" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Remove leaf nodes</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--prune<span class="w"> </span><span class="s2">&quot;n.is_leaf&quot;</span>
+
+<span class="c1"># Remove nodes with size &lt; 10</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--prune<span class="w"> </span><span class="s2">&quot;n.payload.get(&#39;size&#39;, 0) &lt; 10&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="tree-analysis">
+<h2>Tree Analysis<a class="headerlink" href="#tree-analysis" title="Link to this heading">¶</a></h2>
+<section id="basic-statistics">
+<h3>Basic Statistics<a class="headerlink" href="#basic-statistics" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tree size (node count)</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--size
+
+<span class="c1"># Tree height</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--height
+
+<span class="c1"># All statistics</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--stats
+</pre></div>
+</div>
+</section>
+<section id="leaf-nodes">
+<h3>Leaf Nodes<a class="headerlink" href="#leaf-nodes" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List all leaf nodes</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--leaves
+</pre></div>
+</div>
+</section>
+</section>
+<section id="format-conversion">
+<h2>Format Conversion<a class="headerlink" href="#format-conversion" title="Link to this heading">¶</a></h2>
+<section id="json-to-dsl">
+<h3>JSON to DSL<a class="headerlink" href="#json-to-dsl" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To indent format</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>dsl
+
+<span class="c1"># To visual format</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--output<span class="w"> </span>dsl<span class="w"> </span>--dsl-format<span class="w"> </span>visual
+</pre></div>
+</div>
+</section>
+<section id="dsl-to-json">
+<h3>DSL to JSON<a class="headerlink" href="#dsl-to-json" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cat<span class="w"> </span>tree.dsl<span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--input-format<span class="w"> </span>dsl<span class="w"> </span>--output<span class="w"> </span>json
+</pre></div>
+</div>
+</section>
+<section id="pretty-print-any-format">
+<h3>Pretty Print Any Format<a class="headerlink" href="#pretty-print-any-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Pretty print JSON</span>
+jt<span class="w"> </span>tree.json<span class="w"> </span>--pretty
+
+<span class="c1"># Pretty print DSL</span>
+cat<span class="w"> </span>tree.dsl<span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--input-format<span class="w"> </span>dsl<span class="w"> </span>--pretty
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-examples">
+<h2>Advanced Examples<a class="headerlink" href="#advanced-examples" title="Link to this heading">¶</a></h2>
+<section id="pipeline-processing">
+<h3>Pipeline Processing<a class="headerlink" href="#pipeline-processing" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter, transform, and output</span>
+jt<span class="w"> </span>data.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--filter<span class="w"> </span><span class="s2">&quot;level &gt; 1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--map<span class="w"> </span><span class="s2">&quot;{&#39;value&#39;: n.payload.get(&#39;value&#39;, 0) * 2}&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>pretty
+</pre></div>
+</div>
+</section>
+<section id="complex-queries">
+<h3>Complex Queries<a class="headerlink" href="#complex-queries" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find all nodes with specific properties</span>
+jt<span class="w"> </span>org.json<span class="w"> </span>--filter<span class="w"> </span><span class="s2">&quot;n.payload.get(&#39;dept&#39;) == &#39;Engineering&#39; and n.level &gt; 2&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="tree-building-from-multiple-sources">
+<h3>Tree Building from Multiple Sources<a class="headerlink" href="#tree-building-from-multiple-sources" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Combine multiple trees</span>
+<span class="o">(</span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{&quot;name&quot;: &quot;root&quot;, &quot;children&quot;: [&#39;</span><span class="p">;</span><span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>jt<span class="w"> </span>tree1.json<span class="w"> </span>--get<span class="w"> </span>subtree1<span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="p">;</span><span class="w"> </span><span class="se">\</span>
+<span class="w"> </span>jt<span class="w"> </span>tree2.json<span class="w"> </span>--get<span class="w"> </span>subtree2<span class="p">;</span><span class="w"> </span><span class="se">\</span>
+<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;]}&#39;</span><span class="o">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--pretty
+</pre></div>
+</div>
+</section>
+</section>
+<section id="comparison-with-v0-8">
+<h2>Comparison with v0.8<a class="headerlink" href="#comparison-with-v0-8" title="Link to this heading">¶</a></h2>
+<p>The v1.0 <code class="docutils literal notranslate"><span class="pre">jt</span></code> tool has been completely rewritten with:</p>
 <ul class="simple">
-<li><p><strong>file</strong>: The path to the JSON file representing the tree. If not provided, the program reads from standard input.</p></li>
-<li><p><strong>–node-name LAMBDA_EXPRESSION</strong>: Lambda expression to generate node names from a node. Defaults to <cite>lambda node: node.name</cite>.</p></li>
-<li><p><strong>–lca NODE_KEY1 NODE_KEY2</strong>: Get the lowest common ancestor (LCA) of two nodes.</p></li>
-<li><p><strong>–depth NODE_KEY</strong>: Get the depth of a specific node in the tree.</p></li>
-<li><p><strong>–mark-nodes NODE_KEY [NODE_KEY …]</strong>: Mark nodes in the tree by specifying their keys.</p></li>
-<li><p><strong>–distance NODE_KEY1 NODE_KEY2</strong>: Get the distance between two nodes.</p></li>
-<li><p><strong>–version</strong>: Show the program version.</p></li>
-<li><p><strong>–size</strong>: Print the size of the tree (i.e., the number of nodes).</p></li>
-<li><p><strong>–siblings NODE_KEY</strong>: Show the siblings of a specific node.</p></li>
-<li><p><strong>–children NODE_KEY</strong>: Show the children of a specific node.</p></li>
-<li><p><strong>–parent NODE_KEY</strong>: Show the parent of a specific node.</p></li>
-<li><p><strong>–ancestors NODE_KEY</strong>: Show the ancestors of a specific node.</p></li>
-<li><p><strong>–descendants NODE_KEY</strong>: Show the descendants of a specific node.</p></li>
-<li><p><strong>–has-node NODE_KEY</strong>: Check if a specific node exists in the tree.</p></li>
-<li><p><strong>–subtree NODE_KEY</strong>: Get the subtree rooted at a specific node.</p></li>
-<li><p><strong>–node NODE_KEY</strong>: Get a node by its key.</p></li>
-<li><p><strong>–root</strong>: Get the root node of the tree.</p></li>
-<li><p><strong>–root-to-leaves</strong>: Get a list of paths from the root to the leaves of the tree.</p></li>
-<li><p><strong>–leaves</strong>: Get the leaf nodes of the tree.</p></li>
-<li><p><strong>–height</strong>: Get the height of the tree.</p></li>
-<li><p><strong>–nodes</strong>: Get all nodes in the tree.</p></li>
-<li><p><strong>–pretty</strong>: Print the tree in a pretty format.</p></li>
-<li><p><strong>–prune LAMBDA_EXPRESSION</strong>: Prune the tree by a predicate function.</p></li>
-<li><p><strong>–subtree-rooted-at NODE_KEY</strong>: Get the subtree rooted at a specific node.</p></li>
-<li><p><strong>–find-nodes LAMBDA_EXPRESSION</strong>: Find nodes by a predicate function.</p></li>
-<li><p><strong>–json</strong>: Output the tree in JSON format.</p></li>
-<li><p><strong>–convert TARGET_FORMAT</strong>: Convert the tree to a different format (e.g., <cite>FlatForest</cite>, <cite>TreeNode</cite>).</p></li>
-<li><p><strong>–type</strong>: Print the type of the tree.</p></li>
-<li><p><strong>–merge-forest NODE_KEY</strong>: Merge a forest into a single tree under a new node named <cite>NODE_KEY</cite>.</p></li>
-<li><p><strong>–set-root NODE_KEY</strong>: Set the root node of the tree to the node with the given key.</p></li>
-<li><p><strong>–epilog</strong>: Show example usage.</p></li>
+<li><p><strong>New features</strong>: DSL support, fluent operations, better filtering</p></li>
+<li><p><strong>Better performance</strong>: Uses modern Node class internally</p></li>
+<li><p><strong>Cleaner output</strong>: Improved formatting and error messages</p></li>
+<li><p><strong>More formats</strong>: Visual tree, S-expressions, multiple DSL styles</p></li>
+<li><p><strong>Chainable operations</strong>: Filter, map, and prune in one command</p></li>
 </ul>
-<p>### Example Usage
-In addition to the commands listed above, here are more examples to help you understand how <cite>jt</cite> can be used:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Merge a forest into a single tree</span>
-jt<span class="w"> </span>./forest.json<span class="w"> </span>--merge-forest<span class="w"> </span>NewRootNode
-
-<span class="c1"># Prune the tree based on a custom lambda expression</span>
-jt<span class="w"> </span>./example.json<span class="w"> </span>--prune<span class="w"> </span><span class="s1">&#39;lambda node: node.payload &gt; 10&#39;</span>
-
-<span class="c1"># Pretty print the tree structure</span>
-jt<span class="w"> </span>./example.json<span class="w"> </span>--pretty
-
-<span class="c1"># Convert the tree to a different format</span>
-jt<span class="w"> </span>./example.json<span class="w"> </span>--convert<span class="w"> </span>FlatForest
+<section id="migration-from-v0-8">
+<h3>Migration from v0.8<a class="headerlink" href="#migration-from-v0-8" title="Link to this heading">¶</a></h3>
+<p>Most v0.8 commands still work, but some have been renamed:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--subtree</span></code> → <code class="docutils literal notranslate"><span class="pre">--descendants</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--node-stats</span></code> → <code class="docutils literal notranslate"><span class="pre">--stats</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--find-path</span></code> → <code class="docutils literal notranslate"><span class="pre">--path</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="tips-and-tricks">
+<h2>Tips and Tricks<a class="headerlink" href="#tips-and-tricks" title="Link to this heading">¶</a></h2>
+<ol class="arabic">
+<li><p><strong>Use stdin for pipelines</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>api.example.com/tree<span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--pretty
 </pre></div>
 </div>
+</li>
+<li><p><strong>Combine with jq for JSON processing</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>jt<span class="w"> </span>tree.json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.children[0]&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Save common filters as aliases</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">alias</span><span class="w"> </span>jt-leaves<span class="o">=</span><span class="s1">&#39;jt --leaves&#39;</span>
+<span class="nb">alias</span><span class="w"> </span>jt-deep<span class="o">=</span><span class="s1">&#39;jt --filter &quot;level &gt; 2&quot;&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Use for directory trees</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>d<span class="w"> </span><span class="p">|</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jt<span class="w"> </span>--pretty
+</pre></div>
+</div>
+</li>
+</ol>
 </section>
-<section id="license">
-<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
-<p>This program is distributed under the MIT License. See the LICENSE file for more details.</p>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="fluent_api.html"><span class="doc">AlgoTree Fluent API Guide</span></a> - Full API documentation</p></li>
+<li><p><a class="reference internal" href="tutorial.html"><span class="doc">AlgoTree: Comprehensive Tutorial</span></a> - Step-by-step tutorials</p></li>
+<li><p><a class="reference external" href="https://github.com/queelius/AlgoTree/tree/main/examples">GitHub Examples</a></p></li>
+</ul>
 </section>
 </section>
 
@@ -151,22 +379,42 @@ jt<span class="w"> </span>./example.json<span class="w"> </span>--convert<span c
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformations.html">Tree Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">AlgoTree Cookbook</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="flat_forest.html">FlatForest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="treenode.html">TreeNode</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flat_forest_nb.html">FlatForest Notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="expr_trees_nb.html">Expression Trees and Evaluation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">jt Command-Line Tool</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-formats">Input Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-formats">Output Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filtering-and-queries">Filtering and Queries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-navigation">Tree Navigation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-transformations">Tree Transformations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tree-analysis">Tree Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#format-conversion">Format Conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-examples">Advanced Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#comparison-with-v0-8">Comparison with v0.8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tips-and-tricks">Tips and Tricks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">AlgoTree</a></li>
 </ul>
 
@@ -175,7 +423,7 @@ jt<span class="w"> </span>./example.json<span class="w"> </span>--convert<span c
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="identity.html" title="previous chapter">Understanding Equality in Trees and Nodes</a></li>
-      <li>Next: <a href="modules.html" title="next chapter">AlgoTree</a></li>
+      <li>Next: <a href="api_reference.html" title="next chapter">API Reference</a></li>
   </ul></li>
 </ul>
 </div>

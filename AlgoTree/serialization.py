@@ -21,7 +21,7 @@ import json
 import gzip
 import pickle
 from contextlib import contextmanager
-from ..node import Node
+from .node import Node
 
 
 # Simple, Pythonic file I/O

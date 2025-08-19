@@ -1,6 +1,14 @@
 AlgoTree package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   AlgoTree.integrations
+
 Submodules
 ----------
 
@@ -8,6 +16,14 @@ AlgoTree.dsl module
 -------------------
 
 .. automodule:: AlgoTree.dsl
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoTree.exporters module
+-------------------------
+
+.. automodule:: AlgoTree.exporters
    :members:
    :show-inheritance:
    :undoc-members:
@@ -52,10 +68,26 @@ AlgoTree.node\_hasher module
    :show-inheritance:
    :undoc-members:
 
+AlgoTree.pattern\_matcher module
+--------------------------------
+
+.. automodule:: AlgoTree.pattern_matcher
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 AlgoTree.pretty\_tree module
 ----------------------------
 
 .. automodule:: AlgoTree.pretty_tree
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoTree.serialization module
+-----------------------------
+
+.. automodule:: AlgoTree.serialization
    :members:
    :show-inheritance:
    :undoc-members:
@@ -72,6 +104,22 @@ AlgoTree.tree\_hasher module
 ----------------------------
 
 .. automodule:: AlgoTree.tree_hasher
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoTree.tree\_shaper module
+----------------------------
+
+.. automodule:: AlgoTree.tree_shaper
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoTree.tree\_transformer module
+---------------------------------
+
+.. automodule:: AlgoTree.tree_transformer
    :members:
    :show-inheritance:
    :undoc-members:
