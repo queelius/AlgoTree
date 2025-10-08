@@ -103,7 +103,7 @@ class TreeExporter:
             
         Example:
             dot = TreeExporter.to_graphviz(tree,
-                node_attr=lambda n: {"label": f"{n.name}\\n{n.payload.get('size', '')}"})
+                node_attr=lambda n: {"label": f"{n.name}\\n{n.get('size', '')}"})
         """
         lines = [f"digraph {name} {{"]
         
@@ -179,7 +179,7 @@ class TreeExporter:
             
         Example:
             mermaid = TreeExporter.to_mermaid(tree,
-                node_text=lambda n: f"{n.name}<br/>{n.payload.get('type', '')}")
+                node_text=lambda n: f"{n.name}<br/>{n.get('type', '')}")
         """
         lines = [f"graph {direction}"]
         
@@ -256,10 +256,10 @@ class TreeExporter:
             
             # Node name
             lines.append(f"{prefix}- name: {n.name}")
-            
-            # Payload attributes
-            if n.payload:
-                for key, value in n.payload.items():
+
+            # Attributes
+            if n._attrs:
+                for key, value in n._attrs.items():
                     if isinstance(value, (dict, list)):
                         value = json.dumps(value)
                     lines.append(f"{prefix}  {key}: {value}")
@@ -303,19 +303,19 @@ class TreeExporter:
             
             # Open tag with name attribute
             attrs = [f'name="{escape_xml(n.name)}"']
-            
-            # Add payload as attributes (simple values only)
-            for key, value in n.payload.items():
+
+            # Add attrs as attributes (simple values only)
+            for key, value in n._attrs.items():
                 if not isinstance(value, (dict, list)):
                     attrs.append(f'{key}="{escape_xml(value)}"')
-            
+
             attr_str = " ".join(attrs)
-            
+
             if n.children:
                 lines.append(f"{prefix}<node {attr_str}>")
-                
-                # Add complex payload as nested elements
-                for key, value in n.payload.items():
+
+                # Add complex attrs as nested elements
+                for key, value in n._attrs.items():
                     if isinstance(value, (dict, list)):
                         lines.append(f"{prefix}  <{key}>{escape_xml(json.dumps(value))}</{key}>")
                 
@@ -372,8 +372,8 @@ class TreeExporter:
         border: 1px solid #ddd; border-radius: 3px;
         background: #f5f5f5; cursor: pointer;
     }
-    .tree .payload { 
-        font-size: 0.9em; color: #666; 
+    .tree .attrs {
+        font-size: 0.9em; color: #666;
         margin-left: 10px; font-style: italic;
     }
     .collapsed > ul { display: none; }
@@ -392,14 +392,14 @@ class TreeExporter:
             if collapsible and n.children:
                 toggle = '<span class="toggle">▼</span>'
             
-            payload_str = ""
-            if n.payload:
-                items = [f"{k}: {v}" for k, v in n.payload.items()
+            attrs_str = ""
+            if n._attrs:
+                items = [f"{k}: {v}" for k, v in n._attrs.items()
                         if not isinstance(v, (dict, list))]
                 if items:
-                    payload_str = f'<span class="payload">{", ".join(items)}</span>'
+                    attrs_str = f'<span class="attrs">{", ".join(items)}</span>'
             
-            parts.append(f'<li><div class="{node_class}">{toggle}{n.name}{payload_str}</div>')
+            parts.append(f'<li><div class="{node_class}">{toggle}{n.name}{attrs_str}</div>')
             
             # Children
             if n.children:

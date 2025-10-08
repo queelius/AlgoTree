@@ -2,10 +2,10 @@ from setuptools import find_packages, setup
 
 setup(
     name="AlgoTree",
-    version="1.0.0",
+    version="2.0.0",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
-    description="A powerful tree manipulation library with pattern matching and transformations",
+    description="Immutable-by-default tree manipulation library with functional programming patterns and composable transformations",
     long_description=open("README.rst").read(),
     long_description_content_type="text/x-rst",
     packages=find_packages() + ['bin'],

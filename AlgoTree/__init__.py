@@ -1,141 +1,102 @@
-# AlgoTree v1.0 - Modern Tree Manipulation Library
-# 
-# Primary API (v1.0+)
-from .node import Node
-from .fluent import TreeBuilder, FluentNode
-from .dsl import parse_tree, TreeDSL
-from .pattern_matcher import (
-    Pattern, PatternMatcher, MatchType, 
-    pattern_match, dotmatch, dotpluck, 
-    dotexists, dotcount, dotfilter
-)
-from .tree_transformer import (
-    dotmod, dotmap, dotprune, dotmerge,
-    dotgraft, dotsplit, dotflatten, dotreduce,
-    dotannotate, dotvalidate, dotnormalize
-)
-from .tree_shaper import (
-    dotpipe, to_dict, to_list, to_paths,
-    to_adjacency_list, to_edge_list, to_nested_lists,
-    to_table, dotextract, dotcollect, dotgroup,
-    dotpartition, dotproject, to_graphviz_data, to_json_schema
+"""
+AlgoTree - A powerful, modern tree manipulation library for Python.
+
+Core components:
+- Node: Immutable tree nodes with functional operations
+- Tree: Tree wrapper with consistent API
+- Selectors: Composable pattern matching
+- Transformers: Composable tree transformations
+- Builders: Fluent API for tree construction
+"""
+
+# Core classes
+from .node import Node, node
+from .tree import Tree
+
+# Selectors for pattern matching
+from .selectors import (
+    Selector,
+    # Basic selectors
+    NameSelector, AttrsSelector, TypeSelector, PredicateSelector,
+    DepthSelector, LeafSelector, RootSelector,
+    # Logical combinators
+    AndSelector, OrSelector, NotSelector, XorSelector,
+    # Structural combinators
+    ChildOfSelector, ParentOfSelector, DescendantOfSelector,
+    AncestorOfSelector, SiblingOfSelector,
+    # Factory functions
+    name, attrs, type_, predicate, depth, leaf, root, any_, none, parse
 )
 
-# Utilities (still compatible)
+# Transformers for tree manipulation
+from .transformers import (
+    Transformer,
+    # Tree -> Tree transformers
+    TreeTransformer, MapTransformer, FilterTransformer, PruneTransformer,
+    GraftTransformer, FlattenTransformer, NormalizeTransformer, AnnotateTransformer,
+    # Tree -> Any transformers (shapers)
+    Shaper, ReduceShaper, FoldShaper, ExtractShaper, ToDictShaper, ToPathsShaper,
+    # Composite transformers
+    Pipeline, ParallelTransformer, RepeatTransformer, ConditionalTransformer, DebugTransformer,
+    # Factory functions
+    map_, filter_, prune, graft, flatten, normalize, annotate,
+    reduce_, fold, extract, to_dict, to_paths
+)
+
+# Builders for tree construction
+from .builders import (
+    TreeBuilder, FluentTree, TreeContext, QuickBuilder,
+    tree, branch, leaf
+)
+
+# Visualization and export
 from .pretty_tree import PrettyTree, pretty_tree
 from .exporters import TreeExporter, export_tree, save_tree
 
 # Serialization
 from .serialization import save, load, dumps, loads
 
-# Legacy imports (deprecated - will be removed in v2.0)
-# These are kept for minimal compatibility but should not be used in new code
-try:
-    from .flat_forest import FlatForest
-    from .flat_forest_node import FlatForestNode
-    from .treenode import TreeNode
-    from .tree_converter import TreeConverter
-    from .treenode_api import TreeNodeApi
-    from .node_hasher import NodeHasher
-    from .tree_hasher import TreeHasher
-    from .utils import (
-        map,
-        visit,
-        descendants,
-        ancestors,
-        siblings,
-        leaves,
-        height,
-        depth,
-        is_root,
-        is_leaf,
-        is_internal,
-        breadth_first,
-        find_nodes,
-        find_node,
-        find_path,
-        node_stats,
-        size,
-        prune,
-        lca,
-        breadth_first_undirected,
-        node_to_leaf_paths,
-        distance,
-        subtree_centered_at,
-        subtree_rooted_at,
-        paths_to_tree,
-        is_isomorphic,
-    )
-    
-    import warnings
-    warnings.warn(
-        "Legacy AlgoTree APIs (TreeNode, FlatForest) are deprecated and will be removed in v2.0. "
-        "Please migrate to the new Node/TreeBuilder/FluentNode API. "
-        "See https://github.com/queelius/AlgoTree/blob/main/CHANGELOG.md for migration guide.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-except ImportError:
-    # Legacy modules not available - this is fine for new installations
-    pass
+# DSL support
+from .dsl import parse_tree, TreeDSL
 
-__version__ = "1.0.0"
+# Version
+__version__ = "2.0.0"
+
+# Public API
 __all__ = [
-    # Primary API
-    "Node",
-    "TreeBuilder", 
-    "FluentNode",
-    "parse_tree",
-    "TreeDSL",
-    # Pattern Matching
-    "Pattern",
-    "PatternMatcher",
-    "MatchType",
-    "pattern_match",
-    # Dot Notation (dotsuite-inspired)
-    "dotmatch",
-    "dotpluck",
-    "dotexists",
-    "dotcount",
-    "dotfilter",
-    # Tree Transformations (dotmod family - closed)
-    "dotmod",
-    "dotmap",
-    "dotprune",
-    "dotmerge",
-    "dotgraft",
-    "dotsplit",
-    "dotflatten",
-    "dotreduce",
-    "dotannotate",
-    "dotvalidate",
-    "dotnormalize",
-    # Tree Shaping (dotpipe family - open)
-    "dotpipe",
-    "to_dict",
-    "to_list",
-    "to_paths",
-    "to_adjacency_list",
-    "to_edge_list",
-    "to_nested_lists",
-    "to_table",
-    "dotextract",
-    "dotcollect",
-    "dotgroup",
-    "dotpartition",
-    "dotproject",
-    "to_graphviz_data",
-    "to_json_schema",
-    # Utilities
-    "pretty_tree",
-    "PrettyTree",
-    # Export
-    "TreeExporter",
-    "export_tree",
-    "save_tree",
+    # Core
+    'Node', 'node',
+    'Tree',
+
+    # Selectors
+    'Selector',
+    'NameSelector', 'AttrsSelector', 'TypeSelector', 'PredicateSelector',
+    'DepthSelector', 'LeafSelector', 'RootSelector',
+    'AndSelector', 'OrSelector', 'NotSelector', 'XorSelector',
+    'ChildOfSelector', 'ParentOfSelector', 'DescendantOfSelector',
+    'AncestorOfSelector', 'SiblingOfSelector',
+    'name', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'parse',
+
+    # Transformers
+    'Transformer',
+    'TreeTransformer', 'MapTransformer', 'FilterTransformer', 'PruneTransformer',
+    'GraftTransformer', 'FlattenTransformer', 'NormalizeTransformer', 'AnnotateTransformer',
+    'Shaper', 'ReduceShaper', 'FoldShaper', 'ExtractShaper', 'ToDictShaper', 'ToPathsShaper',
+    'Pipeline', 'ParallelTransformer', 'RepeatTransformer', 'ConditionalTransformer', 'DebugTransformer',
+    'map_', 'filter_', 'prune', 'graft', 'flatten', 'normalize', 'annotate',
+    'reduce_', 'fold', 'extract', 'to_dict', 'to_paths',
+
+    # Builders
+    'TreeBuilder', 'FluentTree', 'TreeContext', 'QuickBuilder',
+    'tree', 'branch', 'leaf',
+
+    # Visualization
+    'PrettyTree', 'pretty_tree',
+    'TreeExporter', 'export_tree', 'save_tree',
+
     # Serialization
-    "save",
-    "load",
-    "dumps",
-    "loads",
+    'save', 'load', 'dumps', 'loads',
+
+    # DSL
+    'parse_tree', 'TreeDSL',
 ]

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AlgoTree is a powerful Python library for working with tree structures, featuring a modern fluent API, advanced pattern matching, and comprehensive tree transformations inspired by dotsuite. Version 1.0+ provides a complete redesign with clean OOP architecture.
+AlgoTree is a powerful Python library for working with tree structures, featuring an immutable-by-default API, composable transformations, and comprehensive tree operations. Version 2.0+ provides a clean, modern architecture following functional programming principles.
 
 ## Key Commands
 
@@ -21,10 +21,10 @@ pip install -r requirements.txt
 # Run all tests
 make test
 # or
-python -m unittest discover -s test
+python -m pytest test/
 
 # Run a specific test file
-python -m unittest test.test_treenode
+python -m pytest test/test_node.py
 
 # Run with coverage
 make coverage
@@ -52,51 +52,173 @@ python setup.py sdist bdist_wheel
 make pypi
 ```
 
-## Architecture
+## Architecture (v2.0+)
 
-### Core Components (v1.0+)
+### Core Components
 
-1. **Modern Tree API**
-   - `Node` (AlgoTree/node.py): Clean OOP tree node class
-   - `TreeBuilder` (AlgoTree/fluent.py): Fluent API for tree construction
-   - `FluentNode` (AlgoTree/fluent.py): Chainable operations on trees
-   - `TreeDSL` (AlgoTree/dsl.py): Parse trees from text formats
+1. **Immutable Node API**
+   - `Node` (AlgoTree/node.py): Immutable tree nodes with functional operations
+     - Constructor: `Node(name, *children, attrs={})`
+     - Immutable transformations: `with_name()`, `with_attrs()`, `with_child()`, etc.
+     - Tree operations: `map()`, `filter()`, `find()`, `find_all()`
+     - Iteration: `walk()`, `descendants()`, `ancestors()`, `leaves()`
+   - `node()` convenience function for creating nodes with mixed string/Node children
 
-2. **Pattern Matching** (dotsuite-inspired)
-   - `Pattern` & `PatternMatcher` (AlgoTree/pattern_matcher.py): Advanced pattern matching
-   - Dot notation with escaping: `files.report\.pdf` for literal dots
-   - Wildcards: `*` (single), `**` (deep), `*.txt` (with suffix)
-   - Attributes: `[type=file]`, `[size]` (existence check)
-   - Functions: `dotmatch`, `dotpluck`, `dotexists`, `dotcount`, `dotfilter`
+2. **Selectors** (AlgoTree/selectors.py)
+   - Composable pattern matching for tree nodes
+   - Basic selectors: `name()`, `attrs()`, `type_()`, `predicate()`
+   - Structural selectors: `depth()`, `leaf()`, `root()`
+   - Logical combinators: `&` (and), `|` (or), `~` (not), `^` (xor)
+   - Structural combinators: `ChildOfSelector`, `ParentOfSelector`, etc.
 
-3. **Tree Transformations**
-   - `tree_transformer.py`: Closed transformations (tree→tree)
-     - `dotmod`, `dotmap`, `dotprune`, `dotmerge`, `dotannotate`, etc.
-   - `tree_shaper.py`: Open transformations (tree→any)
-     - `dotpipe`, `to_dict`, `to_list`, `to_paths`, `dotextract`, etc.
+3. **Transformers** (AlgoTree/transformers.py)
+   - Tree → Tree transformers: `map_()`, `filter_()`, `prune()`, `graft()`, etc.
+   - Tree → Any shapers: `reduce_()`, `fold()`, `extract()`, `to_dict()`, `to_paths()`
+   - Composite transformers: `Pipeline`, `ParallelTransformer`, `RepeatTransformer`
 
-4. **Export & Visualization**
+4. **Builders** (AlgoTree/builders.py)
+   - Fluent API for tree construction
+   - `TreeBuilder`, `FluentTree`, `TreeContext`, `QuickBuilder`
+   - Factory functions: `tree()`, `branch()`, `leaf()`
+
+5. **Tree Wrapper** (AlgoTree/tree.py)
+   - `Tree`: Wrapper providing functional operations and consistent API
+   - Factory methods: `from_dict()`, `from_paths()`
+   - Fluent API with method chaining
+
+6. **DSL Support** (AlgoTree/dsl.py)
+   - `TreeDSL`: Parse trees from text formats
+   - Formats: visual (Unicode tree), indent-based, S-expression
+   - `parse_tree()` convenience function
+
+7. **Export & Visualization**
    - `exporters.py`: Export to GraphViz, Mermaid, JSON, XML, YAML, HTML
    - `pretty_tree.py`: ASCII/Unicode tree visualization
+   - `serialization.py`: Save/load trees to/from files
 
-5. **Legacy Components** (deprecated - will be removed in v2.0)
-   - `FlatForest` (AlgoTree/flat_forest.py): Flat tree structure
-   - `FlatForestNode` (AlgoTree/flat_forest_node.py): Node-centric proxy
-   - `TreeNode` (AlgoTree/treenode.py): Dict-based recursive tree
+## API Examples
 
-6. **Utilities**
-   - `utils.py`: Tree algorithms (traversal, search, LCA, pruning, etc.)
-   - `tree_converter.py`: Convert between tree representations
-   - `tree_hasher.py` & `node_hasher.py`: Tree hashing
+### Creating Trees
 
-7. **Command-Line Tool**
-   - `jt` (bin/jt.py): Tree manipulation CLI tool
-   - Supports queries, visualization, transformations
-   - Usage: `jt [file] [options]`
+```python
+from AlgoTree import Node, node
+
+# Direct construction (immutable)
+tree = Node("root",
+    Node("child1", attrs={"value": 1}),
+    Node("child2", attrs={"value": 2})
+)
+
+# Convenience function with mixed children
+tree = node('root',
+    node('child1', value=1),
+    'child2',  # String auto-converted to Node
+    node('child3',
+        'grandchild1',
+        'grandchild2'
+    )
+)
+```
+
+### Immutable Transformations
+
+```python
+# All operations return new trees
+tree2 = tree.with_name("new_root")
+tree3 = tree.with_attrs(status="active")
+tree4 = tree.with_child(Node("new_child"))
+
+# Map over all nodes
+doubled = tree.map(lambda n: n.with_attrs(
+    value=n.get("value", 0) * 2
+))
+
+# Filter nodes
+filtered = tree.filter(lambda n: n.get("value", 0) > 5)
+```
+
+### Finding Nodes
+
+```python
+# Find first match
+node = tree.find("child1")
+node = tree.find(lambda n: n.get("value") > 5)
+
+# Find all matches
+nodes = tree.find_all("leaf*")  # Wildcard matching
+nodes = tree.find_all(lambda n: n.is_leaf)
+```
+
+### Iteration
+
+```python
+# Various traversals
+for node in tree.walk("preorder"):
+    print(node.name)
+
+for node in tree.walk("postorder"):
+    process(node)
+
+# Specific node types
+for leaf in tree.leaves():
+    print(leaf)
+
+for ancestor in node.ancestors():
+    print(ancestor)
+```
+
+### Export & Visualization
+
+```python
+from AlgoTree import export_tree, save_tree, pretty_tree
+
+# Export to various formats
+json_str = export_tree(tree, "json")
+dot_str = export_tree(tree, "graphviz")
+mermaid_str = export_tree(tree, "mermaid")
+
+# Save to file
+save_tree(tree, "tree.json")
+save_tree(tree, "tree.dot")
+
+# Pretty print
+print(pretty_tree(tree))
+```
 
 ## Testing Approach
 
 - Unit tests in `test/` directory cover all major components
 - Test files follow `test_*.py` naming convention
-- Tests use Python's unittest framework
-- Run specific test methods: `python -m unittest test.TestClass.test_method`
+- Tests use pytest framework
+- Run specific test methods: `python -m pytest test/test_node.py::TestNodeCreation::test_simple_node`
+
+## API Design Principles
+
+1. **Immutability**: All operations return new objects, never mutate existing ones
+2. **Composability**: Small, focused functions that combine well
+3. **Functional Style**: Prefer pure functions and method chaining
+4. **Type Safety**: Full type hints for IDE support
+5. **Clean Separation**: Node (data) vs Tree (operations) vs Transformers (algorithms)
+
+## Migration from v1.x
+
+The v2.0 API is a clean break from v1.x:
+
+### Old API (v1.x)
+```python
+node = TreeNode(name="x", foo="bar")  # Arbitrary kwargs
+node.add_child(child)  # Mutable operations
+```
+
+### New API (v2.0+)
+```python
+node = Node("x", attrs={"foo": "bar"})  # Explicit attrs
+node = node.with_child(child)  # Immutable operations
+```
+
+## Important Reminders
+
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless absolutely necessary
+- ALWAYS prefer editing an existing file to creating a new one
+- NEVER proactively create documentation files (*.md) or README files unless explicitly requested

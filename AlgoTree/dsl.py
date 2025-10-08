@@ -72,43 +72,66 @@ class TreeDSL:
         
         # Parse root
         root_name, root_attrs = TreeDSL._parse_node_spec(lines[0])
-        root = Node(name=root_name, **root_attrs)
-        
-        # Track current path for building tree
-        stack = [(root, 0)]  # (node, indent_level)
-        
+        root = Node(root_name, attrs=root_attrs)
+
+        # Build tree structure first
+        nodes_by_indent = {0: {'node': root, 'children': []}}
+        stack = [0]  # Track indent levels
+
         for line in lines[1:]:
             if not line.strip():
                 continue
-            
+
             # Remove tree drawing characters and count indent
-            original_line = line
             line = line.replace('│', ' ').replace('├', ' ').replace('└', ' ').replace('─', ' ')
             indent = len(line) - len(line.lstrip())
             clean_line = line.strip()
-            
+
             # Parse node
             name, attrs = TreeDSL._parse_node_spec(clean_line)
-            
+            node = Node(name, attrs=attrs)
+
             # Find parent based on indent
-            # Pop nodes until we find the right parent level
-            while len(stack) > 1 and stack[-1][1] >= indent:
+            while stack and stack[-1] >= indent:
                 stack.pop()
-            
+
             if not stack:
                 raise ValueError("Invalid tree structure")
-            
-            parent = stack[-1][0]
-            node = parent.add_child(name=name, **attrs)
-            stack.append((node, indent))
-        
-        return root
+
+            parent_indent = stack[-1]
+            nodes_by_indent[parent_indent]['children'].append(node)
+            nodes_by_indent[indent] = {'node': node, 'children': []}
+            stack.append(indent)
+
+        # Rebuild tree with children
+        def rebuild_with_children(indent):
+            node_info = nodes_by_indent[indent]
+            node = node_info['node']
+            children = node_info['children']
+
+            # Recursively rebuild children
+            rebuilt_children = []
+            for child in children:
+                # Find child's indent
+                child_indent = None
+                for ind, info in nodes_by_indent.items():
+                    if info['node'] == child:
+                        child_indent = ind
+                        break
+                if child_indent is not None:
+                    rebuilt_children.append(rebuild_with_children(child_indent))
+                else:
+                    rebuilt_children.append(child)
+
+            return node.with_children(*rebuilt_children) if rebuilt_children else node
+
+        return rebuild_with_children(0)
     
     @staticmethod
     def _parse_indent(text: str) -> Node:
         """
         Parse indent-based format.
-        
+
         Example:
             company: {type: tech, revenue: 1M}
               engineering: {head: Alice}
@@ -119,18 +142,19 @@ class TreeDSL:
         lines = text.split('\n')
         if not lines:
             raise ValueError("Empty tree")
-        
+
+        # First pass: create all nodes and track structure
+        nodes_by_indent = {}
         root = None
-        stack = []
-        
+
         for line in lines:
             if not line.strip():
                 continue
-            
+
             # Calculate indent
             indent = len(line) - len(line.lstrip())
             line = line.strip()
-            
+
             # Parse node
             if ':' in line:
                 name, rest = line.split(':', 1)
@@ -139,22 +163,46 @@ class TreeDSL:
             else:
                 name = line
                 attrs = {}
-            
+
             # Create node
-            node = Node(name=name, **attrs)
-            
-            # Find parent based on indent
-            while stack and stack[-1][1] >= indent:
-                stack.pop()
-            
-            if not stack:
+            node = Node(name, attrs=attrs)
+
+            if indent == 0:
                 root = node
+                nodes_by_indent[0] = {'node': node, 'children': []}
             else:
-                node.parent = stack[-1][0]
-            
-            stack.append((node, indent))
-        
-        return root
+                # Find parent indent
+                parent_indent = max(i for i in nodes_by_indent.keys() if i < indent)
+                nodes_by_indent[parent_indent]['children'].append(node)
+                nodes_by_indent[indent] = {'node': node, 'children': []}
+
+        # Second pass: rebuild tree with children
+        def rebuild(indent):
+            info = nodes_by_indent.get(indent)
+            if not info:
+                return None
+
+            node = info['node']
+            children = info['children']
+
+            if not children:
+                return node
+
+            # Rebuild children recursively
+            rebuilt_children = []
+            for child in children:
+                # Find child's indent
+                child_indent = None
+                for ind, inf in nodes_by_indent.items():
+                    if inf['node'] == child:
+                        child_indent = ind
+                        break
+                if child_indent is not None:
+                    rebuilt_children.append(rebuild(child_indent))
+
+            return node.with_children(*rebuilt_children)
+
+        return rebuild(0) if root else None
     
     @staticmethod
     def _parse_sexpr(text: str) -> Node:
@@ -195,18 +243,19 @@ class TreeDSL:
                         index += 1
                 else:
                     index += 1
-            
-            # Create node
-            node = Node(name=name, **attrs)
-            
+
             # Parse children
+            children = []
             while index < len(tokens) and tokens[index] == '(':
                 child, index = parse_node(tokens, index)
-                child.parent = node
-            
+                children.append(child)
+
+            # Create node with children
+            node = Node(name, *children, attrs=attrs)
+
             if index >= len(tokens) or tokens[index] != ')':
                 raise ValueError("Expected ')' at end of node")
-            
+
             return node, index + 1
         
         root, _ = parse_node(tokens, 0)

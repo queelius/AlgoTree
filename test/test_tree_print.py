@@ -1,34 +1,20 @@
 import unittest
+from AlgoTree.node import Node
 from AlgoTree.pretty_tree import PrettyTree, pretty_tree
 
 
 class TestTreePrettyPrinter(unittest.TestCase):
 
-    class Node:
-        def __init__(self, name, children=None, payload=None):
-            self.name = name
-            self.payload = payload
-            self.children = children or []
-            for child in self.children:
-                child.parent = self
-            self.parent = None
-
-        @property
-        def root(self):
-            node = self
-            while node.parent:
-                node = node.parent
-            return node
-
     def setUp(self):
         # Creating a sample tree structure for testing
-        self.root = self.Node(
-            "root",
-            [
-                self.Node("child1", [self.Node("child1.1"), self.Node("child1.2")]),
-                self.Node("child2", [self.Node("child2.1")]),
-            ],
-        )
+        child1_1 = Node("child1.1")
+        child1_2 = Node("child1.2")
+        child1 = Node("child1", child1_1, child1_2)
+
+        child2_1 = Node("child2.1")
+        child2 = Node("child2", child2_1)
+
+        self.root = Node("root", child1, child2)
 
     def test_default_pretty_print(self):
         printer = PrettyTree()
