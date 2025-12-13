@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.shell.cli &#8212; AlgoTree 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.shell.cli</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stateless CLI tool for tree operations.</span>
+
+<span class="sd">Provides command-line operations on tree files without an interactive shell.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    algotree &lt;command&gt; &lt;tree_file&gt;[:&lt;path&gt;] [args...]</span>
+<span class="sd">    algotree shell [tree_file]</span>
+
+<span class="sd">Examples:</span>
+<span class="sd">    algotree ls tree.json:/root/child1</span>
+<span class="sd">    algotree cat tree.json:/root/child1</span>
+<span class="sd">    algotree tree tree.json</span>
+<span class="sd">    algotree select &#39;n.depth &gt; 2&#39; tree.json --output filtered.json</span>
+<span class="sd">    algotree shell tree.json</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.serialization</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span> <span class="k">as</span> <span class="n">load_tree</span><span class="p">,</span> <span class="n">save</span> <span class="k">as</span> <span class="n">save_tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Forest</span><span class="p">,</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">TreePath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommandRegistry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.builtins</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_builtin_registry</span>
+
+
+<div class="viewcode-block" id="parse_tree_path">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.cli.parse_tree_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_tree_path</span><span class="p">(</span><span class="n">path_spec</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse a tree path specification.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_spec: Path in format &quot;file.json&quot; or &quot;file.json:/path/to/node&quot;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (filename, path_within_tree)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">path_spec</span><span class="p">:</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">tree_path</span> <span class="o">=</span> <span class="n">path_spec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">tree_path</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path_spec</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="load_tree_file">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.cli.load_tree_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_tree_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tree</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a tree from a file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename: Path to tree file</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tree instance</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If file doesn&#39;t exist</span>
+<span class="sd">        ValueError: If file format is invalid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">load_tree</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Tree</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading tree from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="execute_command">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.cli.execute_command">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">execute_command</span><span class="p">(</span>
+    <span class="n">command_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">tree</span><span class="p">:</span> <span class="n">Tree</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute a command on a tree.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        command_name: Name of command to execute</span>
+<span class="sd">        tree: Tree to operate on</span>
+<span class="sd">        path: Path within tree (or None for root)</span>
+<span class="sd">        args: Command arguments</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple of (success, output)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create forest with single tree</span>
+    <span class="n">forest</span> <span class="o">=</span> <span class="n">Forest</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">tree</span><span class="p">})</span>
+
+    <span class="c1"># Create context</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">ShellContext</span><span class="p">(</span><span class="n">forest</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Navigate to path if specified</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Get command</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">create_builtin_registry</span><span class="p">()</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">command_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">command</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Unknown command: </span><span class="si">{</span><span class="n">command_name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Execute command</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">error</span> <span class="ow">or</span> <span class="s2">&quot;Command failed&quot;</span>
+
+    <span class="c1"># Format output</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">output</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.cli.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Entry point for the algotree CLI tool.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;AlgoTree CLI - Operate on tree files&#39;</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Examples:</span>
+<span class="s2">  algotree ls tree.json</span>
+<span class="s2">  algotree ls tree.json:/root/child1</span>
+<span class="s2">  algotree cat tree.json:/root/child1</span>
+<span class="s2">  algotree tree tree.json -d 3</span>
+<span class="s2">  algotree find &quot;.*test.*&quot; tree.json</span>
+<span class="s2">  algotree select &#39;n.depth &gt; 2&#39; tree.json</span>
+<span class="s2">  algotree shell                 # Start empty shell</span>
+<span class="s2">  algotree shell tree.json       # Start with tree loaded</span>
+
+<span class="s2">Path Format:</span>
+<span class="s2">  &lt;file&gt;[:&lt;path&gt;]</span>
+
+<span class="s2">  file  - Path to tree file (JSON, YAML, etc.)</span>
+<span class="s2">  path  - Optional path within tree (e.g., /root/child1)</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;command&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Command to execute (or &quot;shell&quot; for interactive mode)&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;tree&#39;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Tree file path, optionally with path (file.json or file.json:/path). Optional for shell command.&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;args&#39;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Additional command arguments&#39;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;--output&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Output file (for commands that modify the tree)&#39;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Parse arguments</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># Special case: shell command</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">command</span> <span class="o">==</span> <span class="s1">&#39;shell&#39;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.shell</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeShell</span>
+
+        <span class="c1"># Create shell</span>
+        <span class="n">shell</span> <span class="o">=</span> <span class="n">TreeShell</span><span class="p">()</span>
+
+        <span class="c1"># Load tree if specified</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">load_tree_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+                <span class="n">tree_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">shell</span><span class="o">.</span><span class="n">forest</span> <span class="o">=</span> <span class="n">shell</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">tree_name</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+                <span class="n">shell</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">shell</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">update_forest</span><span class="p">(</span><span class="n">shell</span><span class="o">.</span><span class="n">forest</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; from </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading tree: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">1</span>
+
+        <span class="c1"># Run shell</span>
+        <span class="n">shell</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="c1"># For non-shell commands, tree file is required</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: tree file is required for command &#39;</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Usage: algotree </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="si">}</span><span class="s2"> &lt;tree_file&gt; [args...]&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="c1"># Parse tree path</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">tree_path</span> <span class="o">=</span> <span class="n">parse_tree_path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">tree</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="c1"># Load tree</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">load_tree_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: File not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="c1"># Execute command</span>
+    <span class="n">success</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="n">execute_command</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">tree_path</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="c1"># Print output</span>
+    <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="c1"># Save output if requested</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Get modified tree from forest</span>
+            <span class="n">forest</span> <span class="o">=</span> <span class="n">Forest</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">tree</span><span class="p">})</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="n">ShellContext</span><span class="p">(</span><span class="n">forest</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tree_path</span><span class="p">:</span>
+                <span class="n">context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">tree_path</span><span class="p">)</span>
+
+            <span class="c1"># Execute command again to get modified context</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="n">create_builtin_registry</span><span class="p">()</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">command</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">context</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">current_tree</span><span class="p">:</span>
+                <span class="n">modified_tree</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">current_tree</span>
+                <span class="n">save_tree</span><span class="p">(</span><span class="n">modified_tree</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved to </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Command did not modify the tree&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving output: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../transformations.html">Tree Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cookbook.html">AlgoTree Cookbook</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest_nb.html">FlatForest Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

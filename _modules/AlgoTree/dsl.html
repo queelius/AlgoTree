@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AlgoTree.dsl &#8212; AlgoTree 0.8.0 documentation</title>
+    <title>AlgoTree.dsl &#8212; AlgoTree 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
-    <script src="../../_static/documentation_options.js?v=486e5634"></script>
+    <script src="../../_static/documentation_options.js?v=8d563738"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -45,12 +45,12 @@
 
 
 <div class="viewcode-block" id="TreeDSL">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.dsl.TreeDSL">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.dsl.TreeDSL">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TreeDSL</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parser for various tree DSL formats.&quot;&quot;&quot;</span>
     
 <div class="viewcode-block" id="TreeDSL.parse">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.dsl.TreeDSL.parse">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.dsl.TreeDSL.parse">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -110,43 +110,66 @@
         
         <span class="c1"># Parse root</span>
         <span class="n">root_name</span><span class="p">,</span> <span class="n">root_attrs</span> <span class="o">=</span> <span class="n">TreeDSL</span><span class="o">.</span><span class="n">_parse_node_spec</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">root</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">root_name</span><span class="p">,</span> <span class="o">**</span><span class="n">root_attrs</span><span class="p">)</span>
-        
-        <span class="c1"># Track current path for building tree</span>
-        <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>  <span class="c1"># (node, indent_level)</span>
-        
+        <span class="n">root</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">root_name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">root_attrs</span><span class="p">)</span>
+
+        <span class="c1"># Build tree structure first</span>
+        <span class="n">nodes_by_indent</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">root</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="p">[]}}</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Track indent levels</span>
+
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
                 <span class="k">continue</span>
-            
+
             <span class="c1"># Remove tree drawing characters and count indent</span>
-            <span class="n">original_line</span> <span class="o">=</span> <span class="n">line</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;│&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;├&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;└&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;─&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
             <span class="n">indent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
             <span class="n">clean_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            
+
             <span class="c1"># Parse node</span>
             <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">TreeDSL</span><span class="o">.</span><span class="n">_parse_node_spec</span><span class="p">(</span><span class="n">clean_line</span><span class="p">)</span>
-            
+            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+
             <span class="c1"># Find parent based on indent</span>
-            <span class="c1"># Pop nodes until we find the right parent level</span>
-            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">indent</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">stack</span> <span class="ow">and</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">indent</span><span class="p">:</span>
                 <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            
+
             <span class="k">if</span> <span class="ow">not</span> <span class="n">stack</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid tree structure&quot;</span><span class="p">)</span>
-            
-            <span class="n">parent</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">node</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
-            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">indent</span><span class="p">))</span>
-        
-        <span class="k">return</span> <span class="n">root</span>
+
+            <span class="n">parent_indent</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">nodes_by_indent</span><span class="p">[</span><span class="n">parent_indent</span><span class="p">][</span><span class="s1">&#39;children&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">nodes_by_indent</span><span class="p">[</span><span class="n">indent</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
+
+        <span class="c1"># Rebuild tree with children</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">rebuild_with_children</span><span class="p">(</span><span class="n">indent</span><span class="p">):</span>
+            <span class="n">node_info</span> <span class="o">=</span> <span class="n">nodes_by_indent</span><span class="p">[</span><span class="n">indent</span><span class="p">]</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">]</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="s1">&#39;children&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Recursively rebuild children</span>
+            <span class="n">rebuilt_children</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="c1"># Find child&#39;s indent</span>
+                <span class="n">child_indent</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">nodes_by_indent</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">:</span>
+                        <span class="n">child_indent</span> <span class="o">=</span> <span class="n">ind</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">child_indent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">rebuilt_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rebuild_with_children</span><span class="p">(</span><span class="n">child_indent</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rebuilt_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">with_children</span><span class="p">(</span><span class="o">*</span><span class="n">rebuilt_children</span><span class="p">)</span> <span class="k">if</span> <span class="n">rebuilt_children</span> <span class="k">else</span> <span class="n">node</span>
+
+        <span class="k">return</span> <span class="n">rebuild_with_children</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_parse_indent</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parse indent-based format.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Example:</span>
 <span class="sd">            company: {type: tech, revenue: 1M}</span>
 <span class="sd">              engineering: {head: Alice}</span>
@@ -157,18 +180,19 @@
         <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">lines</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Empty tree&quot;</span><span class="p">)</span>
-        
+
+        <span class="c1"># First pass: create all nodes and track structure</span>
+        <span class="n">nodes_by_indent</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
-        
+
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
                 <span class="k">continue</span>
-            
+
             <span class="c1"># Calculate indent</span>
             <span class="n">indent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-            
+
             <span class="c1"># Parse node</span>
             <span class="k">if</span> <span class="s1">&#39;:&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
                 <span class="n">name</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -177,22 +201,46 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">name</span> <span class="o">=</span> <span class="n">line</span>
                 <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
-            
+
             <span class="c1"># Create node</span>
-            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
-            
-            <span class="c1"># Find parent based on indent</span>
-            <span class="k">while</span> <span class="n">stack</span> <span class="ow">and</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">indent</span><span class="p">:</span>
-                <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-            
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">indent</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">root</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">nodes_by_indent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="p">[]}</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            
-            <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">indent</span><span class="p">))</span>
-        
-        <span class="k">return</span> <span class="n">root</span>
+                <span class="c1"># Find parent indent</span>
+                <span class="n">parent_indent</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nodes_by_indent</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">indent</span><span class="p">)</span>
+                <span class="n">nodes_by_indent</span><span class="p">[</span><span class="n">parent_indent</span><span class="p">][</span><span class="s1">&#39;children&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">nodes_by_indent</span><span class="p">[</span><span class="n">indent</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;node&#39;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="c1"># Second pass: rebuild tree with children</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">rebuild</span><span class="p">(</span><span class="n">indent</span><span class="p">):</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">nodes_by_indent</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">info</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="n">node</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">]</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;children&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">children</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">node</span>
+
+            <span class="c1"># Rebuild children recursively</span>
+            <span class="n">rebuilt_children</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+                <span class="c1"># Find child&#39;s indent</span>
+                <span class="n">child_indent</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">inf</span> <span class="ow">in</span> <span class="n">nodes_by_indent</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">inf</span><span class="p">[</span><span class="s1">&#39;node&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">child</span><span class="p">:</span>
+                        <span class="n">child_indent</span> <span class="o">=</span> <span class="n">ind</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">child_indent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">rebuilt_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rebuild</span><span class="p">(</span><span class="n">child_indent</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">with_children</span><span class="p">(</span><span class="o">*</span><span class="n">rebuilt_children</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rebuild</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">root</span> <span class="k">else</span> <span class="kc">None</span>
     
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_parse_sexpr</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
@@ -233,18 +281,19 @@
                         <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
-            
-            <span class="c1"># Create node</span>
-            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
-            
+
             <span class="c1"># Parse children</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="ow">and</span> <span class="n">tokens</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;(&#39;</span><span class="p">:</span>
                 <span class="n">child</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">parse_node</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-                <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
-            
+                <span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+
+            <span class="c1"># Create node with children</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">children</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tokens</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;)&#39;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected &#39;)&#39; at end of node&quot;</span><span class="p">)</span>
-            
+
             <span class="k">return</span> <span class="n">node</span><span class="p">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
         
         <span class="n">root</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parse_node</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -332,7 +381,7 @@
 
 
 <div class="viewcode-block" id="parse_tree">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.dsl.parse_tree">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.dsl.parse_tree">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_tree</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convenience function to parse tree from DSL text.</span>
@@ -405,7 +454,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformations.html">Tree Transformations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cookbook.html">AlgoTree Cookbook</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
 <ul>
@@ -418,6 +470,7 @@
 <p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
 </ul>
 

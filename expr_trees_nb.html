@@ -39,54 +39,54 @@
 to our tree structures, namely <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code>, and to evaluate the
 expression trees by rewriting the nodes in post-order traversal.</p>
 <p>First, let’s define our expression tree.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from AlgoTree.treenode import TreeNode
-from copy import deepcopy
-import json
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.treenode</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeNode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
-# Define the expression tree
-expr = TreeNode.from_dict(
-    {
-        &quot;value&quot;: &quot;+&quot;,
-        &quot;type&quot;: &quot;op&quot;,
-        &quot;children&quot;: [
-            {
-                &quot;value&quot;: &quot;max&quot;,
-                &quot;type&quot;: &quot;op&quot;,
-                &quot;children&quot;: [
-                    {
-                        &quot;value&quot;: &quot;+&quot;,
-                        &quot;type&quot;: &quot;op&quot;,
-                        &quot;children&quot;: [
-                            {&quot;type&quot;: &quot;var&quot;, &quot;value&quot;: &quot;x&quot;},
-                            {&quot;type&quot;: &quot;const&quot;, &quot;value&quot;: 1},
-                        ],
-                    },
-                    {&quot;type&quot;: &quot;const&quot;, &quot;value&quot;: 0},
-                ],
-            },
-            {
-                &quot;type&quot;: &quot;op&quot;,
-                &quot;value&quot;: &quot;+&quot;,
-                &quot;children&quot;: [
-                    {
-                        &quot;type&quot;: &quot;op&quot;,
-                        &quot;value&quot;: &quot;max&quot;,
-                        &quot;children&quot;: [
-                            {&quot;type&quot;: &quot;var&quot;, &quot;value&quot;: &quot;x&quot;},
-                            {&quot;type&quot;: &quot;var&quot;, &quot;value&quot;: &quot;y&quot;},
-                        ],
-                    },
-                    {&quot;type&quot;: &quot;const&quot;, &quot;value&quot;: 3},
-                    {&quot;type&quot;: &quot;var&quot;, &quot;value&quot;: &quot;y&quot;},
-                ],
-            },
-        ],
-    }
-)
+<span class="c1"># Define the expression tree</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;op&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;op&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;op&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+                        <span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;op&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;op&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;children&quot;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">},</span>
+                            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;y&quot;</span><span class="p">},</span>
+                        <span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+                    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;y&quot;</span><span class="p">},</span>
+                <span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Print the expression tree in JSON format
-print(json.dumps(expr.to_dict(), indent=4))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print the expression tree in JSON format</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -197,11 +197,11 @@ print(json.dumps(expr.to_dict(), indent=4))
 <p>We can use the class <code class="docutils literal notranslate"><span class="pre">PrettyTree</span></code> (and a standalone <code class="docutils literal notranslate"><span class="pre">pretty_tree</span></code>
 function based on that class) to visualize the tree structure in a more
 human-readable way.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from AlgoTree.tree_converter import TreeConverter
-from AlgoTree.pretty_tree import pretty_tree
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.tree_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">TreeConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.pretty_tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">pretty_tree</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(pretty_tree(expr, node_name=lambda x: x.payload[&quot;value&quot;]))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">pretty_tree</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">node_name</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+
@@ -231,21 +231,21 @@ as well as numbers and variables.</p>
 <p>We will provide a <strong>closure</strong> over all of these types so that when we
 evaluate the expression in post-order, all of the types are defined for
 the operations.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def postorder(node, fn, ctx):
-    &quot;&quot;&quot;
-    Applies function `fn` to the nodes in the tree using post-order traversal.
-    :param fn: Function to apply to each node. Should accept one argument: the node.
-    :param ctx: Context passed to the function.
-    :return: The tree with the function `fn` applied to its nodes.
-    &quot;&quot;&quot;
-    results = []
-    for child in node.children:
-        result = postorder(child, fn, ctx)
-        if result is not None:
-            results.append(result)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">postorder</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies function `fn` to the nodes in the tree using post-order traversal.</span>
+<span class="sd">    :param fn: Function to apply to each node. Should accept one argument: the node.</span>
+<span class="sd">    :param ctx: Context passed to the function.</span>
+<span class="sd">    :return: The tree with the function `fn` applied to its nodes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">postorder</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
-    node.children = results
-    return fn(node, ctx)
+    <span class="n">node</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">results</span>
+    <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The function <code class="docutils literal notranslate"><span class="pre">postorder</span></code> takes a tree node <code class="docutils literal notranslate"><span class="pre">node</span></code>, a function
@@ -264,45 +264,45 @@ rewriting the tree in a different form, like algebraic simplification.</p>
 <section id="expression-tree-evaluator">
 <h2>Expression Tree Evaluator<a class="headerlink" href="#expression-tree-evaluator" title="Link to this heading">¶</a></h2>
 <p>We will now design a simple expression tree evaluator, <code class="docutils literal notranslate"><span class="pre">Eval</span></code>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>class Eval:
-    &quot;&quot;&quot;
-    An evaluator for expressions defined by operations on types, respectively
-    defined by `Eval.Op` and `Eval.Type`. The operations are a
-    dictionary where the keys are the operation names and the values are
-    functions that take a node and a context and return the value of the
-    operation in that context.
-    &quot;&quot;&quot;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Eval</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An evaluator for expressions defined by operations on types, respectively</span>
+<span class="sd">    defined by `Eval.Op` and `Eval.Type`. The operations are a</span>
+<span class="sd">    dictionary where the keys are the operation names and the values are</span>
+<span class="sd">    functions that take a node and a context and return the value of the</span>
+<span class="sd">    operation in that context.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    Op = {
-        &quot;+&quot;: lambda x: sum(x),
-        &quot;max&quot;: lambda x: max(x),
-    }
+    <span class="n">Op</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+    <span class="p">}</span>
 
-    Type = {
-        &quot;const&quot;: lambda node, _: node.payload[&quot;value&quot;],
-        &quot;var&quot;: lambda node, ctx: ctx[node.payload[&quot;value&quot;]],
-        &quot;op&quot;: lambda node, _: Eval.Op[node.payload[&quot;value&quot;]](
-            [c.payload[&quot;value&quot;] for c in node.children]
-        ),
-    }
+    <span class="n">Type</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;const&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">node</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">ctx</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]],</span>
+        <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">node</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="n">Eval</span><span class="o">.</span><span class="n">Op</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]](</span>
+            <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
 
-    def __init__(self, debug=True):
-        &quot;&quot;&quot;
-        :param debug: If True, print debug information
-        &quot;&quot;&quot;
-        self.debug = debug
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param debug: If True, print debug information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
 
-    def __call__(self, expr, ctx):
-        NodeType = type(expr)
-        def _eval(node, ctx):
-            expr_type = node.payload[&quot;type&quot;]
-            value = Eval.Type[expr_type](node, ctx)
-            result = NodeType(type=&quot;const&quot;, value=value)
-            if self.debug:
-                print(f&quot;Eval({node.payload}) -&gt; {result.payload}&quot;)
-            return result
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="n">NodeType</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_eval</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+            <span class="n">expr_type</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">Eval</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">expr_type</span><span class="p">](</span><span class="n">node</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">NodeType</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eval(</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="si">}</span><span class="s2">) -&gt; </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">payload</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
 
-        return postorder(deepcopy(expr), _eval, ctx)
+        <span class="k">return</span> <span class="n">postorder</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span> <span class="n">_eval</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To evaluate an expression tree, we need the operations to be defined for
@@ -312,11 +312,11 @@ the expression tree.</p>
 <p>We call this closure a context. Normally, the operations and other
 things are also defined in the closure, but for simplicity we will just
 define the operations and provide closures over the variables.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define the context with variable values
-ctx = {&quot;x&quot;: 1, &quot;y&quot;: 2, &quot;z&quot;: 3}
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the context with variable values</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
 
-# Evaluate the expression tree with the context
-result = Eval(debug=True)(expr, ctx)
+<span class="c1"># Evaluate the expression tree with the context</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">Eval</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Eval</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;var&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
@@ -334,8 +334,8 @@ result = Eval(debug=True)(expr, ctx)
 </pre></div>
 </div>
 <p>Let’s print the final result of the evaluation of the expression tree.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Print the result of the evaluation
-print(result.payload)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print the result of the evaluation</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
@@ -350,8 +350,8 @@ expression, which in this case is a single node with no children.</p>
 further. We call this state a <strong>normal form</strong>. Essentially, we can think
 of the tree as a program that computes a value, and the normal form is
 the result of running the program.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Ensure the evaluated result is in its normal form
-assert Eval(debug=False)(result, ctx).payload == result.payload
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure the evaluated result is in its normal form</span>
+<span class="k">assert</span> <span class="n">Eval</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">result</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">payload</span> <span class="o">==</span> <span class="n">result</span><span class="o">.</span><span class="n">payload</span>
 </pre></div>
 </div>
 </section>
@@ -360,10 +360,10 @@ assert Eval(debug=False)(result, ctx).payload == result.payload
 <h2>Converting to FlatForest<a class="headerlink" href="#converting-to-flatforest" title="Link to this heading">¶</a></h2>
 <p>Let’s convert the tree to a <code class="docutils literal notranslate"><span class="pre">FlatForest</span></code> and perform the same
 evaluation.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from AlgoTree.flat_forest_node import FlatForestNode
-from AlgoTree.flat_forest import FlatForest
-flat_expr = TreeConverter.convert(source=expr, target_type=FlatForestNode, extract=lambda x: x.payload)
-print(pretty_tree(flat_expr, node_name=lambda x: x.payload[&quot;value&quot;]))
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.flat_forest_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForestNode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.flat_forest</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatForest</span>
+<span class="n">flat_expr</span> <span class="o">=</span> <span class="n">TreeConverter</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="n">FlatForestNode</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pretty_tree</span><span class="p">(</span><span class="n">flat_expr</span><span class="p">,</span> <span class="n">node_name</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">payload</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+
@@ -381,8 +381,8 @@ print(pretty_tree(flat_expr, node_name=lambda x: x.payload[&quot;value&quot;]))
 </pre></div>
 </div>
 <p>Evaluate the flat forest expression</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>result = Eval(False)(flat_expr, ctx)
-print(result.payload)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">Eval</span><span class="p">(</span><span class="kc">False</span><span class="p">)(</span><span class="n">flat_expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
@@ -401,18 +401,18 @@ which is by default the first root node encountered.</p>
 <h2>Handling Undefined Variables<a class="headerlink" href="#handling-undefined-variables" title="Link to this heading">¶</a></h2>
 <p>What happens when we change the context so that not every variable is
 defined?</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define an incomplete context with missing variable values
-open_ctx = {
-    &quot;x&quot;: 1,
-    # &#39;y&#39;: 2,  # &#39;y&#39; is not defined in this context
-    &quot;z&quot;: 3,
-}
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define an incomplete context with missing variable values</span>
+<span class="n">open_ctx</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># &#39;y&#39;: 2,  # &#39;y&#39; is not defined in this context</span>
+    <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
 
-# Try evaluating the expression tree with the incomplete context
-try:
-    Eval(debug=True)(expr, open_ctx)
-except KeyError as e:
-    print(f&quot;Error: {e}&quot;)
+<span class="c1"># Try evaluating the expression tree with the incomplete context</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">Eval</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">expr</span><span class="p">,</span> <span class="n">open_ctx</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Eval</span><span class="p">({</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;var&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="s1">&#39;x&#39;</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
@@ -463,23 +463,23 @@ a common way to serialize trees to disk or to send them over the
 network.</p>
 <p>Howerver, we can also construct the tree directly using the <code class="docutils literal notranslate"><span class="pre">TreeNode</span></code>
 class.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>root = TreeNode(name=&quot;+&quot;, value=&quot;+&quot;, type=&quot;op&quot;)
-root_1 = TreeNode(name=&quot;max&quot;, value=&quot;max&quot;, type=&quot;op&quot;, parent=root)
-root_2 = TreeNode(name=&quot;+&quot;, value=&quot;+&quot;, type=&quot;op&quot;, parent=root)
-root_1_1 = TreeNode(name=&quot;+&quot;, value=&quot;+&quot;, type=&quot;op&quot;, parent=root_1)
-root_1_1_1 = TreeNode(name=&quot;var&quot;, value=&quot;x&quot;, type=&quot;var&quot;, parent=root_1_1)
-root_1_1_2 = TreeNode(name=&quot;const&quot;, value=1, type=&quot;const&quot;, parent=root_1_1)
-root_2_1 = TreeNode(name=&quot;max&quot;, value=&quot;max&quot;, type=&quot;op&quot;, parent=root_2)
-root_2_1_1 = TreeNode(name=&quot;var&quot;, value=&quot;x&quot;, type=&quot;var&quot;, parent=root_2_1)
-root_2_1_2 = TreeNode(name=&quot;var&quot;, value=&quot;y&quot;, type=&quot;var&quot;, parent=root_2_1)
-root_2_2 = TreeNode(name=&quot;const&quot;, value=3, type=&quot;const&quot;, parent=root_2)
-root_2_3 = TreeNode(name=&quot;var&quot;, value=&quot;y&quot;, type=&quot;var&quot;, parent=root_2)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;op&quot;</span><span class="p">)</span>
+<span class="n">root_1</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;op&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+<span class="n">root_2</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;op&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+<span class="n">root_1_1</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;op&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_1</span><span class="p">)</span>
+<span class="n">root_1_1_1</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_1_1</span><span class="p">)</span>
+<span class="n">root_1_1_2</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_1_1</span><span class="p">)</span>
+<span class="n">root_2_1</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;op&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_2</span><span class="p">)</span>
+<span class="n">root_2_1_1</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_2_1</span><span class="p">)</span>
+<span class="n">root_2_1_2</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_2_1</span><span class="p">)</span>
+<span class="n">root_2_2</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;const&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_2</span><span class="p">)</span>
+<span class="n">root_2_3</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">root_2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s evaluate this tree to see if it gives the same result as the
 previous expression tree.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>result = Eval(False)(flat_expr, ctx)
-print(result.payload)
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">Eval</span><span class="p">(</span><span class="kc">False</span><span class="p">)(</span><span class="n">flat_expr</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;const&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>

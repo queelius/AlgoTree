@@ -1,8 +1,24 @@
 AlgoTree package
 ================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   AlgoTree.shell
+
 Submodules
 ----------
+
+AlgoTree.builders module
+------------------------
+
+.. automodule:: AlgoTree.builders
+   :members:
+   :show-inheritance:
+   :undoc-members:
 
 AlgoTree.dsl module
 -------------------
@@ -20,26 +36,10 @@ AlgoTree.exporters module
    :show-inheritance:
    :undoc-members:
 
-AlgoTree.flat\_forest module
-----------------------------
+AlgoTree.interop module
+-----------------------
 
-.. automodule:: AlgoTree.flat_forest
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.flat\_forest\_node module
-----------------------------------
-
-.. automodule:: AlgoTree.flat_forest_node
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.fluent module
-----------------------
-
-.. automodule:: AlgoTree.fluent
+.. automodule:: AlgoTree.interop
    :members:
    :show-inheritance:
    :undoc-members:
@@ -52,26 +52,18 @@ AlgoTree.node module
    :show-inheritance:
    :undoc-members:
 
-AlgoTree.node\_hasher module
-----------------------------
-
-.. automodule:: AlgoTree.node_hasher
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.pattern\_matcher module
---------------------------------
-
-.. automodule:: AlgoTree.pattern_matcher
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 AlgoTree.pretty\_tree module
 ----------------------------
 
 .. automodule:: AlgoTree.pretty_tree
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+AlgoTree.selectors module
+-------------------------
+
+.. automodule:: AlgoTree.selectors
    :members:
    :show-inheritance:
    :undoc-members:
@@ -84,58 +76,18 @@ AlgoTree.serialization module
    :show-inheritance:
    :undoc-members:
 
-AlgoTree.tree\_converter module
--------------------------------
-
-.. automodule:: AlgoTree.tree_converter
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.tree\_hasher module
+AlgoTree.transformers module
 ----------------------------
 
-.. automodule:: AlgoTree.tree_hasher
+.. automodule:: AlgoTree.transformers
    :members:
    :show-inheritance:
    :undoc-members:
 
-AlgoTree.tree\_shaper module
-----------------------------
+AlgoTree.tree module
+--------------------
 
-.. automodule:: AlgoTree.tree_shaper
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.tree\_transformer module
----------------------------------
-
-.. automodule:: AlgoTree.tree_transformer
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.treenode module
-------------------------
-
-.. automodule:: AlgoTree.treenode
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.treenode\_api module
------------------------------
-
-.. automodule:: AlgoTree.treenode_api
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-AlgoTree.utils module
----------------------
-
-.. automodule:: AlgoTree.utils
+.. automodule:: AlgoTree.tree
    :members:
    :show-inheritance:
    :undoc-members:
