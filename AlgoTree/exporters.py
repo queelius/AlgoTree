@@ -436,6 +436,59 @@ document.querySelectorAll('.tree .node').forEach(node => {
         
         return "".join(html_parts)
 
+    @staticmethod
+    def to_flat(node: Node, indent: int = 2) -> str:
+        """
+        Export tree to flat/graph format.
+
+        Creates a flat dictionary where each node is a key mapping to a dict with:
+        - .name: node name (hidden metadata)
+        - .children: list of child node names (hidden metadata)
+        - .color: color attribute if present (hidden metadata)
+        - other attributes as regular key-value pairs
+
+        The dot-prefix indicates hidden metadata (like Unix hidden files).
+
+        Args:
+            node: Root node of tree
+            indent: JSON indentation level
+
+        Returns:
+            JSON string of flat representation
+        """
+        flat_dict = {}
+
+        def flatten(n: Node, path_prefix: str = ""):
+            # Generate unique key (use path to handle duplicate names)
+            if path_prefix:
+                key = f"{path_prefix}/{n.name}"
+            else:
+                key = n.name
+
+            # Build node entry with dot-prefix for metadata
+            node_entry = {
+                ".name": n.name,
+                ".children": [child.name for child in n.children]
+            }
+
+            # Add color if present in attrs
+            if '.color' in n.attrs:
+                node_entry[".color"] = n.attrs['.color']
+
+            # Add all other attributes (skip dot-prefixed ones)
+            for k, v in n.attrs.items():
+                if not k.startswith('.'):
+                    node_entry[k] = v
+
+            flat_dict[key] = node_entry
+
+            # Recursively flatten children
+            for child in n.children:
+                flatten(child, key)
+
+        flatten(node)
+        return json.dumps(flat_dict, indent=indent)
+
 
 # Convenience functions
 def export_tree(node: Node, format: str, **kwargs) -> str:
@@ -452,6 +505,8 @@ def export_tree(node: Node, format: str, **kwargs) -> str:
     """
     exporters = {
         'json': TreeExporter.to_json,
+        'flat': TreeExporter.to_flat,
+        'graph': TreeExporter.to_flat,  # Alias
         'ascii': TreeExporter.to_ascii,
         'unicode': TreeExporter.to_unicode,
         'graphviz': TreeExporter.to_graphviz,

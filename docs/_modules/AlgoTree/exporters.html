@@ -45,12 +45,12 @@
 
 
 <div class="viewcode-block" id="TreeExporter">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TreeExporter</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for tree exporters.&quot;&quot;&quot;</span>
     
 <div class="viewcode-block" id="TreeExporter.to_dict">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_dict">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_dict">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export tree to dictionary (already implemented in Node).&quot;&quot;&quot;</span>
@@ -58,7 +58,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_json">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_json">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_json">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export tree to JSON string.&quot;&quot;&quot;</span>
@@ -66,7 +66,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_ascii">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_ascii">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_ascii">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_ascii</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -122,7 +122,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_unicode">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_unicode">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_unicode">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_unicode</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Export tree to Unicode box drawing (alias for to_ascii with unicode style).&quot;&quot;&quot;</span>
@@ -130,7 +130,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_graphviz">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_graphviz">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_graphviz">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_graphviz</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> 
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Tree&quot;</span><span class="p">,</span>
@@ -152,7 +152,7 @@
 <span class="sd">            </span>
 <span class="sd">        Example:</span>
 <span class="sd">            dot = TreeExporter.to_graphviz(tree,</span>
-<span class="sd">                node_attr=lambda n: {&quot;label&quot;: f&quot;{n.name}\\n{n.payload.get(&#39;size&#39;, &#39;&#39;)}&quot;})</span>
+<span class="sd">                node_attr=lambda n: {&quot;label&quot;: f&quot;{n.name}\\n{n.get(&#39;size&#39;, &#39;&#39;)}&quot;})</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;digraph </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2">&quot;</span><span class="p">]</span>
         
@@ -211,7 +211,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_mermaid">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_mermaid">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_mermaid">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_mermaid</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span>
                    <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;TD&quot;</span><span class="p">,</span>
@@ -231,7 +231,7 @@
 <span class="sd">            </span>
 <span class="sd">        Example:</span>
 <span class="sd">            mermaid = TreeExporter.to_mermaid(tree,</span>
-<span class="sd">                node_text=lambda n: f&quot;{n.name}&lt;br/&gt;{n.payload.get(&#39;type&#39;, &#39;&#39;)}&quot;)</span>
+<span class="sd">                node_text=lambda n: f&quot;{n.name}&lt;br/&gt;{n.get(&#39;type&#39;, &#39;&#39;)}&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;graph </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
         
@@ -291,7 +291,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_yaml">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_yaml">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_yaml">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_yaml</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -311,10 +311,10 @@
             
             <span class="c1"># Node name</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">- name: </span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            
-            <span class="c1"># Payload attributes</span>
-            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="c1"># Attributes</span>
+            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
                         <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                     <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -330,7 +330,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_xml">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_xml">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_xml">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_xml</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">root_tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tree&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -361,19 +361,19 @@
             
             <span class="c1"># Open tag with name attribute</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;name=&quot;</span><span class="si">{</span><span class="n">escape_xml</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">]</span>
-            
-            <span class="c1"># Add payload as attributes (simple values only)</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="c1"># Add attrs as attributes (simple values only)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
                     <span class="n">attrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">=&quot;</span><span class="si">{</span><span class="n">escape_xml</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
-            
+
             <span class="n">attr_str</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
-            
+
             <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&lt;node </span><span class="si">{</span><span class="n">attr_str</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
-                
-                <span class="c1"># Add complex payload as nested elements</span>
-                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+                <span class="c1"># Add complex attrs as nested elements</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
                         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">  &lt;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">escape_xml</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
                 
@@ -394,7 +394,7 @@
 
     
 <div class="viewcode-block" id="TreeExporter.to_html">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.TreeExporter.to_html">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_html">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_html</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> 
                 <span class="n">include_styles</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -433,8 +433,8 @@
 <span class="s2">        border: 1px solid #ddd; border-radius: 3px;</span>
 <span class="s2">        background: #f5f5f5; cursor: pointer;</span>
 <span class="s2">    }</span>
-<span class="s2">    .tree .payload { </span>
-<span class="s2">        font-size: 0.9em; color: #666; </span>
+<span class="s2">    .tree .attrs {</span>
+<span class="s2">        font-size: 0.9em; color: #666;</span>
 <span class="s2">        margin-left: 10px; font-style: italic;</span>
 <span class="s2">    }</span>
 <span class="s2">    .collapsed &gt; ul { display: none; }</span>
@@ -453,14 +453,14 @@
             <span class="k">if</span> <span class="n">collapsible</span> <span class="ow">and</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
                 <span class="n">toggle</span> <span class="o">=</span> <span class="s1">&#39;&lt;span class=&quot;toggle&quot;&gt;▼&lt;/span&gt;&#39;</span>
             
-            <span class="n">payload_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="p">:</span>
-                <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="n">attrs_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="p">:</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">))]</span>
                 <span class="k">if</span> <span class="n">items</span><span class="p">:</span>
-                    <span class="n">payload_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;span class=&quot;payload&quot;&gt;</span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span>
+                    <span class="n">attrs_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;span class=&quot;attrs&quot;&gt;</span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span>
             
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;li&gt;&lt;div class=&quot;</span><span class="si">{</span><span class="n">node_class</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">toggle</span><span class="si">}{</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">payload_str</span><span class="si">}</span><span class="s1">&lt;/div&gt;&#39;</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;li&gt;&lt;div class=&quot;</span><span class="si">{</span><span class="n">node_class</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">toggle</span><span class="si">}{</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="si">}{</span><span class="n">attrs_str</span><span class="si">}</span><span class="s1">&lt;/div&gt;&#39;</span><span class="p">)</span>
             
             <span class="c1"># Children</span>
             <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
@@ -496,13 +496,69 @@
 <span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">html_parts</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TreeExporter.to_flat">
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.TreeExporter.to_flat">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_flat</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Export tree to flat/graph format.</span>
+
+<span class="sd">        Creates a flat dictionary where each node is a key mapping to a dict with:</span>
+<span class="sd">        - .name: node name (hidden metadata)</span>
+<span class="sd">        - .children: list of child node names (hidden metadata)</span>
+<span class="sd">        - .color: color attribute if present (hidden metadata)</span>
+<span class="sd">        - other attributes as regular key-value pairs</span>
+
+<span class="sd">        The dot-prefix indicates hidden metadata (like Unix hidden files).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: Root node of tree</span>
+<span class="sd">            indent: JSON indentation level</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            JSON string of flat representation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">flat_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="c1"># Generate unique key (use path to handle duplicate names)</span>
+            <span class="k">if</span> <span class="n">path_prefix</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span>
+
+            <span class="c1"># Build node entry with dot-prefix for metadata</span>
+            <span class="n">node_entry</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;.name&quot;</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;.children&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Add color if present in attrs</span>
+            <span class="k">if</span> <span class="s1">&#39;.color&#39;</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                <span class="n">node_entry</span><span class="p">[</span><span class="s2">&quot;.color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;.color&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Add all other attributes (skip dot-prefixed ones)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
+                    <span class="n">node_entry</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+            <span class="n">flat_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_entry</span>
+
+            <span class="c1"># Recursively flatten children</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="n">flatten</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="n">flatten</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">flat_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span></div>
 </div>
 
 
 
 <span class="c1"># Convenience functions</span>
 <div class="viewcode-block" id="export_tree">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.export_tree">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.export_tree">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">export_tree</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Export tree to specified format.</span>
@@ -517,6 +573,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">exporters</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;json&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_json</span><span class="p">,</span>
+        <span class="s1">&#39;flat&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_flat</span><span class="p">,</span>
+        <span class="s1">&#39;graph&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_flat</span><span class="p">,</span>  <span class="c1"># Alias</span>
         <span class="s1">&#39;ascii&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_ascii</span><span class="p">,</span>
         <span class="s1">&#39;unicode&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_unicode</span><span class="p">,</span>
         <span class="s1">&#39;graphviz&#39;</span><span class="p">:</span> <span class="n">TreeExporter</span><span class="o">.</span><span class="n">to_graphviz</span><span class="p">,</span>
@@ -536,7 +594,7 @@
 
 
 <div class="viewcode-block" id="save_tree">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.exporters.save_tree">[docs]</a>
+<a class="viewcode-back" href="../../api_reference.html#AlgoTree.exporters.save_tree">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_tree</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save tree to file in specified format.</span>

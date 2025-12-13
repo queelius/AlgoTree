@@ -44,6 +44,11 @@ AlgoTree v2.0 provides a modern, functional approach to working with tree struct
 - **Composable transformers** - Build complex pipelines with simple operators
 - **Multiple construction styles** - Fluent builders, DSL parsing, factory methods
 - **Rich export formats** - JSON, GraphViz, Mermaid, paths, and more
+- **Interactive shell** - Terminal-based exploration and quick operations
+
+**For Scripting & Automation:** Use the fluent Python API (recommended)
+
+**For Interactive Exploration:** Use the shell/CLI tools
 
 Installation
 ------------
@@ -654,6 +659,95 @@ Data Processing Pipeline
    # Process data
    result = pipeline(data)
    print("Processed values:", result)
+
+When to Use Python API vs Shell
+--------------------------------
+
+AlgoTree provides two interfaces for different use cases:
+
+**Use the Python API (Recommended for Scripting):**
+
+.. code-block:: python
+
+   from AlgoTree import Node, Tree, node
+   from AlgoTree.transformers import map_, filter_, prune
+
+   # Fluent, composable, type-safe
+   tree = Tree(node('root',
+       node('child1', value=1),
+       node('child2', value=2)
+   ))
+
+   # Powerful transformations with full Python
+   result = tree.map(lambda n: n.with_attrs(doubled=n.get('value', 0) * 2))
+   filtered = tree.filter(lambda n: n.get('value', 0) > 1)
+
+   # Integration with Python ecosystem
+   import pandas as pd
+   df = pd.DataFrame([{'name': n.name, 'value': n.get('value')}
+                      for n in tree.root.descendants()])
+
+**Use the Shell/CLI (For Interactive Exploration):**
+
+.. code-block:: bash
+
+   # Quick exploration
+   algotree shell tree.json
+
+   # In the shell:
+   > cd root
+   > ls
+   > find "child.*"
+   > select "n.get('value', 0) > 1"
+   > tree
+
+   # One-off terminal operations
+   algotree tree tree.json
+   algotree select 'n.depth > 2' tree.json
+
+**Decision Matrix:**
+
+=====================  ====================  ==================
+Use Case               Python API            Shell/CLI
+=====================  ====================  ==================
+Automation             **Recommended**       Not ideal
+Scripts/Programs       **Recommended**       Not ideal
+Complex logic          **Recommended**       Not ideal
+Type safety            **Recommended**       No type checking
+IDE support            **Recommended**       N/A
+Testing                **Recommended**       Limited
+Integration            **Recommended**       Limited
+Quick exploration      Possible              **Recommended**
+Terminal workflows     Possible              **Recommended**
+Learning structure     Possible              **Recommended**
+Human interaction      Possible              **Recommended**
+=====================  ====================  ==================
+
+**Example: Automation with Python API**
+
+.. code-block:: python
+
+   # Production-ready script
+   from AlgoTree import Tree, map_, filter_, save
+
+   # Load, transform, save
+   tree = Tree.from_dict(load_data())
+   processed = tree.filter(validate).map(enrich).prune(cleanup)
+   save(processed.root, 'output.json')
+
+   # Full error handling, logging, etc.
+
+**Example: Quick Exploration with Shell**
+
+.. code-block:: bash
+
+   # Quick terminal session
+   $ algotree shell data.json
+   > tree
+   > cd interesting_node
+   > stat
+   > find "pattern.*"
+   > exit
 
 Migration from v1.x
 -------------------

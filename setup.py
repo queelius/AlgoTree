@@ -18,7 +18,7 @@ setup(
     },
     python_requires=">=3.8",
     install_requires=[
-        # Core dependencies (if any)
+        'prompt_toolkit>=3.0.0',
     ],
     extras_require={
         'dev': [
@@ -42,6 +42,8 @@ setup(
     entry_points={
         'console_scripts': [
             'jt=bin.jt:main',
+            'algotree=AlgoTree.shell.cli:main',
+            'algotree-shell=AlgoTree.shell.shell:main',
         ],
     },
     include_package_data=True,

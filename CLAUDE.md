@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AlgoTree is a powerful Python library for working with tree structures, featuring an immutable-by-default API, composable transformations, and comprehensive tree operations. Version 2.0+ provides a clean, modern architecture following functional programming principles.
 
+**Primary Interface:** The fluent Python API (Node, Tree, transformers, selectors) is the recommended approach for all scripting, automation, and programmatic use.
+
+**Secondary Interface:** The interactive shell (AlgoTree.shell) is designed for interactive exploration, quick queries, and terminal-based workflows - not for scripting or automation.
+
 ## Key Commands
 
 ### Development Setup
@@ -52,6 +56,22 @@ python setup.py sdist bdist_wheel
 make pypi
 ```
 
+### Interactive Shell (For Exploration Only)
+```bash
+# Start interactive shell for exploration
+python -m AlgoTree.shell.shell
+
+# Start shell with a tree file
+algotree-shell tree.json
+
+# Use CLI for one-off terminal operations
+algotree ls tree.json
+algotree tree tree.json
+algotree select 'n.depth > 2' tree.json
+```
+
+**Note:** For scripting and automation, always use the Python API below, not the shell.
+
 ## Architecture (v2.0+)
 
 ### Core Components
@@ -96,7 +116,19 @@ make pypi
    - `pretty_tree.py`: ASCII/Unicode tree visualization
    - `serialization.py`: Save/load trees to/from files
 
+8. **Interactive Shell** (AlgoTree/shell/) - For exploration, not scripting
+   - `Forest`: Collection of named trees
+   - `ShellContext`: Immutable navigation state
+   - `TreeShell`: Interactive REPL with prompt_toolkit
+   - Built-in commands: `cd`, `ls`, `pwd`, `cat`, `tree`, `find`, `select`, etc.
+   - CLI tool: `algotree` for stateless terminal operations
+   - **Use case:** Interactive exploration, learning, quick queries
+   - **Not for:** Scripting, automation, production code
+   - See `AlgoTree/shell/README.md` for full documentation
+
 ## API Examples
+
+**Important:** These examples use the Python API, which is the recommended approach for all scripting and programmatic use. The shell is only for interactive exploration.
 
 ### Creating Trees
 
@@ -199,6 +231,47 @@ print(pretty_tree(tree))
 3. **Functional Style**: Prefer pure functions and method chaining
 4. **Type Safety**: Full type hints for IDE support
 5. **Clean Separation**: Node (data) vs Tree (operations) vs Transformers (algorithms)
+6. **Python First**: The Python API is the primary interface for all programmatic use
+
+## When to Use What
+
+### Use Python API (Recommended for Development)
+
+**For:**
+- Scripts and automation
+- Production code
+- Complex transformations
+- Integration with other Python code
+- Testing and CI/CD
+- Any programmatic usage
+
+**Example:**
+```python
+from AlgoTree import Tree, Node, map_, filter_
+
+tree = Tree(Node('root', Node('a'), Node('b')))
+result = tree.filter(lambda n: n.depth > 0).map(lambda n: n.with_attrs(tagged=True))
+```
+
+### Use Shell (Interactive Exploration Only)
+
+**For:**
+- Interactive exploration of tree structures
+- Quick ad-hoc queries
+- Learning tree operations
+- Terminal workflows
+- Visualizing tree structure
+
+**Example:**
+```bash
+$ algotree shell tree.json
+> tree
+> cd root
+> find ".*"
+> exit
+```
+
+**Rule of thumb:** If you're thinking about scripting shell commands, use the Python API instead.
 
 ## Migration from v1.x
 

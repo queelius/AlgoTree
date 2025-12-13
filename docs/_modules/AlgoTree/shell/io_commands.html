@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.shell.io_commands &#8212; AlgoTree 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.shell.io_commands</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">I/O commands for saving and loading trees.</span>
+
+<span class="sd">Provides commands to persist trees to files and load them back,</span>
+<span class="sd">as well as interoperability with AlgoGraph.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShellContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span><span class="p">,</span> <span class="n">CommandResult</span>
+
+<span class="c1"># Check if AlgoGraph is available</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoGraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">Graph</span>
+    <span class="n">ALGOGRAPH_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">ALGOGRAPH_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="SaveCommand">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.SaveCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SaveCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save current tree to a file.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;save&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Save current tree to a file&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;save &lt;filename&gt; [tree_name]&quot;</span>
+
+<div class="viewcode-block" id="SaveCommand.execute">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.SaveCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pipe_input</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Usage: save &lt;filename&gt; [tree_name]&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Determine which tree to save</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Save specified tree</span>
+            <span class="n">tree_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tree_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Save current tree</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Not in a tree. Use: save &lt;filename&gt; &lt;tree_name&gt;&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+            <span class="n">tree_name</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;No tree to save&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="c1"># Save tree to file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.serialization</span><span class="w"> </span><span class="kn">import</span> <span class="n">save</span>
+            <span class="n">save</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Saved tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving tree: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LoadCommand">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.LoadCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LoadCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a tree from a file.</span>
+
+<span class="sd">    At forest root: Loads as new tree into forest.</span>
+<span class="sd">    Inside a tree: Loads as subtree at current node.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;load&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Load a tree from a file (as tree or subtree)&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;load &lt;filename&gt; [name]&quot;</span>
+
+<div class="viewcode-block" id="LoadCommand.execute">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.LoadCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pipe_input</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Usage: load &lt;filename&gt; [name]&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Load tree from file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.serialization</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.shell.builtins</span><span class="w"> </span><span class="kn">import</span> <span class="n">MkdirCommand</span>
+
+            <span class="n">loaded_node</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+            <span class="c1"># At forest root: Add as new tree</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span><span class="p">:</span>
+                <span class="c1"># Determine tree name</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">tree_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Use filename without extension or node&#39;s name</span>
+                    <span class="n">tree_name</span> <span class="o">=</span> <span class="n">loaded_node</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">loaded_node</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">loaded_node</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> \
+                                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">loaded_node</span><span class="p">)</span>
+                <span class="n">new_forest</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">tree_name</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+                <span class="n">new_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">update_forest</span><span class="p">(</span><span class="n">new_forest</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span>
+                    <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Loaded tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">context</span><span class="o">=</span><span class="n">new_context</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Inside a tree: Add as subtree (child node)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_node</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">current</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Invalid current location&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+                <span class="c1"># Optionally rename the loaded node</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">new_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">loaded_node</span> <span class="o">=</span> <span class="n">loaded_node</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">new_name</span><span class="p">)</span>
+
+                <span class="c1"># Add loaded node as child</span>
+                <span class="n">new_node</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">with_child</span><span class="p">(</span><span class="n">loaded_node</span><span class="p">)</span>
+
+                <span class="c1"># Update tree</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Current tree not found&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+
+                <span class="c1"># Replace node in tree</span>
+                <span class="n">mkdir_cmd</span> <span class="o">=</span> <span class="n">MkdirCommand</span><span class="p">()</span>
+                <span class="n">new_tree</span> <span class="o">=</span> <span class="n">mkdir_cmd</span><span class="o">.</span><span class="n">_replace_node_in_tree</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">_current_path</span><span class="p">,</span> <span class="n">new_node</span><span class="p">)</span>
+
+                <span class="c1"># Update forest</span>
+                <span class="n">new_forest</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span><span class="p">,</span> <span class="n">new_tree</span><span class="p">)</span>
+                <span class="n">new_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">update_forest</span><span class="p">(</span><span class="n">new_forest</span><span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span>
+                    <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Loaded subtree &#39;</span><span class="si">{</span><span class="n">loaded_node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">context</span><span class="o">=</span><span class="n">new_context</span>
+                <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading tree: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ExportCommand">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.ExportCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExportCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Export current tree to various formats.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;export&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Export tree to various formats&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;export &lt;filename&gt; [--format FORMAT] [tree_name]&quot;</span>
+
+<div class="viewcode-block" id="ExportCommand.execute">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.ExportCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pipe_input</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+                <span class="s2">&quot;Usage: export &lt;filename&gt; [--format FORMAT] [tree_name]</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;Formats: json, flat, yaml, xml, dot, mermaid&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+            <span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">export_format</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">tree_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Parse options</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;--format&#39;</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+                <span class="n">export_format</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tree_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Auto-detect format from extension if not specified</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">export_format</span><span class="p">:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">format_map</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span> <span class="s1">&#39;yaml&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.yml&#39;</span><span class="p">:</span> <span class="s1">&#39;yaml&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.xml&#39;</span><span class="p">:</span> <span class="s1">&#39;xml&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.dot&#39;</span><span class="p">:</span> <span class="s1">&#39;dot&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.gv&#39;</span><span class="p">:</span> <span class="s1">&#39;dot&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;.mmd&#39;</span><span class="p">:</span> <span class="s1">&#39;mermaid&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">export_format</span> <span class="o">=</span> <span class="n">format_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Determine which tree to export</span>
+        <span class="k">if</span> <span class="n">tree_name</span><span class="p">:</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tree_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Not in a tree. Use: export &lt;filename&gt; &lt;tree_name&gt;&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree</span>
+            <span class="n">tree_name</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span>
+
+        <span class="c1"># Export tree</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.exporters</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_tree</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">export_tree</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">export_format</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Exported tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">export_format</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error exporting tree: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ToGraphCommand">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.ToGraphCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToGraphCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert current tree/node to AlgoGraph Graph.</span>
+
+<span class="sd">    Requires AlgoGraph to be installed or in PYTHONPATH.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;tograph&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Convert tree to AlgoGraph (requires AlgoGraph)&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;tograph [--undirected] [tree_name]&quot;</span>
+
+<div class="viewcode-block" id="ToGraphCommand.execute">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.ToGraphCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pipe_input</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ALGOGRAPH_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+                <span class="s2">&quot;AlgoGraph not available. Install AlgoGraph or add it to PYTHONPATH.&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Parse options</span>
+        <span class="n">directed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">tree_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s1">&#39;--undirected&#39;</span><span class="p">:</span>
+                <span class="n">directed</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tree_name</span> <span class="o">=</span> <span class="n">arg</span>
+
+        <span class="c1"># Determine which tree to convert</span>
+        <span class="k">if</span> <span class="n">tree_name</span><span class="p">:</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tree_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_node</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="s2">&quot;Not in a tree&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+            <span class="n">tree_name</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_tree_name</span> <span class="ow">or</span> <span class="s2">&quot;tree&quot;</span>
+
+        <span class="c1"># Convert to graph</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.interop</span><span class="w"> </span><span class="kn">import</span> <span class="n">tree_to_graph</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">tree_to_graph</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="n">directed</span><span class="p">)</span>
+
+            <span class="c1"># Display graph info</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;Converted &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; to AlgoGraph:&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;  Vertices: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">vertex_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;  Edges: </span><span class="si">{</span><span class="n">graph</span><span class="o">.</span><span class="n">edge_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;  Directed: </span><span class="si">{</span><span class="n">directed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error converting to graph: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FromGraphCommand">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.FromGraphCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FromGraphCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert AlgoGraph Graph to tree (requires root vertex).</span>
+
+<span class="sd">    Requires AlgoGraph to be installed or in PYTHONPATH.</span>
+<span class="sd">    This command loads a graph from a JSON file and converts it to a tree.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;fromgraph&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Load graph from file and convert to tree&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;fromgraph &lt;filename&gt; &lt;root_vertex&gt; [tree_name]&quot;</span>
+
+<div class="viewcode-block" id="FromGraphCommand.execute">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.io_commands.FromGraphCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">ShellContext</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">pipe_input</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ALGOGRAPH_AVAILABLE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+                <span class="s2">&quot;AlgoGraph not available. Install AlgoGraph or add it to PYTHONPATH.&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+                <span class="s2">&quot;Usage: fromgraph &lt;filename&gt; &lt;root_vertex&gt; [tree_name]&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span>
+            <span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">root_vertex</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">tree_name</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">root_vertex</span>
+
+        <span class="c1"># Load graph from file</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoGraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_graph</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.interop</span><span class="w"> </span><span class="kn">import</span> <span class="n">graph_to_tree</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">load_graph</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">graph_to_tree</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">root_vertex</span><span class="p">)</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+            <span class="c1"># Add to forest</span>
+            <span class="n">new_forest</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">forest</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">tree_name</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+            <span class="n">new_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">update_forest</span><span class="p">(</span><span class="n">new_forest</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">ok</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Loaded graph from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> as tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; (root: </span><span class="si">{</span><span class="n">root_vertex</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">new_context</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">CommandResult</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading graph: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../transformations.html">Tree Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cookbook.html">AlgoTree Cookbook</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest_nb.html">FlatForest Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

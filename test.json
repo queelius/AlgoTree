@@ -1,0 +1,20 @@
+{
+  "name": "test",
+  "abc.txt": "",
+  "children": [
+    {
+      "name": "child1",
+      "readme.txt": "",
+      "readme.md": "This is a README for test/child1/readme.txt",
+      "children": [
+        {
+          "name": "child11",
+          "what.txt": "what"
+        }
+      ]
+    },
+    {
+      "name": "child2"
+    }
+  ]
+}

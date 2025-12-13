@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.shell.core &#8212; AlgoTree 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.shell.core</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Core abstractions for the AlgoTree shell.</span>
+
+<span class="sd">This module provides the foundational classes for managing forests of trees,</span>
+<span class="sd">parsing paths, and maintaining navigation state.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">AlgoTree.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+
+
+<div class="viewcode-block" id="Forest">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.Forest">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Forest</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A collection of named trees.</span>
+
+<span class="sd">    Immutable container that holds multiple trees, each identified by a unique name.</span>
+<span class="sd">    All operations return new Forest instances.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from AlgoTree import node</span>
+<span class="sd">        &gt;&gt;&gt; f = Forest()</span>
+<span class="sd">        &gt;&gt;&gt; f = f.set(&quot;my_tree&quot;, node(&quot;root&quot;, &quot;child1&quot;, &quot;child2&quot;))</span>
+<span class="sd">        &gt;&gt;&gt; tree = f.get(&quot;my_tree&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; f.tree_names()</span>
+<span class="sd">        [&#39;my_tree&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trees</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a forest with optional trees.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            trees: Dictionary mapping tree names to Node or Tree instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tree</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">trees</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">tree</span> <span class="ow">in</span> <span class="n">trees</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tree</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">)</span> <span class="k">else</span> <span class="n">Tree</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Forest.get">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.Forest.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tree</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a tree by name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The tree name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The Tree instance, or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Forest.set">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.Forest.set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Forest&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add or replace a tree in the forest.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The tree name</span>
+<span class="sd">            tree: Node or Tree instance</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New Forest with the tree added/replaced</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_trees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_trees</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tree</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">)</span> <span class="k">else</span> <span class="n">Tree</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Forest</span><span class="p">(</span><span class="n">new_trees</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Forest.remove">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.Forest.remove">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Forest&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove a tree from the forest.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The tree name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New Forest with the tree removed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+        <span class="n">new_trees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">new_trees</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Forest</span><span class="p">(</span><span class="n">new_trees</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Forest.tree_names">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.Forest.tree_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tree_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all tree names in the forest.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Sorted list of tree names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if a tree name exists in the forest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trees</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of trees in the forest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trees</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the forest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Forest(trees=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_names</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="TreePath">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.TreePath">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TreePath</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents an absolute or relative path within a forest.</span>
+
+<span class="sd">    Paths have the format:</span>
+<span class="sd">    - Absolute: /tree_name/node1/node2/...</span>
+<span class="sd">    - Relative: node1/node2/... or ./node1 or ../sibling</span>
+<span class="sd">    - Forest root: /</span>
+
+<span class="sd">    Special path components:</span>
+<span class="sd">    - . : current node</span>
+<span class="sd">    - .. : parent node</span>
+<span class="sd">    - [N] : Nth child (0-indexed)</span>
+<span class="sd">    - @id:value : node with specific ID in metadata</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; TreePath.parse(&quot;/my_tree&quot;)</span>
+<span class="sd">        TreePath(tree_name=&#39;my_tree&#39;, components=[], is_absolute=True)</span>
+
+<span class="sd">        &gt;&gt;&gt; TreePath.parse(&quot;/my_tree/child1/child2&quot;)</span>
+<span class="sd">        TreePath(tree_name=&#39;my_tree&#39;, components=[&#39;child1&#39;, &#39;child2&#39;], is_absolute=True)</span>
+
+<span class="sd">        &gt;&gt;&gt; TreePath.parse(&quot;child/grandchild&quot;)</span>
+<span class="sd">        TreePath(tree_name=None, components=[&#39;child&#39;, &#39;grandchild&#39;], is_absolute=False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">tree_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">components</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">is_absolute</span><span class="p">:</span> <span class="nb">bool</span>
+
+<div class="viewcode-block" id="TreePath.parse">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.TreePath.parse">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;TreePath&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a path string into a TreePath.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path string (e.g., &quot;/tree/child1/child2&quot; or &quot;child/grandchild&quot;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TreePath instance</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If path format is invalid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Path cannot be empty&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Normalize slashes</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c1"># Check if absolute</span>
+        <span class="n">is_absolute</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Handle forest root</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tree_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(),</span> <span class="n">is_absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Remove leading slash for processing</span>
+        <span class="k">if</span> <span class="n">is_absolute</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="c1"># Split into components</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">and</span> <span class="n">p</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tree_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(),</span> <span class="n">is_absolute</span><span class="o">=</span><span class="n">is_absolute</span><span class="p">)</span>
+
+        <span class="c1"># Extract tree name if absolute</span>
+        <span class="n">tree_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">is_absolute</span><span class="p">:</span>
+            <span class="n">tree_name</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">components</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tree_name</span><span class="o">=</span><span class="n">tree_name</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="n">components</span><span class="p">,</span> <span class="n">is_absolute</span><span class="o">=</span><span class="n">is_absolute</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TreePath.join">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.TreePath.join">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;TreePath&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Join additional path components.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parts: Path components to append</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New TreePath with components appended</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">part</span> <span class="ow">and</span> <span class="n">part</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span>
+                <span class="n">new_components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_components</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TreePath.parent">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.TreePath.parent">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;TreePath&#39;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the parent path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TreePath to parent, or None if at root</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_absolute</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_name</span><span class="p">:</span>
+                <span class="c1"># Tree root -&gt; forest root</span>
+                <span class="k">return</span> <span class="n">TreePath</span><span class="p">(</span><span class="n">tree_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(),</span> <span class="n">is_absolute</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the path.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_name</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_name</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="k">else</span> <span class="s1">&#39;.&#39;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TreePath(&#39;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ShellContext">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.ShellContext">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShellContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maintains navigation state and provides operations within a forest.</span>
+
+<span class="sd">    The context tracks:</span>
+<span class="sd">    - Current forest (collection of trees)</span>
+<span class="sd">    - Current tree (if navigated into a tree)</span>
+<span class="sd">    - Current node (if navigated within a tree)</span>
+<span class="sd">    - Working directory path</span>
+
+<span class="sd">    All operations return new ShellContext instances (immutable).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from AlgoTree import node</span>
+<span class="sd">        &gt;&gt;&gt; forest = Forest({&quot;tree1&quot;: node(&quot;root&quot;, &quot;child1&quot;, &quot;child2&quot;)})</span>
+<span class="sd">        &gt;&gt;&gt; ctx = ShellContext(forest)</span>
+<span class="sd">        &gt;&gt;&gt; ctx.pwd()</span>
+<span class="sd">        &#39;/&#39;</span>
+<span class="sd">        &gt;&gt;&gt; ctx2 = ctx.cd(&quot;tree1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; ctx2.pwd()</span>
+<span class="sd">        &#39;/tree1&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">forest</span><span class="p">:</span> <span class="n">Forest</span><span class="p">,</span>
+        <span class="n">current_tree</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">current_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize shell context.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            forest: The forest to operate on</span>
+<span class="sd">            current_tree: Name of current tree (None = forest root)</span>
+<span class="sd">            current_path: Path components within current tree</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span> <span class="o">=</span> <span class="n">forest</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span> <span class="o">=</span> <span class="n">current_tree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span> <span class="o">=</span> <span class="n">current_path</span> <span class="ow">or</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Forest</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current forest.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_tree_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name of the current tree.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tree</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current tree object.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the current node within the tree.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Current Node, or None if at forest root or tree root</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_tree</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span>
+
+        <span class="c1"># Navigate to current path</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span>
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">:</span>
+            <span class="c1"># Handle indexed access: child[0], child[1], etc.</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(.+)\[(\d+)\]$&#39;</span><span class="p">,</span> <span class="n">component</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+                <span class="n">matching</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">]</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matching</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">matching</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Find child by name</span>
+                <span class="n">child</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">component</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">child</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">child</span>
+
+        <span class="k">return</span> <span class="n">node</span>
+
+<div class="viewcode-block" id="ShellContext.pwd">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.ShellContext.pwd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pwd</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get current working directory path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Absolute path string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
+
+<div class="viewcode-block" id="ShellContext.cd">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.ShellContext.cd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ShellContext&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change directory to the specified path.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Absolute or relative path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New ShellContext at the target location</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If path is invalid or doesn&#39;t exist</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tree_path</span> <span class="o">=</span> <span class="n">TreePath</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c1"># Handle absolute paths</span>
+        <span class="k">if</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">:</span>
+            <span class="c1"># Navigate to forest root</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">tree_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ShellContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">)</span>
+
+            <span class="c1"># Navigate to tree</span>
+            <span class="k">if</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">tree_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">tree_path</span><span class="o">.</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Verify path exists</span>
+            <span class="n">new_ctx</span> <span class="o">=</span> <span class="n">ShellContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">,</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">tree_name</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">tree_path</span><span class="o">.</span><span class="n">components</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">components</span> <span class="ow">and</span> <span class="n">new_ctx</span><span class="o">.</span><span class="n">current_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">new_ctx</span>
+
+        <span class="c1"># Handle relative paths</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">:</span>
+            <span class="c1"># At forest root, can only cd into a tree</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree_path</span><span class="o">.</span><span class="n">components</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tree_name</span> <span class="o">=</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">tree_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tree &#39;</span><span class="si">{</span><span class="n">tree_name</span><span class="si">}</span><span class="s2">&#39; not found&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">ShellContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot use relative path with multiple components at forest root&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Within a tree, navigate relative to current path</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">tree_path</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">component</span> <span class="o">==</span> <span class="s1">&#39;..&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">new_path</span><span class="p">:</span>
+                    <span class="n">new_path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># At tree root, go to forest root</span>
+                    <span class="k">return</span> <span class="n">ShellContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+
+        <span class="c1"># Verify path exists</span>
+        <span class="n">new_ctx</span> <span class="o">=</span> <span class="n">ShellContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forest</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">,</span> <span class="n">new_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_path</span> <span class="ow">and</span> <span class="n">new_ctx</span><span class="o">.</span><span class="n">current_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">new_ctx</span></div>
+
+
+<div class="viewcode-block" id="ShellContext.resolve_path">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.ShellContext.resolve_path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resolve_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Node</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resolve a path to a tree name and node.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Absolute or relative path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple of (tree_name, node) or (None, None) if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">current_node</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ShellContext.update_forest">
+<a class="viewcode-back" href="../../../AlgoTree.shell.html#AlgoTree.shell.core.ShellContext.update_forest">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_forest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forest</span><span class="p">:</span> <span class="n">Forest</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;ShellContext&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the forest while maintaining current position if possible.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            forest: New forest</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            New ShellContext with updated forest</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if current tree still exists</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">forest</span><span class="p">:</span>
+            <span class="c1"># Tree was removed, go to forest root</span>
+            <span class="k">return</span> <span class="n">ShellContext</span><span class="p">(</span><span class="n">forest</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ShellContext</span><span class="p">(</span><span class="n">forest</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_tree</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_path</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ShellContext(pwd=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pwd</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;)&quot;</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../transformations.html">Tree Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cookbook.html">AlgoTree Cookbook</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../flat_forest_nb.html">FlatForest Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

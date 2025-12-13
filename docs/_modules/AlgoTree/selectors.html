@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoTree.selectors &#8212; AlgoTree 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AlgoTree.selectors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Composable selector system for tree pattern matching.</span>
+
+<span class="sd">This module provides a type-safe, composable selector system</span>
+<span class="sd">that can be combined using logical operators.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Pattern</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tree</span>
+
+
+<div class="viewcode-block" id="Selector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Selector</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for tree node selectors.</span>
+
+<span class="sd">    Selectors can be composed using operators:</span>
+<span class="sd">    - &amp; for AND</span>
+<span class="sd">    - | for OR</span>
+<span class="sd">    - ~ for NOT</span>
+<span class="sd">    - ^ for XOR</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Selector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.matches">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if node matches this selector.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Selector.select">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.select">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select all matching nodes from tree.&quot;&quot;&quot;</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">root</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">)</span> <span class="k">else</span> <span class="n">tree</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">walk</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">node</span></div>
+
+
+<div class="viewcode-block" id="Selector.first">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.first">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">first</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get first matching node or None.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">node</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Selector.count">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.count">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count matching nodes.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">tree</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Selector.exists">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Node</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if any node matches.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">first</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+    <span class="c1"># Logical operators for composition</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine selectors with AND.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AndSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine selectors with OR.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">OrSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Negate selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">NotSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__xor__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine selectors with XOR (exclusive or).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">XorSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="c1"># Structural combinators</span>
+
+<div class="viewcode-block" id="Selector.child_of">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.child_of">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">child_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_selector</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes that are direct children of parent matching selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ChildOfSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_selector</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.parent_of">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.parent_of">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parent_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child_selector</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes that are direct parents of children matching selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ParentOfSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child_selector</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.descendant_of">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.descendant_of">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">descendant_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ancestor_selector</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes that are descendants of nodes matching selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DescendantOfSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ancestor_selector</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.ancestor_of">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.ancestor_of">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ancestor_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">descendant_selector</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes that are ancestors of nodes matching selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">AncestorOfSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">descendant_selector</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.sibling_of">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.sibling_of">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sibling_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sibling_selector</span><span class="p">:</span> <span class="s1">&#39;Selector&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes that are siblings of nodes matching selector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SiblingOfSelector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sibling_selector</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.at_depth">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.at_depth">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">at_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Match nodes at specific depth.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">&amp;</span> <span class="n">DepthSelector</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Selector.at_level">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.at_level">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">at_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Alias for at_depth.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">at_depth</span><span class="p">(</span><span class="n">level</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Convenience methods</span>
+
+<div class="viewcode-block" id="Selector.where">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.Selector.where">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">where</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Selector&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add attribute constraints.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">&amp;</span> <span class="n">AttrsSelector</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">()&quot;</span></div>
+
+
+
+<span class="c1"># Basic selectors</span>
+
+<div class="viewcode-block" id="NameSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.NameSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NameSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes by name pattern.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span>
+        <span class="c1"># Check if it&#39;s a glob pattern (* or ?)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_glob</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">pattern</span> <span class="ow">or</span> <span class="s1">&#39;?&#39;</span> <span class="ow">in</span> <span class="n">pattern</span><span class="p">)</span>
+        <span class="c1"># Check if it&#39;s a regex pattern (has other regex chars)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_regex</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[</span><span class="se">\\</span><span class="s1">^$+</span><span class="si">{}</span><span class="s1">[\]|()\s]&#39;</span><span class="p">,</span> <span class="n">pattern</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_glob</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_regex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NameSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.NameSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_glob</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_regex</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;NameSelector(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="si">!r}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="AttrsSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AttrsSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AttrsSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes by attributes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+<div class="viewcode-block" id="AttrsSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AttrsSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">node_value</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="c1"># Value is a predicate function</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">(</span><span class="n">node_value</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Check for existence</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Check for equality</span>
+                <span class="k">if</span> <span class="n">node_value</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">attrs_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">v</span><span class="si">!r}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;AttrsSelector(</span><span class="si">{</span><span class="n">attrs_str</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="TypeSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.TypeSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypeSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes by type attribute.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span> <span class="o">=</span> <span class="n">node_type</span>
+
+<div class="viewcode-block" id="TypeSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.TypeSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_type</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TypeSelector(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_type</span><span class="si">!r}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="PredicateSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.PredicateSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PredicateSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes using custom predicate function.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predicate</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Node</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span> <span class="o">=</span> <span class="n">predicate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<div class="viewcode-block" id="PredicateSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.PredicateSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;PredicateSelector(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="DepthSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.DepthSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DepthSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes at specific depth.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">range</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">depth</span>
+
+<div class="viewcode-block" id="DepthSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.DepthSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">node_depth</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">depth</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="nb">range</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">node_depth</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span>
+        <span class="k">return</span> <span class="n">node_depth</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;DepthSelector(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="si">!r}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="LeafSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.LeafSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LeafSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select leaf nodes.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LeafSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.LeafSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;LeafSelector()&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="RootSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.RootSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RootSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select root node.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RootSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.RootSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;RootSelector()&quot;</span></div>
+
+
+
+<span class="c1"># Logical combinators</span>
+
+<div class="viewcode-block" id="AndSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AndSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AndSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Selector that matches if all sub-selectors match.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">selectors</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span> <span class="o">=</span> <span class="n">selectors</span>
+
+<div class="viewcode-block" id="AndSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AndSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39; &amp; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="OrSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.OrSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OrSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Selector that matches if any sub-selector matches.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">selectors</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span> <span class="o">=</span> <span class="n">selectors</span>
+
+<div class="viewcode-block" id="OrSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.OrSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39; | &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="NotSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.NotSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NotSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Selector that matches if sub-selector doesn&#39;t match.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="n">selector</span>
+
+<div class="viewcode-block" id="NotSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.NotSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;~</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="XorSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.XorSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">XorSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Selector that matches if exactly one sub-selector matches.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">selectors</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span> <span class="o">=</span> <span class="n">selectors</span>
+
+<div class="viewcode-block" id="XorSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.XorSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">matches</span> <span class="o">==</span> <span class="mi">1</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39; ^ &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<span class="c1"># Structural combinators</span>
+
+<div class="viewcode-block" id="ChildOfSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.ChildOfSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChildOfSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes that are children of parent matching selector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">parent_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span> <span class="o">=</span> <span class="n">child_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span> <span class="o">=</span> <span class="n">parent_selector</span>
+
+<div class="viewcode-block" id="ChildOfSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.ChildOfSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">.child_of(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ParentOfSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.ParentOfSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParentOfSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes that are parents of children matching selector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">child_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span> <span class="o">=</span> <span class="n">parent_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span> <span class="o">=</span> <span class="n">child_selector</span>
+
+<div class="viewcode-block" id="ParentOfSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.ParentOfSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">.parent_of(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">child_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="DescendantOfSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.DescendantOfSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DescendantOfSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes that are descendants of ancestor matching selector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">descendant_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">ancestor_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span> <span class="o">=</span> <span class="n">descendant_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span> <span class="o">=</span> <span class="n">ancestor_selector</span>
+
+<div class="viewcode-block" id="DescendantOfSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.DescendantOfSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">ancestor</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">ancestors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">ancestor</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">.descendant_of(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="AncestorOfSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AncestorOfSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AncestorOfSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes that are ancestors of descendant matching selector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ancestor_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">descendant_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span> <span class="o">=</span> <span class="n">ancestor_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span> <span class="o">=</span> <span class="n">descendant_selector</span>
+
+<div class="viewcode-block" id="AncestorOfSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.AncestorOfSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">descendant</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">descendants</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">descendant</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ancestor_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">.ancestor_of(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">descendant_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="SiblingOfSelector">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.SiblingOfSelector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SiblingOfSelector</span><span class="p">(</span><span class="n">Selector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select nodes that are siblings of node matching selector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">,</span> <span class="n">sibling_selector</span><span class="p">:</span> <span class="n">Selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_selector</span> <span class="o">=</span> <span class="n">node_selector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sibling_selector</span> <span class="o">=</span> <span class="n">sibling_selector</span>
+
+<div class="viewcode-block" id="SiblingOfSelector.matches">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.SiblingOfSelector.matches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">sibling</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">siblings</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sibling_selector</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">sibling</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">.sibling_of(</span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sibling_selector</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+
+<span class="c1"># Factory functions for common selectors</span>
+
+<div class="viewcode-block" id="name">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NameSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create name selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">NameSelector</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="attrs">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.attrs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">attrs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttrsSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create attributes selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">AttrsSelector</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="type_">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.type_">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">type_</span><span class="p">(</span><span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create type selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">TypeSelector</span><span class="p">(</span><span class="n">node_type</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="predicate">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.predicate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">predicate</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Node</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PredicateSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create predicate selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PredicateSelector</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="depth">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.depth">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">depth</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">range</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DepthSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create depth selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">DepthSelector</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="leaf">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.leaf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">leaf</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">LeafSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create leaf selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">LeafSelector</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="root">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.root">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">root</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">RootSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create root selector.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">RootSelector</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="any_">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.any_">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">any_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Selector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select any node.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PredicateSelector</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;any&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="none">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.none">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">none</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Selector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Select no nodes.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PredicateSelector</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># CSS-like selector parser (simplified)</span>
+
+<div class="viewcode-block" id="parse">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.selectors.parse">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">selector_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Selector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse CSS-like selector string.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &#39;node&#39;           - Select by name</span>
+<span class="sd">        &#39;*.txt&#39;          - Wildcard pattern</span>
+<span class="sd">        &#39;[type=file]&#39;    - Attribute selector</span>
+<span class="sd">        &#39;parent &gt; child&#39; - Direct child</span>
+<span class="sd">        &#39;ancestor child&#39; - Descendant</span>
+<span class="sd">        &#39;:leaf&#39;          - Pseudo-selectors</span>
+<span class="sd">        &#39;:root&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># This is a simplified parser - could be extended</span>
+    <span class="n">selector_str</span> <span class="o">=</span> <span class="n">selector_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Pseudo-selectors</span>
+    <span class="k">if</span> <span class="n">selector_str</span> <span class="o">==</span> <span class="s1">&#39;:leaf&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">leaf</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">selector_str</span> <span class="o">==</span> <span class="s1">&#39;:root&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">root</span><span class="p">()</span>
+
+    <span class="c1"># Attribute selector</span>
+    <span class="k">if</span> <span class="n">selector_str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">selector_str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">):</span>
+        <span class="n">attr_str</span> <span class="o">=</span> <span class="n">selector_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">attr_str</span><span class="p">:</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">attr_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Try to parse value</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># Keep as string</span>
+            <span class="k">return</span> <span class="n">attrs</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Just check existence</span>
+            <span class="k">return</span> <span class="n">attrs</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">attr_str</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+
+    <span class="c1"># Direct child selector</span>
+    <span class="k">if</span> <span class="s1">&#39; &gt; &#39;</span> <span class="ow">in</span> <span class="n">selector_str</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">selector_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &gt; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">parent_sel</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">child_sel</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">child_sel</span><span class="o">.</span><span class="n">child_of</span><span class="p">(</span><span class="n">parent_sel</span><span class="p">)</span>
+
+    <span class="c1"># Descendant selector</span>
+    <span class="k">if</span> <span class="s1">&#39; &#39;</span> <span class="ow">in</span> <span class="n">selector_str</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">selector_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ancestor_sel</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">descendant_sel</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">descendant_sel</span><span class="o">.</span><span class="n">descendant_of</span><span class="p">(</span><span class="n">ancestor_sel</span><span class="p">)</span>
+
+    <span class="c1"># Name selector (with wildcard support)</span>
+    <span class="k">return</span> <span class="n">name</span><span class="p">(</span><span class="n">selector_str</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AlgoTree</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fluent_api.html">AlgoTree Fluent API Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pattern_matching.html">Pattern Matching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transformations.html">Tree Transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">AlgoTree: Comprehensive Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cookbook.html">AlgoTree Cookbook</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Traditional API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest.html">FlatForest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../treenode.html">TreeNode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flat_forest_nb.html">FlatForest Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../expr_trees_nb.html">Expression Trees and Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../identity.html">Understanding Equality in Trees and Nodes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools &amp; Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../jt.html">jt Command-Line Tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AlgoTree</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Alex Towell.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

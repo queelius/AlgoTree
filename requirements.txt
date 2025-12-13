@@ -5,3 +5,4 @@ sphinxcontrib-napoleon
 pytest
 coverage
 anytree
+prompt_toolkit>=3.0.0

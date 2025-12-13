@@ -59,6 +59,16 @@ from .serialization import save, load, dumps, loads
 # DSL support
 from .dsl import parse_tree, TreeDSL
 
+# Interoperability with AlgoGraph (optional)
+from .interop import (
+    tree_to_graph,
+    graph_to_tree,
+    node_to_flat_dict,
+    flat_dict_to_node,
+    tree_to_flat_dict,
+    flat_dict_to_tree,
+)
+
 # Version
 __version__ = "2.0.0"
 
@@ -99,4 +109,9 @@ __all__ = [
 
     # DSL
     'parse_tree', 'TreeDSL',
+
+    # Interoperability with AlgoGraph
+    'tree_to_graph', 'graph_to_tree',
+    'node_to_flat_dict', 'flat_dict_to_node',
+    'tree_to_flat_dict', 'flat_dict_to_tree',
 ]

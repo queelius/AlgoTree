@@ -32,247 +32,302 @@
             
   <h1>Source code for AlgoTree.serialization</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Serialization for AlgoTree - Modern Pythonic Approach.</span>
+<span class="sd">Serialization for AlgoTree - Support for multiple formats.</span>
 
-<span class="sd">Philosophy:</span>
-<span class="sd">- JSON is the native format (human-readable, universal)</span>
-<span class="sd">- Trees are naturally hierarchical, so nested JSON is default</span>
-<span class="sd">- Support other formats only when there&#39;s a clear use case</span>
-<span class="sd">- Don&#39;t reinvent the wheel - use standard libraries</span>
-
-<span class="sd">The Node class already provides to_dict() and from_dict() methods</span>
-<span class="sd">that work seamlessly with Python&#39;s json module. This module adds:</span>
-<span class="sd">- Convenience functions for file I/O</span>
-<span class="sd">- Optional compression</span>
-<span class="sd">- Streaming for large trees</span>
-<span class="sd">- Integration with modern data formats (Parquet for analytics)</span>
+<span class="sd">Supports JSON, YAML, XML, and pickle formats for saving/loading trees.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">BinaryIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
 
 
-<span class="c1"># Simple, Pythonic file I/O</span>
-
-<div class="viewcode-block" id="save">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.save">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Save tree to JSON file.</span>
-<span class="sd">    </span>
-<span class="sd">    This is the recommended way to persist trees. Uses the natural</span>
-<span class="sd">    hierarchical JSON representation.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        tree: Tree to save</span>
-<span class="sd">        path: File path (can be string or Path object)</span>
-<span class="sd">        compress: If True, use gzip compression</span>
-<span class="sd">    </span>
-<span class="sd">    Example:</span>
-<span class="sd">        save(tree, &quot;my_tree.json&quot;)</span>
-<span class="sd">        save(tree, &quot;my_tree.json.gz&quot;, compress=True)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_detect_format</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect format from file extension.&quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-    
-    <span class="k">if</span> <span class="n">compress</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
+    <span class="c1"># Handle .gz compression</span>
+    <span class="k">if</span> <span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">suffix</span>
 
+    <span class="n">format_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span> <span class="s1">&#39;yaml&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.yml&#39;</span><span class="p">:</span> <span class="s1">&#39;yaml&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.xml&#39;</span><span class="p">:</span> <span class="s1">&#39;xml&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.pkl&#39;</span><span class="p">:</span> <span class="s1">&#39;pickle&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.pickle&#39;</span><span class="p">:</span> <span class="s1">&#39;pickle&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
 
-<div class="viewcode-block" id="load">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.load">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Load tree from JSON file.</span>
-<span class="sd">    </span>
-<span class="sd">    Automatically handles gzip compression if file ends with .gz</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        path: File path</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        Root node of loaded tree</span>
-<span class="sd">    </span>
-<span class="sd">    Example:</span>
-<span class="sd">        tree = load(&quot;my_tree.json&quot;)</span>
-<span class="sd">        tree = load(&quot;my_tree.json.gz&quot;)  # Auto-detects compression</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">Node</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">format_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">suffix</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="dumps">
 <a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.dumps">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">dumps</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="o">**</span><span class="n">json_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dumps</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Serialize tree to JSON string.</span>
-<span class="sd">    </span>
+<span class="sd">    Serialize tree to string.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        tree: Tree to serialize</span>
-<span class="sd">        **json_kwargs: Arguments passed to json.dumps (indent, sort_keys, etc.)</span>
-<span class="sd">    </span>
+<span class="sd">        format: Output format (&#39;json&#39;, &#39;yaml&#39;, &#39;xml&#39;)</span>
+<span class="sd">        **kwargs: Format-specific arguments</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        JSON string</span>
-<span class="sd">    </span>
+<span class="sd">        Serialized string</span>
+
 <span class="sd">    Example:</span>
-<span class="sd">        json_str = dumps(tree, indent=2, sort_keys=True)</span>
+<span class="sd">        json_str = dumps(tree, format=&quot;json&quot;, indent=2)</span>
+<span class="sd">        yaml_str = dumps(tree, format=&quot;yaml&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="o">**</span><span class="n">json_kwargs</span><span class="p">)</span></div>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+        <span class="c1"># Set default indent if not provided</span>
+        <span class="k">if</span> <span class="s1">&#39;indent&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;indent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;yaml&quot;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;PyYAML required for YAML format: pip install pyyaml&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;xml&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_to_xml</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported format: </span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">. Use &#39;json&#39;, &#39;yaml&#39;, or &#39;xml&#39;&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="loads">
 <a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.loads">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loads</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Deserialize tree from JSON string.</span>
-<span class="sd">    </span>
+<span class="sd">    Deserialize tree from string.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        json_str: JSON string</span>
-<span class="sd">    </span>
+<span class="sd">        string: Serialized string</span>
+<span class="sd">        format: Input format (&#39;json&#39;, &#39;yaml&#39;, &#39;xml&#39;)</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Root node of tree</span>
-<span class="sd">    </span>
+
 <span class="sd">    Example:</span>
-<span class="sd">        tree = loads(&#39;{&quot;name&quot;: &quot;root&quot;, &quot;children&quot;: [...]}&#39;)</span>
+<span class="sd">        tree = loads(json_str, format=&quot;json&quot;)</span>
+<span class="sd">        tree = loads(yaml_str, format=&quot;yaml&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;json&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;yaml&quot;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;PyYAML required for YAML format: pip install pyyaml&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;xml&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_from_xml</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported format: </span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">. Use &#39;json&#39;, &#39;yaml&#39;, or &#39;xml&#39;&quot;</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">Node</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 
 
-<span class="c1"># Streaming for large trees</span>
-
-<div class="viewcode-block" id="stream_writer">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.stream_writer">[docs]</a>
-<span class="nd">@contextmanager</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">stream_writer</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="save">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.save">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Context manager for streaming tree writes.</span>
-<span class="sd">    </span>
-<span class="sd">    Useful for very large trees that shouldn&#39;t be held entirely in memory.</span>
-<span class="sd">    </span>
+<span class="sd">    Save tree to file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tree: Tree to save</span>
+<span class="sd">        path: File path</span>
+<span class="sd">        format: Output format (auto-detected from extension if not provided)</span>
+<span class="sd">        compress: If True, use gzip compression</span>
+
 <span class="sd">    Example:</span>
-<span class="sd">        with stream_writer(&quot;large_tree.json&quot;) as writer:</span>
-<span class="sd">            writer.write_node(root)</span>
-<span class="sd">            for subtree in generate_subtrees():</span>
-<span class="sd">                writer.write_subtree(subtree)</span>
+<span class="sd">        save(tree, &quot;tree.json&quot;)</span>
+<span class="sd">        save(tree, &quot;tree.yaml&quot;, format=&quot;yaml&quot;)</span>
+<span class="sd">        save(tree, &quot;tree.json.gz&quot;, compress=True)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    
-    <span class="k">class</span><span class="w"> </span><span class="nc">StreamWriter</span><span class="p">:</span>
-        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">file</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;{</span><span class="se">\n</span><span class="s1">  &quot;nodes&quot;: [</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-        
-        <span class="k">def</span><span class="w"> </span><span class="nf">write_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Write single node to stream.&quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">first</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
-            
-            <span class="n">node_data</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="n">parent_id</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">node</span><span class="o">.</span><span class="n">payload</span>
-            <span class="p">}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;    &#39;</span><span class="p">)</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">node_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
-        
-        <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  ]</span><span class="se">\n</span><span class="s1">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-    
+
+    <span class="c1"># Auto-detect format if not provided</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">_detect_format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="c1"># Handle pickle separately (binary format)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;pickle&quot;</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">compress</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Text-based formats</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">compress</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">StreamWriter</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">writer</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">StreamWriter</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">writer</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="iter_nodes">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.iter_nodes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">iter_nodes</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<div class="viewcode-block" id="load">
+<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.load">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="nb">format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Iterate over nodes in a JSON file without loading entire tree.</span>
-<span class="sd">    </span>
-<span class="sd">    Useful for processing large trees.</span>
-<span class="sd">    </span>
+<span class="sd">    Load tree from file.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        path: Path to JSON file</span>
-<span class="sd">    </span>
-<span class="sd">    Yields:</span>
-<span class="sd">        Node dictionaries</span>
-<span class="sd">    </span>
+<span class="sd">        path: File path</span>
+<span class="sd">        format: Input format (auto-detected from extension if not provided)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Root node of loaded tree</span>
+
 <span class="sd">    Example:</span>
-<span class="sd">        for node_data in iter_nodes(&quot;large_tree.json&quot;):</span>
-<span class="sd">            if node_data.get(&quot;type&quot;) == &quot;file&quot;:</span>
-<span class="sd">                process_file(node_data)</span>
+<span class="sd">        tree = load(&quot;tree.json&quot;)</span>
+<span class="sd">        tree = load(&quot;tree.yaml&quot;)</span>
+<span class="sd">        tree = load(&quot;tree.json.gz&quot;)  # Auto-detects compression</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    
+
+    <span class="c1"># Auto-detect format if not provided</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">_detect_format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="c1"># Handle pickle separately (binary format)</span>
+    <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;pickle&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="c1"># Text-based formats</span>
     <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
-        <span class="n">opener</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">opener</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
-    
-    <span class="k">with</span> <span class="n">opener</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="c1"># Use streaming JSON parser for efficiency</span>
-        <span class="c1"># This is a simplified version - real implementation would use ijson</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        
-        <span class="k">def</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">node_dict</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">node_dict</span>
-            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;children&#39;</span><span class="p">,</span> <span class="p">[]):</span>
-                <span class="k">yield from</span> <span class="n">traverse</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-        
-        <span class="k">yield from</span> <span class="n">traverse</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span></div>
 
 
 
-<span class="c1"># Alternative formats (only when needed)</span>
+<span class="c1"># XML helpers</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_xml</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">root_tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tree&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert dictionary to XML string.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;xml.etree.ElementTree required for XML format&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dict_to_element</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;node&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dict to XML element.&quot;&quot;&quot;</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+        <span class="c1"># Add name as attribute</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">elem</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># Add other attributes (except children)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">):</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+        <span class="c1"># Add children</span>
+        <span class="k">if</span> <span class="s1">&#39;children&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">child_dict</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;children&#39;</span><span class="p">]:</span>
+                <span class="n">child_elem</span> <span class="o">=</span> <span class="n">dict_to_element</span><span class="p">(</span><span class="n">child_dict</span><span class="p">,</span> <span class="s2">&quot;node&quot;</span><span class="p">)</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child_elem</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">elem</span>
+
+    <span class="n">root</span> <span class="o">=</span> <span class="n">dict_to_element</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">root_tag</span><span class="p">)</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+    <span class="c1"># Convert to string with XML declaration</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;unicode&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_from_xml</span><span class="p">(</span><span class="n">xml_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert XML string to dictionary.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;xml.etree.ElementTree required for XML format&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">element_to_dict</span><span class="p">(</span><span class="n">elem</span><span class="p">:</span> <span class="n">ET</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert XML element to dict.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Get name attribute</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Get other attributes</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">elem</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span>
+                <span class="c1"># Try to convert to appropriate type</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="c1"># Get children</span>
+        <span class="n">children</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
+            <span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element_to_dict</span><span class="p">(</span><span class="n">child</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">children</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;children&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">children</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">xml_string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">element_to_dict</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+
+<span class="c1"># Legacy pickle helpers for backward compatibility</span>
 
 <div class="viewcode-block" id="to_pickle">
 <a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.to_pickle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_pickle</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Serialize tree using pickle.</span>
-<span class="sd">    </span>
-<span class="sd">    Faster than JSON but Python-only and not human-readable.</span>
-<span class="sd">    Use only for temporary caching or when speed is critical.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        tree: Tree to serialize</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Pickled bytes</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -285,184 +340,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">from_pickle</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Deserialize tree from pickle.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        data: Pickled bytes</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Tree root node</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="to_parquet">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.to_parquet">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">to_parquet</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">include_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Export tree to Parquet format for analytics.</span>
-<span class="sd">    </span>
-<span class="sd">    Parquet is columnar format excellent for analytical queries.</span>
-<span class="sd">    Each node becomes a row with its attributes as columns.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        tree: Tree to export</span>
-<span class="sd">        path: Output file path</span>
-<span class="sd">        include_path: Include full path from root as column</span>
-<span class="sd">    </span>
-<span class="sd">    Example:</span>
-<span class="sd">        to_parquet(tree, &quot;tree_data.parquet&quot;)</span>
-<span class="sd">        # Then analyze with pandas, Spark, DuckDB, etc.</span>
-<span class="sd">        df = pd.read_parquet(&quot;tree_data.parquet&quot;)</span>
-<span class="sd">        df[df[&#39;type&#39;] == &#39;file&#39;].groupby(&#39;extension&#39;).size()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;pandas required for Parquet: pip install pandas pyarrow&quot;</span><span class="p">)</span>
-    
-    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span> <span class="n">path_parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">path_parts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">path_parts</span> <span class="o">=</span> <span class="p">[]</span>
-        
-        <span class="n">current_path</span> <span class="o">=</span> <span class="n">path_parts</span> <span class="o">+</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
-        
-        <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s1">&#39;level&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">path_parts</span><span class="p">),</span>
-            <span class="s1">&#39;is_leaf&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s1">&#39;num_children&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
-        <span class="p">}</span>
-        
-        <span class="k">if</span> <span class="n">include_path</span><span class="p">:</span>
-            <span class="n">row</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_path</span><span class="p">)</span>
-            <span class="n">row</span><span class="p">[</span><span class="s1">&#39;parent_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_parts</span><span class="p">)</span> <span class="k">if</span> <span class="n">path_parts</span> <span class="k">else</span> <span class="kc">None</span>
-        
-        <span class="c1"># Add payload attributes</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        
-        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-        
-        <span class="c1"># Traverse children</span>
-        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="n">traverse</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">current_path</span><span class="p">)</span>
-    
-    <span class="n">traverse</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
-    
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;pyarrow&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="from_parquet">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.from_parquet">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">from_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Node</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Load tree from Parquet format.</span>
-<span class="sd">    </span>
-<span class="sd">    Reconstructs tree structure from tabular data.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        path: Parquet file path</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        Root node of tree</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;pandas required for Parquet: pip install pandas pyarrow&quot;</span><span class="p">)</span>
-    
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    
-    <span class="c1"># Build tree from paths</span>
-    <span class="k">if</span> <span class="s1">&#39;path&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parquet file must have &#39;path&#39; column to reconstruct tree&quot;</span><span class="p">)</span>
-    
-    <span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">path_to_node</span> <span class="o">=</span> <span class="p">{}</span>
-    
-    <span class="c1"># Sort by path depth to ensure parents are created before children</span>
-    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;depth&#39;</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        
-        <span class="c1"># Extract payload (all columns except structural ones)</span>
-        <span class="n">structural_cols</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;path&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_path&#39;</span><span class="p">,</span> <span class="s1">&#39;level&#39;</span><span class="p">,</span> <span class="s1">&#39;is_leaf&#39;</span><span class="p">,</span> <span class="s1">&#39;num_children&#39;</span><span class="p">,</span> <span class="s1">&#39;depth&#39;</span><span class="p">}</span>
-        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
-                  <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">structural_cols</span> <span class="ow">and</span> <span class="n">pd</span><span class="o">.</span><span class="n">notna</span><span class="p">(</span><span class="n">v</span><span class="p">)}</span>
-        
-        <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">payload</span><span class="p">)</span>
-        <span class="n">path_to_node</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
-        
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">root</span> <span class="o">=</span> <span class="n">node</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">parent_path</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">parent_path</span> <span class="ow">in</span> <span class="n">path_to_node</span><span class="p">:</span>
-                <span class="n">parent</span> <span class="o">=</span> <span class="n">path_to_node</span><span class="p">[</span><span class="n">parent_path</span><span class="p">]</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
-                <span class="n">parent</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">root</span></div>
-
-
-
-<span class="c1"># Integration with standard library</span>
-
-<div class="viewcode-block" id="register_json_encoder">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.register_json_encoder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">register_json_encoder</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Register Node class with json module for seamless serialization.</span>
-<span class="sd">    </span>
-<span class="sd">    After calling this, you can use json.dumps directly on Node objects:</span>
-<span class="sd">        register_json_encoder()</span>
-<span class="sd">        json.dumps(tree)  # Works without calling to_dict()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">class</span><span class="w"> </span><span class="nc">NodeEncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Node</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-    
-    <span class="c1"># Monkey-patch json module (use with caution)</span>
-    <span class="n">json</span><span class="o">.</span><span class="n">_default_encoder</span> <span class="o">=</span> <span class="n">NodeEncoder</span><span class="p">()</span></div>
-
-
-
-<span class="c1"># Backward compatibility helpers</span>
-
-<div class="viewcode-block" id="upgrade_legacy_format">
-<a class="viewcode-back" href="../../AlgoTree.html#AlgoTree.serialization.upgrade_legacy_format">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">upgrade_legacy_format</span><span class="p">(</span><span class="n">legacy_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Upgrade legacy TreeNode/FlatForest format to modern format.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        legacy_data: Old format dictionary</span>
-<span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        Modern format dictionary compatible with Node.from_dict()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Handle old TreeNode format (which used dict inheritance)</span>
-    <span class="k">if</span> <span class="s1">&#39;_children&#39;</span> <span class="ow">in</span> <span class="n">legacy_data</span><span class="p">:</span>
-        <span class="n">legacy_data</span><span class="p">[</span><span class="s1">&#39;children&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">legacy_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_children&#39;</span><span class="p">)</span>
-    
-    <span class="c1"># Handle old FlatForest format</span>
-    <span class="k">if</span> <span class="s1">&#39;nodes&#39;</span> <span class="ow">in</span> <span class="n">legacy_data</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">legacy_data</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="c1"># Convert to modern format</span>
-        <span class="c1"># This is just a placeholder - actual conversion would be more complex</span>
-        <span class="k">pass</span>
-    
-    <span class="k">return</span> <span class="n">legacy_data</span></div>
 
 </pre></div>
 
