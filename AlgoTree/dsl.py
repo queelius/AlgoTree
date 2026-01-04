@@ -7,31 +7,31 @@ Supports multiple formats:
 - S-expression format
 """
 import re
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Dict, Any
 from .node import Node
 
 
 class TreeDSL:
     """Parser for various tree DSL formats."""
-    
+
     @staticmethod
     def parse(text: str, format: str = 'auto') -> Node:
         """
         Parse tree from DSL text.
-        
+
         Args:
             text: DSL text to parse.
             format: Format to use ('visual', 'indent', 'sexpr', 'auto').
                    'auto' tries to detect format automatically.
-        
+
         Returns:
             Root node of parsed tree.
         """
         text = text.strip()
-        
+
         if format == 'auto':
             format = TreeDSL._detect_format(text)
-        
+
         if format == 'visual':
             return TreeDSL._parse_visual(text)
         elif format == 'indent':
@@ -40,7 +40,7 @@ class TreeDSL:
             return TreeDSL._parse_sexpr(text)
         else:
             raise ValueError(f"Unknown format: {format}")
-    
+
     @staticmethod
     def _detect_format(text: str) -> str:
         """Detect DSL format from text."""
@@ -53,12 +53,12 @@ class TreeDSL:
         # Default to indent format
         else:
             return 'indent'
-    
+
     @staticmethod
     def _parse_visual(text: str) -> Node:
         """
         Parse visual tree format.
-        
+
         Example:
             company[type:tech]
             ├── engineering[head:Alice]
@@ -69,64 +69,55 @@ class TreeDSL:
         lines = text.split('\n')
         if not lines:
             raise ValueError("Empty tree")
-        
-        # Parse root
-        root_name, root_attrs = TreeDSL._parse_node_spec(lines[0])
-        root = Node(root_name, attrs=root_attrs)
 
-        # Build tree structure first
-        nodes_by_indent = {0: {'node': root, 'children': []}}
-        stack = [0]  # Track indent levels
-
-        for line in lines[1:]:
+        # Parse all lines to get (indent, name, attrs)
+        parsed_lines = []
+        for line in lines:
             if not line.strip():
                 continue
 
             # Remove tree drawing characters and count indent
-            line = line.replace('│', ' ').replace('├', ' ').replace('└', ' ').replace('─', ' ')
-            indent = len(line) - len(line.lstrip())
-            clean_line = line.strip()
+            cleaned = line.replace('│', ' ').replace('├', ' ').replace('└', ' ').replace('─', ' ')
+            indent = len(cleaned) - len(cleaned.lstrip())
+            clean_text = cleaned.strip()
 
             # Parse node
-            name, attrs = TreeDSL._parse_node_spec(clean_line)
-            node = Node(name, attrs=attrs)
+            name, attrs = TreeDSL._parse_node_spec(clean_text)
+            parsed_lines.append((indent, name, attrs))
 
-            # Find parent based on indent
-            while stack and stack[-1] >= indent:
-                stack.pop()
+        if not parsed_lines:
+            raise ValueError("Empty tree")
 
-            if not stack:
-                raise ValueError("Invalid tree structure")
+        # Build tree using a stack-based approach (same as indent parser)
+        def build_tree(lines, start_idx, parent_indent):
+            """Recursively build tree from lines starting at start_idx."""
+            if start_idx >= len(lines):
+                return None, start_idx
 
-            parent_indent = stack[-1]
-            nodes_by_indent[parent_indent]['children'].append(node)
-            nodes_by_indent[indent] = {'node': node, 'children': []}
-            stack.append(indent)
+            indent, name, attrs = lines[start_idx]
 
-        # Rebuild tree with children
-        def rebuild_with_children(indent):
-            node_info = nodes_by_indent[indent]
-            node = node_info['node']
-            children = node_info['children']
+            # Collect all children (nodes with greater indent until we hit same/lower indent)
+            children = []
+            idx = start_idx + 1
 
-            # Recursively rebuild children
-            rebuilt_children = []
-            for child in children:
-                # Find child's indent
-                child_indent = None
-                for ind, info in nodes_by_indent.items():
-                    if info['node'] == child:
-                        child_indent = ind
-                        break
-                if child_indent is not None:
-                    rebuilt_children.append(rebuild_with_children(child_indent))
-                else:
-                    rebuilt_children.append(child)
+            while idx < len(lines):
+                child_indent = lines[idx][0]
 
-            return node.with_children(*rebuilt_children) if rebuilt_children else node
+                if child_indent <= indent:
+                    # Same or lower indent - not our child
+                    break
 
-        return rebuild_with_children(0)
-    
+                # This is a child - recursively build it
+                child_node, idx = build_tree(lines, idx, indent)
+                if child_node:
+                    children.append(child_node)
+
+            node = Node(name, *children, attrs=attrs)
+            return node, idx
+
+        root, _ = build_tree(parsed_lines, 0, -1)
+        return root
+
     @staticmethod
     def _parse_indent(text: str) -> Node:
         """
@@ -143,72 +134,70 @@ class TreeDSL:
         if not lines:
             raise ValueError("Empty tree")
 
-        # First pass: create all nodes and track structure
-        nodes_by_indent = {}
-        root = None
-
+        # Parse all nodes with their indent levels
+        parsed_lines = []
         for line in lines:
             if not line.strip():
                 continue
 
             # Calculate indent
             indent = len(line) - len(line.lstrip())
-            line = line.strip()
+            line_content = line.strip()
 
-            # Parse node
-            if ':' in line:
-                name, rest = line.split(':', 1)
+            # Parse node - check for bracket notation first (name[attrs])
+            # then for colon notation (name: {attrs})
+            if '[' in line_content and ']' in line_content:
+                # Bracket notation: node[key:value]
+                name, attrs = TreeDSL._parse_node_spec(line_content)
+            elif ':' in line_content:
+                # Colon notation: node: {key: value}
+                name, rest = line_content.split(':', 1)
                 name = name.strip()
                 attrs = TreeDSL._parse_attrs(rest.strip())
             else:
-                name = line
+                name = line_content
                 attrs = {}
 
-            # Create node
-            node = Node(name, attrs=attrs)
+            parsed_lines.append((indent, name, attrs))
 
-            if indent == 0:
-                root = node
-                nodes_by_indent[0] = {'node': node, 'children': []}
-            else:
-                # Find parent indent
-                parent_indent = max(i for i in nodes_by_indent.keys() if i < indent)
-                nodes_by_indent[parent_indent]['children'].append(node)
-                nodes_by_indent[indent] = {'node': node, 'children': []}
+        if not parsed_lines:
+            raise ValueError("Empty tree")
 
-        # Second pass: rebuild tree with children
-        def rebuild(indent):
-            info = nodes_by_indent.get(indent)
-            if not info:
-                return None
+        # Build tree using a stack-based approach
+        def build_tree(lines, start_idx, parent_indent):
+            """Recursively build tree from lines starting at start_idx."""
+            if start_idx >= len(lines):
+                return None, start_idx
 
-            node = info['node']
-            children = info['children']
+            indent, name, attrs = lines[start_idx]
 
-            if not children:
-                return node
+            # Collect all children (nodes with greater indent until we hit same/lower indent)
+            children = []
+            idx = start_idx + 1
 
-            # Rebuild children recursively
-            rebuilt_children = []
-            for child in children:
-                # Find child's indent
-                child_indent = None
-                for ind, inf in nodes_by_indent.items():
-                    if inf['node'] == child:
-                        child_indent = ind
-                        break
-                if child_indent is not None:
-                    rebuilt_children.append(rebuild(child_indent))
+            while idx < len(lines):
+                child_indent = lines[idx][0]
 
-            return node.with_children(*rebuilt_children)
+                if child_indent <= indent:
+                    # Same or lower indent - not our child
+                    break
 
-        return rebuild(0) if root else None
-    
+                # This is a child - recursively build it
+                child_node, idx = build_tree(lines, idx, indent)
+                if child_node:
+                    children.append(child_node)
+
+            node = Node(name, *children, attrs=attrs)
+            return node, idx
+
+        root, _ = build_tree(parsed_lines, 0, -1)
+        return root
+
     @staticmethod
     def _parse_sexpr(text: str) -> Node:
         """
         Parse S-expression format.
-        
+
         Example:
             (company :type tech :revenue 1M
               (engineering :head Alice
@@ -219,19 +208,19 @@ class TreeDSL:
         tokens = TreeDSL._tokenize_sexpr(text)
         if not tokens:
             raise ValueError("Empty tree")
-        
+
         def parse_node(tokens, index):
             if index >= len(tokens) or tokens[index] != '(':
                 raise ValueError("Expected '(' at start of node")
-            
+
             index += 1
             if index >= len(tokens):
                 raise ValueError("Unexpected end of expression")
-            
+
             # Get node name
             name = tokens[index]
             index += 1
-            
+
             # Parse attributes
             attrs = {}
             while index < len(tokens) and tokens[index] not in ['(', ')']:
@@ -239,7 +228,7 @@ class TreeDSL:
                     key = tokens[index][1:]
                     index += 1
                     if index < len(tokens) and tokens[index] not in ['(', ')', ':']:
-                        attrs[key] = tokens[index]
+                        attrs[key] = TreeDSL._parse_value(tokens[index])
                         index += 1
                 else:
                     index += 1
@@ -257,10 +246,10 @@ class TreeDSL:
                 raise ValueError("Expected ')' at end of node")
 
             return node, index + 1
-        
+
         root, _ = parse_node(tokens, 0)
         return root
-    
+
     @staticmethod
     def _tokenize_sexpr(text: str) -> List[str]:
         """Tokenize S-expression."""
@@ -268,12 +257,12 @@ class TreeDSL:
         text = text.replace('(', ' ( ').replace(')', ' ) ')
         # Split and filter empty tokens
         return [token for token in text.split() if token]
-    
+
     @staticmethod
     def _parse_node_spec(text: str) -> Tuple[str, Dict[str, Any]]:
         """
         Parse node specification like 'name[attr1:val1,attr2:val2]'.
-        
+
         Returns:
             Tuple of (name, attributes_dict)
         """
@@ -281,44 +270,44 @@ class TreeDSL:
         match = re.match(r'^([^[]+)(?:\[(.*)\])?$', text.strip())
         if not match:
             return text.strip(), {}
-        
+
         name = match.group(1).strip()
         attrs_str = match.group(2)
-        
+
         if not attrs_str:
             return name, {}
-        
+
         attrs = {}
         for pair in attrs_str.split(','):
             if ':' in pair:
                 key, value = pair.split(':', 1)
                 attrs[key.strip()] = TreeDSL._parse_value(value.strip())
-        
+
         return name, attrs
-    
+
     @staticmethod
     def _parse_attrs(text: str) -> Dict[str, Any]:
         """Parse attributes from various formats."""
         text = text.strip()
-        
+
         # Handle dictionary-like format
         if text.startswith('{') and text.endswith('}'):
             text = text[1:-1]
-        
+
         attrs = {}
         # Simple key:value parsing
         for pair in text.split(','):
             if ':' in pair:
                 key, value = pair.split(':', 1)
                 attrs[key.strip()] = TreeDSL._parse_value(value.strip())
-        
+
         return attrs
-    
+
     @staticmethod
     def _parse_value(value: str) -> Any:
         """Parse value string to appropriate type."""
         value = value.strip()
-        
+
         # Try to parse as number
         try:
             if '.' in value:
@@ -326,32 +315,32 @@ class TreeDSL:
             return int(value)
         except ValueError:
             pass
-        
+
         # Boolean
         if value.lower() == 'true':
             return True
         elif value.lower() == 'false':
             return False
-        
+
         # String (remove quotes if present)
         if (value.startswith('"') and value.endswith('"')) or \
            (value.startswith("'") and value.endswith("'")):
             return value[1:-1]
-        
+
         return value
 
 
 def parse_tree(text: str, format: str = 'auto') -> Node:
     """
     Convenience function to parse tree from DSL text.
-    
+
     Args:
         text: DSL text to parse.
         format: Format to use ('visual', 'indent', 'sexpr', 'auto').
-        
+
     Returns:
         Root node of parsed tree.
-        
+
     Examples:
         # Visual format
         tree = parse_tree('''
@@ -361,7 +350,7 @@ def parse_tree(text: str, format: str = 'auto') -> Node:
             │   └── backend
             └── sales
         ''')
-        
+
         # Indent format
         tree = parse_tree('''
             company
@@ -370,7 +359,7 @@ def parse_tree(text: str, format: str = 'auto') -> Node:
                 backend
               sales
         ''')
-        
+
         # S-expression format
         tree = parse_tree('''
             (company

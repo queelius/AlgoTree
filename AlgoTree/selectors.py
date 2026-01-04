@@ -5,7 +5,7 @@ This module provides a type-safe, composable selector system
 that can be combined using logical operators.
 """
 
-from typing import Any, Callable, Iterator, Optional, Union, List, Dict, Pattern
+from typing import Callable, Iterator, Optional, Union
 from abc import ABC, abstractmethod
 import re
 import fnmatch
@@ -452,7 +452,7 @@ def parse(selector_str: str) -> Selector:
             # Try to parse value
             try:
                 value = eval(value)
-            except:
+            except Exception:
                 pass  # Keep as string
             return attrs(**{key: value})
         else:

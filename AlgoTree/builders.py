@@ -7,7 +7,7 @@ with a focus on clarity and ease of use.
 
 from typing import Any, Optional, Union, List, Dict, Callable
 from contextlib import contextmanager
-from .node import Node, node
+from .node import Node
 from .tree import Tree
 
 
@@ -151,8 +151,8 @@ class TreeBuilder:
         """
         # Move to root first
         root_builder = self.root()
-        node = root_builder._build_node()
-        return Tree(node)
+        root_node = root_builder._build_node()
+        return Tree(root_node)
 
     def build_node(self) -> Node:
         """
@@ -356,6 +356,36 @@ def leaf(name: str, **attrs) -> TreeBuilder:
 
 # Context manager for building trees
 
+class ChildContext:
+    """
+    Helper context returned by TreeContext.child() for nested building.
+    """
+
+    def __init__(self, tree_context: 'TreeContext', builder: TreeBuilder):
+        self._tree_context = tree_context
+        self._builder = builder
+
+    @contextmanager
+    def child(self, name: str, **attrs):
+        """Add nested child in context."""
+        child_builder = TreeBuilder(name, **attrs)
+        self._builder._children.append(child_builder)
+        child_builder._parent = self._builder
+
+        self._tree_context._stack.append(child_builder)
+        try:
+            yield ChildContext(self._tree_context, child_builder)
+        finally:
+            self._tree_context._stack.pop()
+
+    def add_child(self, name: str, **attrs) -> 'ChildContext':
+        """Add a leaf child directly (without context manager)."""
+        child_builder = TreeBuilder(name, **attrs)
+        self._builder._children.append(child_builder)
+        child_builder._parent = self._builder
+        return ChildContext(self._tree_context, child_builder)
+
+
 class TreeContext:
     """
     Context manager for building trees with indented syntax.
@@ -363,10 +393,13 @@ class TreeContext:
     Example:
         with TreeContext('root') as ctx:
             with ctx.child('src') as src:
-                src.child('main.py', type='file')
-                src.child('utils.py', type='file')
+                with src.child('main.py', type='file'):
+                    pass
+                with src.child('utils.py', type='file'):
+                    pass
             with ctx.child('docs') as docs:
-                docs.child('README.md', type='file')
+                with docs.child('README.md', type='file'):
+                    pass
 
         tree = ctx.build()
     """
@@ -384,7 +417,7 @@ class TreeContext:
 
         self._stack.append(child_builder)
         try:
-            yield child_builder
+            yield ChildContext(self, child_builder)
         finally:
             self._stack.pop()
 

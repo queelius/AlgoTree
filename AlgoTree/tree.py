@@ -5,7 +5,7 @@ This module provides a clean, composable API for tree manipulation
 following functional programming principles.
 """
 
-from typing import Any, Callable, Iterator, Optional, Union, TypeVar, List, Dict, Tuple, TYPE_CHECKING
+from typing import Any, Callable, Iterator, Optional, Union, TypeVar, List, Dict, TYPE_CHECKING
 from functools import reduce
 from .node import Node
 
@@ -112,21 +112,24 @@ class Tree:
             if not children_dict:
                 return Node(name)
 
-            children = [dict_to_node(child_name, child_dict)
-                       for child_name, child_dict in sorted(children_dict.items())]
+            children = [
+                dict_to_node(child_name, child_dict)
+                for child_name, child_dict in sorted(children_dict.items())
+            ]
             return Node(name, *children)
 
         # Get root name (first part of first path)
         root_name = paths[0].split(delimiter)[0] if paths else 'root'
-        root_children_dict = tree_dict.get(root_name, tree_dict)
 
         # If root_name is in tree_dict, use it as root
         if root_name in tree_dict:
             root = dict_to_node(root_name, tree_dict[root_name])
         else:
             # Otherwise create root with all top-level entries as children
-            children = [dict_to_node(name, children_dict)
-                       for name, children_dict in sorted(tree_dict.items())]
+            children = [
+                dict_to_node(name, children_dict)
+                for name, children_dict in sorted(tree_dict.items())
+            ]
             root = Node(root_name, *children)
 
         return cls(root)
@@ -260,27 +263,41 @@ class Tree:
         """
         Flatten tree to specified depth.
 
+        Nodes beyond max_depth have their descendants moved up to become
+        direct children of the node at max_depth.
+
         Args:
-            max_depth: Maximum depth (None for complete flattening)
+            max_depth: Maximum depth (None for complete flattening to root's children)
 
         Returns:
             New flattened tree
         """
-        def flatten_node(node: Node, current_depth: int = 0) -> List[Node]:
-            if max_depth is not None and current_depth >= max_depth:
-                return [node]
-
+        def collect_descendants(node: Node) -> List[Node]:
+            """Collect all descendants as leaf nodes (no children)."""
+            if not node.children:
+                return [Node(node.name, attrs=node.attrs)]
             result = []
             for child in node.children:
-                grandchildren = flatten_node(child, current_depth + 1)
-                result.extend(grandchildren)
+                result.extend(collect_descendants(child))
+            return result
 
-            if result:
-                return [node.with_children(*result)]
-            return [node]
+        def flatten_node(node: Node, current_depth: int = 0) -> Node:
+            if max_depth is not None and current_depth >= max_depth:
+                # At max depth, collect all descendants as direct children
+                all_descendants = []
+                for child in node.children:
+                    all_descendants.extend(collect_descendants(child))
+                if all_descendants:
+                    return Node(node.name, *all_descendants, attrs=node.attrs)
+                return node
 
-        flattened = flatten_node(self._root)[0]
-        return Tree(flattened)
+            # Not at max depth yet, recursively flatten children
+            new_children = [flatten_node(child, current_depth + 1) for child in node.children]
+            if new_children:
+                return Node(node.name, *new_children, attrs=node.attrs)
+            return node
+
+        return Tree(flatten_node(self._root, 0))
 
     # Query operations
 

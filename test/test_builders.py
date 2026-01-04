@@ -322,9 +322,9 @@ class TestTreeContext(unittest.TestCase):
         """Test basic context usage."""
         with TreeContext("root") as ctx:
             with ctx.child("a") as a:
-                a.child("a1")
+                a.add_child("a1")  # add_child for leaf nodes
             with ctx.child("b") as b:
-                b.child("b1")
+                b.add_child("b1")
 
         result = ctx.build()
 
@@ -348,7 +348,8 @@ class TestTreeContext(unittest.TestCase):
         with TreeContext("root") as ctx:
             with ctx.child("a") as a:
                 with a.child("b") as b:
-                    b.child("c")
+                    with b.child("c"):
+                        pass
 
         result = ctx.build()
 

@@ -46,7 +46,7 @@ from .transformers import (
 # Builders for tree construction
 from .builders import (
     TreeBuilder, FluentTree, TreeContext, QuickBuilder,
-    tree, branch, leaf
+    tree, branch, leaf as leaf_node  # renamed to avoid collision with selectors.leaf
 )
 
 # Visualization and export
@@ -98,7 +98,7 @@ __all__ = [
 
     # Builders
     'TreeBuilder', 'FluentTree', 'TreeContext', 'QuickBuilder',
-    'tree', 'branch', 'leaf',
+    'tree', 'branch', 'leaf_node',
 
     # Visualization
     'PrettyTree', 'pretty_tree',

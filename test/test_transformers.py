@@ -316,11 +316,14 @@ class TestPipeline(unittest.TestCase):
 
     def test_pipeline_with_shaper(self):
         """Test pipeline ending with shaper."""
+        # Note: filter preserves ancestors (root), so extract gets root's value (None) too
         pipeline = filter_(lambda n: n.get("value", 0) > 1) >> \
                    extract(lambda n: n.get("value"))
 
         result = pipeline(self.tree)
-        self.assertEqual(set(result), {2, 3})
+        # Filter out None (from root node which is kept as ancestor)
+        values = {v for v in result if v is not None}
+        self.assertEqual(values, {2, 3})
 
     def test_pipeline_or_operator(self):
         """Test pipeline with | operator."""

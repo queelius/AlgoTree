@@ -136,60 +136,43 @@ format:
 		echo "$(RED)black not installed. Run 'make install-dev' first.$(NC)"; \
 	fi
 
-## Documentation
-docs: install
+## Documentation (MkDocs)
+docs:
 	@echo "$(BLUE)Generating documentation...$(NC)"
-	@echo "$(YELLOW)Ensuring package is installed in editable mode...$(NC)"
+	$(PIP) install mkdocs mkdocs-material mkdocstrings mkdocstrings-python --quiet
 	$(PIP) install -e . --quiet
-	sphinx-apidoc -f -o source $(PACKAGE_NAME)
-	cd source && sphinx-build -b html . ../docs
-	@echo "$(GREEN)Documentation generated in docs/$(NC)"
+	mkdocs build
+	@echo "$(GREEN)Documentation generated in site/$(NC)"
 
-docs-serve: docs
+docs-serve:
 	@echo "$(BLUE)Starting documentation server...$(NC)"
 	@echo "$(GREEN)Documentation available at http://localhost:8000$(NC)"
 	@echo "$(YELLOW)Press Ctrl+C to stop the server$(NC)"
-	cd docs && python -m http.server 8000
+	$(PIP) install mkdocs mkdocs-material mkdocstrings mkdocstrings-python --quiet
+	$(PIP) install -e . --quiet
+	mkdocs serve
 
 docs-open: docs
 	@echo "$(BLUE)Opening documentation in browser...$(NC)"
 	@if command -v xdg-open >/dev/null 2>&1; then \
-		xdg-open docs/index.html; \
+		xdg-open site/index.html; \
 	elif command -v open >/dev/null 2>&1; then \
-		open docs/index.html; \
+		open site/index.html; \
 	else \
-		echo "$(YELLOW)Please open docs/index.html in your browser$(NC)"; \
+		echo "$(YELLOW)Please open site/index.html in your browser$(NC)"; \
 	fi
 
-docs-deploy-gh-pages: docs
+docs-deploy-gh-pages:
 	@echo "$(BLUE)Deploying documentation to GitHub Pages...$(NC)"
-	@if [ ! -d ".git" ]; then \
-		echo "$(RED)Error: Not a git repository$(NC)"; \
-		exit 1; \
-	fi
-	@echo "$(YELLOW)Checking out gh-pages branch...$(NC)"
-	@if git show-ref --quiet refs/heads/gh-pages; then \
-		git checkout gh-pages; \
-		git pull origin gh-pages; \
-	else \
-		git checkout --orphan gh-pages; \
-		git rm -rf .; \
-		git clean -fdx; \
-	fi
-	@echo "$(YELLOW)Copying documentation...$(NC)"
-	cp -r docs/* .
-	echo "queelius.github.io/AlgoTree" > CNAME || true
-	git add -A
-	git commit -m "Update documentation" || true
-	git push origin gh-pages
-	git checkout -
+	$(PIP) install mkdocs mkdocs-material mkdocstrings mkdocstrings-python --quiet
+	$(PIP) install -e . --quiet
+	mkdocs gh-deploy --force
 	@echo "$(GREEN)Documentation deployed to GitHub Pages$(NC)"
 	@echo "$(GREEN)Visit: https://queelius.github.io/AlgoTree/$(NC)"
 
 docs-clean:
 	@echo "$(BLUE)Cleaning documentation...$(NC)"
-	rm -rf docs/_build docs/_static docs/_templates
-	rm -f source/$(PACKAGE_NAME).rst source/modules.rst
+	rm -rf site/
 	@echo "$(GREEN)Documentation cleaned$(NC)"
 
 ## Coverage

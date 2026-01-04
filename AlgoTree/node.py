@@ -9,10 +9,7 @@ This module provides the core Node class for AlgoTree with:
 """
 
 from typing import Any, Dict, Iterator, Optional, Union, Callable, TypeVar, Tuple, List, TYPE_CHECKING
-from dataclasses import dataclass, field, replace
-from functools import cached_property
 import weakref
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from .selectors import Selector
@@ -123,7 +120,7 @@ class Node:
         """Return new node with child removed."""
         if isinstance(child, int):
             if 0 <= child < len(self._children):
-                new_children = self._children[:child] + self._children[child+1:]
+                new_children = self._children[:child] + self._children[child + 1:]
             else:
                 return self
         elif isinstance(child, str):

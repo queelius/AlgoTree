@@ -7,7 +7,6 @@ that can be composed using operators like >> and |.
 
 from typing import Any, Callable, Optional, Union, List, Dict, TypeVar, Generic
 from abc import ABC, abstractmethod
-from functools import reduce
 from .tree import Tree
 from .node import Node
 from .selectors import Selector

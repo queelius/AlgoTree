@@ -31,8 +31,8 @@ class TestTreeDSL(unittest.TestCase):
         tree = TreeDSL.parse(text)
 
         self.assertEqual(tree.get("type"), "container")
-        self.assertEqual(tree.children[0].get("value"), "1")
-        self.assertEqual(tree.children[1].get("value"), "2")
+        self.assertEqual(tree.children[0].get("value"), 1)
+        self.assertEqual(tree.children[1].get("value"), 2)
 
     def test_parse_indent_format(self):
         """Test parsing indent-based format."""
@@ -46,8 +46,8 @@ class TestTreeDSL(unittest.TestCase):
         self.assertEqual(tree.name, "root")
         self.assertEqual(tree.get("type"), "container")
         self.assertEqual(len(tree.children), 2)
-        self.assertEqual(tree.children[0].get("value"), "1")
-        self.assertEqual(tree.children[1].children[0].get("value"), "3")
+        self.assertEqual(tree.children[0].get("value"), 1)
+        self.assertEqual(tree.children[1].children[0].get("value"), 3)
 
     def test_parse_sexpr_format(self):
         """Test parsing S-expression format."""
@@ -59,7 +59,7 @@ class TestTreeDSL(unittest.TestCase):
         self.assertEqual(tree.get("type"), "container")
         self.assertEqual(len(tree.children), 2)
         self.assertEqual(tree.children[0].name, "child1")
-        self.assertEqual(tree.children[0].get("value"), "1")
+        self.assertEqual(tree.children[0].get("value"), 1)
 
     def test_parse_sexpr_nested(self):
         """Test parsing nested S-expressions."""
@@ -218,15 +218,15 @@ class TestComplexTrees(unittest.TestCase):
 
         tree = TreeDSL.parse(text)
 
-        self.assertEqual(tree.get("level"), "0")
+        self.assertEqual(tree.get("level"), 0)
         self.assertEqual(len(tree.children), 2)
 
         # Deep nesting
         a = tree.children[0]
         b = a.children[0]
         c = b.children[0]
-        self.assertEqual(c.get("level"), "3")
-        self.assertEqual(c.get("value"), "30")
+        self.assertEqual(c.get("level"), 3)
+        self.assertEqual(c.get("value"), 30)
 
     def test_complex_sexpr_tree(self):
         """Test parsing complex S-expression."""
@@ -243,7 +243,7 @@ class TestComplexTrees(unittest.TestCase):
 
         eng = tree.children[0]
         self.assertEqual(eng.name, "engineering")
-        self.assertEqual(eng.get("size"), "50")
+        self.assertEqual(eng.get("size"), 50)
         self.assertEqual(len(eng.children), 2)
 
 
