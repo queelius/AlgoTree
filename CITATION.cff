@@ -1,0 +1,37 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://citation-file-format.github.io/ for more info.
+
+cff-version: 1.2.0
+title: AlgoTree
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Alex
+    family-names: Towell
+    email: lex@metafunctor.com
+    affiliation: Independent Researcher
+repository-code: 'https://github.com/queelius/AlgoTree'
+url: 'https://queelius.github.io/AlgoTree/'
+abstract: >-
+  AlgoTree is a powerful, modern tree manipulation library
+  for Python featuring an immutable-by-default API,
+  composable transformations, and comprehensive tree
+  operations. It provides functional programming patterns
+  for tree construction, traversal, pattern matching, and
+  export to multiple formats including GraphViz, Mermaid,
+  JSON, and HTML.
+keywords:
+  - tree
+  - data-structure
+  - algorithms
+  - pattern-matching
+  - transformation
+  - fluent-api
+  - immutable
+  - functional-programming
+  - python
+license: MIT
+version: 2.0.1
+date-released: '2025-01-03'
