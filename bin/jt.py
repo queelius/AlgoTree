@@ -251,7 +251,7 @@ def parse_transform_spec(spec: str) -> Union[Dict, List[Tuple]]:
                     # Try to parse value as JSON, fallback to string
                     try:
                         value = json.loads(value)
-                    except:
+                    except (ValueError, TypeError):
                         pass
                     change_dict[key.strip()] = value
             transformations[path] = change_dict

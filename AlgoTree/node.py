@@ -9,6 +9,7 @@ This module provides the core Node class for AlgoTree with:
 """
 
 from typing import Any, Dict, Iterator, Optional, Union, Callable, TypeVar, Tuple, List, TYPE_CHECKING
+from collections import deque
 import weakref
 
 if TYPE_CHECKING:
@@ -218,9 +219,9 @@ class Node:
                 yield from child.walk('postorder')
             yield self
         elif order == 'levelorder':
-            queue = [self]
+            queue = deque([self])
             while queue:
-                node = queue.pop(0)
+                node = queue.popleft()
                 yield node
                 queue.extend(node.children)
         else:
@@ -354,22 +355,8 @@ class Node:
         selector: Union[str, Callable[['Node'], bool], 'Selector']
     ) -> Callable[['Node'], bool]:
         """Convert selector to predicate function."""
-        # Check if it's a Selector object (has matches method)
-        if hasattr(selector, 'matches'):
-            return selector.matches
-
-        if callable(selector):
-            return selector
-
-        # String selector - match by name
-        pattern = selector
-        if '*' in pattern:
-            # Simple wildcard matching
-            import fnmatch
-            return lambda node: fnmatch.fnmatch(node.name, pattern)
-        else:
-            # Exact match
-            return lambda node: node.name == pattern
+        from ._utils import make_predicate
+        return make_predicate(selector)
 
     # Comparison and hashing
 

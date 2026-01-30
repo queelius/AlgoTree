@@ -7,6 +7,7 @@ that can be combined using logical operators.
 
 from typing import Callable, Iterator, Optional, Union
 from abc import ABC, abstractmethod
+import ast
 import re
 import fnmatch
 from .node import Node
@@ -449,10 +450,10 @@ def parse(selector_str: str) -> Selector:
         attr_str = selector_str[1:-1]
         if '=' in attr_str:
             key, value = attr_str.split('=', 1)
-            # Try to parse value
+            # Try to parse value as a Python literal (safe)
             try:
-                value = eval(value)
-            except Exception:
+                value = ast.literal_eval(value)
+            except (ValueError, SyntaxError):
                 pass  # Keep as string
             return attrs(**{key: value})
         else:

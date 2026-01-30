@@ -254,10 +254,7 @@ def flat_dict_to_node(flat_dict: Dict[str, Any], root_key: Optional[str] = None)
         else:
             root_key = roots[0]
 
-    def build_node(key: str, visited: Optional[Set[str]] = None) -> Node:
-        if visited is None:
-            visited = set()
-
+    def build_node(key: str, visited: Set[str]) -> Node:
         if key in visited:
             raise ValueError(f"Cycle detected at node '{key}'")
         visited.add(key)
@@ -265,6 +262,7 @@ def flat_dict_to_node(flat_dict: Dict[str, Any], root_key: Optional[str] = None)
         data = flat_dict.get(key)
         if data is None:
             # Node referenced but not in dict - create minimal node
+            visited.discard(key)
             return Node(key)
 
         name = data.get('.name', key)
@@ -289,11 +287,13 @@ def flat_dict_to_node(flat_dict: Dict[str, Any], root_key: Optional[str] = None)
                 if prefixed_key in flat_dict:
                     actual_key = prefixed_key
 
-            children.append(build_node(actual_key, visited.copy()))
+            children.append(build_node(actual_key, visited))
 
+        # Backtrack: allow this key to appear in sibling branches
+        visited.discard(key)
         return Node(name, *children, attrs=attrs)
 
-    return build_node(root_key)
+    return build_node(root_key, set())
 
 
 # Convenience functions for Tree objects

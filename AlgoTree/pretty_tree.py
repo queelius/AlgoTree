@@ -1,7 +1,5 @@
 from typing import Callable, Optional, Dict, Any, List
 
-# from AlgoTree.treenode_api import TreeNodeApi
-
 
 class PrettyTree:
     """
@@ -66,7 +64,6 @@ class PrettyTree:
         :param kwargs: Additional style parameters to override the default style.
         :return: A pretty string representation of the tree.
         """
-        # TreeNodeApi.check(node)
         style = self.style.copy()
         style.update(kwargs.get("style", {}))
 

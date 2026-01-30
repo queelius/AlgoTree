@@ -449,35 +449,16 @@ class Tree:
 
     def _matches(self, node: Node, selector: Union[str, Callable[[Node], bool], 'Selector']) -> bool:
         """Check if node matches selector."""
-        # Check if it's a Selector object (has matches method)
-        if hasattr(selector, 'matches'):
-            return selector.matches(node)
-
-        if callable(selector):
-            return selector(node)
-
-        return node.name == selector or (
-            '*' in selector and self._wildcard_match(node.name, selector)
-        )
-
-    def _wildcard_match(self, name: str, pattern: str) -> bool:
-        """Simple wildcard matching."""
-        import fnmatch
-        return fnmatch.fnmatch(name, pattern)
+        from ._utils import matches_selector
+        return matches_selector(node, selector)
 
     def _make_predicate(
         self,
         selector: Union[str, Callable[[Node], bool], 'Selector']
     ) -> Callable[[Node], bool]:
         """Convert selector to predicate function."""
-        # Check if it's a Selector object (has matches method)
-        if hasattr(selector, 'matches'):
-            return selector.matches
-
-        if callable(selector):
-            return selector
-
-        return lambda node: self._matches(node, selector)
+        from ._utils import make_predicate
+        return make_predicate(selector)
 
     # String representations
 
