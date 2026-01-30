@@ -54,6 +54,12 @@ pip install AlgoTree
 - **AlgoGraph Interop**: Convert trees to/from graph representations
 - **Type Safety**: Full type hints for IDE support
 
+## Author
+
+**Alexander Towell** (Alex Towell)
+Southern Illinois University Edwardsville (SIUE)
+[queelius@gmail.com](mailto:queelius@gmail.com) | [GitHub](https://github.com/queelius)
+
 ## License
 
 MIT License - see [LICENSE](https://github.com/queelius/AlgoTree/blob/master/LICENSE) for details.
