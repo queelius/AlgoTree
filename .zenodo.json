@@ -1,0 +1,36 @@
+{
+  "title": "AlgoTree: A Modern Tree Manipulation Library for Python",
+  "description": "AlgoTree is a powerful, modern tree manipulation library for Python featuring an immutable-by-default API, composable transformations, and comprehensive tree operations. It provides functional programming patterns for tree construction, traversal, pattern matching, and export to multiple formats including GraphViz, Mermaid, JSON, and HTML.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Towell, Alexander",
+      "affiliation": "Southern Illinois University Edwardsville"
+    }
+  ],
+  "keywords": [
+    "tree",
+    "data-structure",
+    "algorithms",
+    "pattern-matching",
+    "transformation",
+    "fluent-api",
+    "immutable",
+    "functional-programming",
+    "python"
+  ],
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://pypi.org/project/AlgoTree/",
+      "relation": "isSupplementTo"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://queelius.github.io/AlgoTree/",
+      "relation": "isDocumentedBy"
+    }
+  ],
+  "access_right": "open"
+}

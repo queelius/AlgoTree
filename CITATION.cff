@@ -8,10 +8,11 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: Alex
+  - given-names: Alexander
     family-names: Towell
-    email: lex@metafunctor.com
-    affiliation: Independent Researcher
+    alias: Alex Towell
+    email: queelius@gmail.com
+    affiliation: Southern Illinois University Edwardsville
 repository-code: 'https://github.com/queelius/AlgoTree'
 url: 'https://queelius.github.io/AlgoTree/'
 abstract: >-
