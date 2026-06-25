@@ -626,3 +626,27 @@ class TestXmlBackend:
         root = ET.fromstring(result)
         elem = next(n for n in root.iter("node") if n.get("name") == "root")
         assert elem.get("count") == "42"
+
+    def test_xml_list_valued_attr_parses(self):
+        """A node with a list-valued attr must still produce XML parseable by ET.fromstring."""
+        import json
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        node = Node("root", attrs={"my list": [1, 2, 3]})
+        result = render(node, "xml")
+        # Must not raise
+        root = ET.fromstring(result)
+        # The sanitised tag (space → underscore) should appear
+        node_elem = next(n for n in root.iter("node") if n.get("name") == "root")
+        attr_elem = node_elem.find("my_list")
+        assert attr_elem is not None
+        assert json.loads(attr_elem.text) == [1, 2, 3]
+
+    def test_xml_invalid_xml_name_key_sanitized(self):
+        """Keys with XML-invalid characters (digits first, angle brackets, spaces) are sanitized."""
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        node = Node("root", attrs={"1bad": {"nested": True}, "key<x>": [0]})
+        result = render(node, "xml")
+        # Must parse without error
+        ET.fromstring(result)

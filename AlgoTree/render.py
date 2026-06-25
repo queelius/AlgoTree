@@ -306,8 +306,13 @@ def _to_xml(node: Node, root_tag: str = "tree", **_opts: Any) -> str:
             else:
                 elem.set(k, str(v))
         # complex attrs as nested text elements
+        # XML element tag names must be valid XML Names: sanitize the key.
+        import re as _re
         for k, v in complex_attrs.items():
-            child_elem = _ET.SubElement(elem, k)
+            safe_k = _re.sub(r"[^\w.-]", "_", k)
+            if safe_k[:1].isdigit():
+                safe_k = "_" + safe_k
+            child_elem = _ET.SubElement(elem, safe_k)
             child_elem.text = _json.dumps(v)
         # children
         for child in n.children:
