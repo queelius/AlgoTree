@@ -249,7 +249,7 @@ def normalize(
         clean_attrs=clean_attrs,
         allowed_attrs=allowed_attrs,
     )
-    return Transformer(lambda t: t.map(_fn), 'normalize')
+    return Transformer(lambda t: t.map(_fn), f'normalize(sort={sort_children}, clean={clean_attrs})')
 
 
 def annotate(

@@ -15,8 +15,8 @@ from AlgoTree.node import Node
 from AlgoTree.tree import Tree
 from AlgoTree.transformers import (
     Transformer, identity,
-    map_, filter_, prune, graft, annotate, normalize,
-    reduce_, fold, extract, to_dict, to_paths, flatten,
+    map_, filter_, prune, annotate, normalize,
+    reduce_, fold, extract, to_dict, to_paths,
 )
 
 
@@ -211,12 +211,6 @@ class TestAssociativity(unittest.TestCase):
 
 class TestNodeTreeSymmetry(unittest.TestCase):
     """Same logical result from bare Node and Tree wrapper."""
-
-    def _roots_equal(self, t, tree_x, node_x):
-        """Apply transformer to both inputs and compare roots."""
-        tree_result = t(tree_x)
-        node_result = t(node_x)
-        self.assertEqual(_root_eq(tree_result), node_result if isinstance(node_result, Node) else node_result)
 
     def test_map_symmetry(self):
         t = map_(lambda n: {"value": n.get("value", 0) * 3})
