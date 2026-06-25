@@ -184,6 +184,24 @@ class Node:
             return self._rebuild(children=tuple(filtered_children))
         return None
 
+    def fold(self, fn: Callable[['Node', List[T]], T]) -> T:
+        """
+        Catamorphism: reduce the tree bottom-up.
+
+        Calls fn(node, child_results) for every node, where child_results is
+        the list of results already computed for that node's children, in
+        order. This is the single recursion primitive: size, height, to_dict,
+        rendering, and evaluation are all folds with a different combine step.
+
+        Args:
+            fn: Combine step (node, [child_results]) -> result.
+
+        Returns:
+            The result of folding the whole subtree rooted at this node.
+        """
+        child_results = [child.fold(fn) for child in self._children]
+        return fn(self, child_results)
+
     def find(self, selector: Union[str, Callable[['Node'], bool], 'Selector']) -> Optional['Node']:
         """Find first node matching selector."""
         predicate = self._make_predicate(selector)
