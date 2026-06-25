@@ -1,15 +1,23 @@
 """
 AlgoTree - A powerful, modern tree manipulation library for Python.
 
+Primary type: Node
+    Node is the single self-sufficient tree type.  Every operation that Tree
+    offers (construct, transform, query, navigate, render, serialize) is
+    available directly on Node.  You rarely need to construct a Tree; use it
+    only for code that depends on its empty-sentinel convention or the
+    Node|dict|None map() sniffing for back-compat with v1 callers.
+
 Core components:
-- Node: Immutable tree nodes with functional operations
-- Tree: Tree wrapper with consistent API
-- Selectors: Composable pattern matching
+- Node (primary): Immutable tree nodes with the full operation set
+- Tree (forwarder): Thin wrapper over Node; preserved for back-compat
+- Selectors: Composable pattern matching (work with bare Node or Tree)
 - Transformers: Composable tree transformations
 - Builders: Fluent API for tree construction
 """
 
 # Core classes
+# Node is the primary type; Tree is a thin forwarder kept for back-compat.
 from .node import Node, node
 from .tree import Tree
 from .cursor import Cursor, walk_cursors
