@@ -233,12 +233,14 @@ class TestNodeSelect(unittest.TestCase):
         )
 
     def test_select_with_selector(self):
-        from AlgoTree.selectors import NameSelector
+        from AlgoTree.selectors import GlobSelector
         root = _make_tree()
         tree = Tree(root)
-        sel = NameSelector("a*")
+        sel = GlobSelector("a*")
         node_results = list(root.select(sel))
         tree_results = list(tree.select(sel))
+        # _make_tree() has nodes named 'a', 'a1', 'a2' — glob 'a*' must match all 3
+        self.assertEqual(len(node_results), 3)
         self.assertEqual(
             [n.name for n in node_results],
             [n.name for n in tree_results]
