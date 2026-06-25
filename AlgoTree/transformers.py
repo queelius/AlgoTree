@@ -1,508 +1,287 @@
 """
 Composable transformation system for trees.
 
-This module provides a clean, functional approach to tree transformations
-that can be composed using operators like >> and |.
+One function-style Transformer that composes with >>.  Factory functions
+return Transformer instances; they work on Node or Tree (duck-typed).
 """
 
-from typing import Any, Callable, Optional, Union, List, Dict, TypeVar, Generic
-from abc import ABC, abstractmethod
-from .tree import Tree
-from .node import Node
-from .selectors import Selector
+from typing import Any, Callable, Optional, Union, List, Dict, TypeVar
+
 from ._utils import make_predicate as _make_predicate_fn
 
 T = TypeVar('T')
-S = TypeVar('S')
 
 
-class Transformer(ABC, Generic[T, S]):
-    """
-    Base class for composable tree transformations.
+class Transformer:
+    """A composable tree operation: callable, composes with >>."""
 
-    Transformers can be composed using operators:
-    - >> or | for sequential composition (pipeline)
-    - & for parallel composition (apply both, merge results)
-    """
+    __slots__ = ('_fn', '_label')
 
-    @abstractmethod
-    def __call__(self, tree: T) -> S:
-        """Apply transformation to tree."""
-        pass
+    def __init__(self, fn: Callable[[Any], Any], label: str = 'transformer'):
+        self._fn = fn
+        self._label = label
 
-    def __rshift__(self, other: 'Transformer[S, Any]') -> 'Pipeline':
-        """Compose transformers with >> operator."""
-        return Pipeline(self, other)
+    def __call__(self, tree: Any) -> Any:
+        return self._fn(tree)
 
-    def __or__(self, other: 'Transformer[S, Any]') -> 'Pipeline':
-        """Alternative composition syntax with | operator."""
-        return Pipeline(self, other)
+    def __rshift__(self, other: 'Transformer') -> 'Transformer':
+        """Sequential composition: (a >> b)(x) == b(a(x))."""
+        nxt = other if isinstance(other, Transformer) else Transformer(
+            other, getattr(other, '__name__', 'fn')
+        )
+        label = f'{self._label} >> {nxt._label}'
+        # Capture self and nxt by value to avoid late-binding issues
+        _self = self
+        _nxt = nxt
 
-    def __and__(self, other: 'Transformer[T, S]') -> 'ParallelTransformer[T, S]':
-        """Parallel composition - apply both and merge."""
-        return ParallelTransformer(self, other)
+        def _composed(t):
+            return _nxt(_self(t))
 
-    def repeat(self, times: int) -> 'RepeatTransformer[T]':
-        """Apply transformer N times."""
-        return RepeatTransformer(self, times)
+        return Transformer(_composed, label)
 
-    def when(self, condition: Callable[[T], bool]) -> 'ConditionalTransformer[T, S]':
-        """Apply transformer only if condition is met."""
-        return ConditionalTransformer(self, condition)
+    def repeat(self, times: int) -> 'Transformer':
+        """Apply this transformer N times."""
+        _self = self
 
-    def debug(self, name: str = "", callback: Optional[Callable[[Any], None]] = None) -> 'DebugTransformer':
-        """Add debugging to transformer."""
-        return DebugTransformer(self, name, callback)
+        def _run(t):
+            for _ in range(times):
+                t = _self(t)
+            return t
 
+        return Transformer(_run, f'{self._label}.repeat({times})')
 
-# Tree -> Tree transformers (closed transformations)
-
-class TreeTransformer(Transformer[Tree, Tree]):
-    """Base class for tree-to-tree transformations."""
-    pass
-
-
-class MapTransformer(TreeTransformer):
-    """Map function over all nodes."""
-
-    def __init__(self, fn: Callable[[Node], Union[Node, Dict[str, Any], None]]):
-        self.fn = fn
-
-    def __call__(self, tree: Tree) -> Tree:
-        return tree.map(self.fn)
-
-    def __repr__(self) -> str:
-        return f"MapTransformer({self.fn})"
-
-
-class FilterTransformer(TreeTransformer):
-    """Filter nodes by predicate or selector."""
-
-    def __init__(self, predicate: Union[Selector, Callable[[Node], bool]]):
-        self.predicate = predicate
-
-    def __call__(self, tree: Tree) -> Tree:
-        return tree.filter(self.predicate)
-
-    def __repr__(self) -> str:
-        return f"FilterTransformer({self.predicate})"
-
-
-class PruneTransformer(TreeTransformer):
-    """Remove nodes matching selector."""
-
-    def __init__(self, selector: Union[Selector, str, Callable[[Node], bool]]):
-        self.selector = selector
-
-    def __call__(self, tree: Tree) -> Tree:
-        return tree.prune(self.selector)
-
-    def __repr__(self) -> str:
-        return f"PruneTransformer({self.selector})"
-
-
-class GraftTransformer(TreeTransformer):
-    """Add subtree to nodes matching selector."""
-
-    def __init__(
+    def when(
         self,
-        selector: Union[Selector, str, Callable[[Node], bool]],
-        subtree: Union[Node, Tree, Callable[[Node], Node]]
-    ):
-        self.selector = selector
-        self.subtree = subtree
+        condition: Callable[[Any], bool],
+        else_: Optional[Callable[[Any], Any]] = None
+    ) -> 'Transformer':
+        """Apply this transformer only when condition(tree) is true."""
+        _self = self
 
-    def __call__(self, tree: Tree) -> Tree:
-        if callable(self.subtree):
-            predicate = _make_predicate_fn(self.selector)
-            make_subtree = self.subtree
+        def _run(t):
+            if condition(t):
+                return _self(t)
+            return else_(t) if else_ is not None else t
 
-            def add_dynamic(node: Node) -> Node:
-                if predicate(node):
-                    return node.with_child(make_subtree(node))
-                return node
-            return Tree(tree.root.map(add_dynamic))
-        else:
-            return tree.graft(self.selector, self.subtree)
+        return Transformer(_run, f'{self._label}.when(...)')
 
     def __repr__(self) -> str:
-        return f"GraftTransformer({self.selector}, {self.subtree})"
+        return f'Transformer({self._label!r})'
 
 
-class FlattenTransformer(TreeTransformer):
-    """Flatten tree to specified depth."""
-
-    def __init__(self, max_depth: Optional[int] = None):
-        self.max_depth = max_depth
-
-    def __call__(self, tree: Tree) -> Tree:
-        return tree.flatten(self.max_depth)
-
-    def __repr__(self) -> str:
-        return f"FlattenTransformer(max_depth={self.max_depth})"
+# Lawful identity element for >>
+identity = Transformer(lambda t: t, 'identity')
 
 
-class NormalizeTransformer(TreeTransformer):
-    """Normalize tree structure (sort children, clean attributes)."""
+# ---------------------------------------------------------------------------
+# Internal helpers for normalize / annotate
+# ---------------------------------------------------------------------------
 
-    def __init__(
-        self,
-        sort_children: bool = True,
-        sort_key: Optional[Callable[[Node], Any]] = None,
-        clean_attrs: bool = False,
-        allowed_attrs: Optional[List[str]] = None
-    ):
-        self.sort_children = sort_children
-        self.sort_key = sort_key or (lambda n: n.name)
-        self.clean_attrs = clean_attrs
-        self.allowed_attrs = allowed_attrs
+def _normalize_node_factory(
+    sort_children: bool = True,
+    sort_key: Optional[Callable] = None,
+    clean_attrs: bool = False,
+    allowed_attrs: Optional[List[str]] = None
+) -> Callable:
+    from .node import Node
 
-    def __call__(self, tree: Tree) -> Tree:
-        def normalize_node(node: Node) -> Node:
-            # Clean attributes if needed
-            if self.clean_attrs:
-                if self.allowed_attrs:
-                    # Keep only allowed attributes
-                    new_attrs = {k: v for k, v in node.attrs.items() if k in self.allowed_attrs}
-                    node = Node(node.name, *node.children, attrs=new_attrs)
-                else:
-                    # Remove all attributes
-                    node = Node(node.name, *node.children)
+    _sort_key = sort_key if sort_key is not None else (lambda n: n.name)
 
-            # Sort children if needed
-            if self.sort_children and node.children:
-                sorted_children = sorted(node.children, key=self.sort_key)
-                node = node.with_children(*sorted_children)
-
-            return node
-
-        return Tree(tree.root.map(normalize_node))
-
-    def __repr__(self) -> str:
-        return f"NormalizeTransformer(sort={self.sort_children}, clean_attrs={self.clean_attrs})"
-
-
-class AnnotateTransformer(TreeTransformer):
-    """Add annotations to nodes."""
-
-    def __init__(
-        self,
-        selector: Optional[Union[Selector, str, Callable[[Node], bool]]] = None,
-        **annotations
-    ):
-        self.selector = selector
-        self.annotations = annotations
-
-    def __call__(self, tree: Tree) -> Tree:
-        predicate = _make_predicate_fn(self.selector) if self.selector is not None else None
-
-        def annotate_node(node: Node) -> Node:
-            if predicate is None or predicate(node):
-                computed_annotations = {
-                    key: value(node) if callable(value) else value
-                    for key, value in self.annotations.items()
-                }
-                return node.with_attrs(**computed_annotations)
-            return node
-
-        return Tree(tree.root.map(annotate_node))
-
-    def __repr__(self) -> str:
-        return f"AnnotateTransformer({self.selector}, {self.annotations})"
-
-
-# Tree -> Any transformers (open transformations)
-
-class Shaper(Transformer[Tree, T], Generic[T]):
-    """Base class for tree-to-any transformations."""
-    pass
-
-
-class ReduceShaper(Shaper[T]):
-    """Reduce tree to single value."""
-
-    def __init__(
-        self,
-        fn: Callable[[T, Node], T],
-        initial: T,
-        order: str = 'preorder'
-    ):
-        self.fn = fn
-        self.initial = initial
-        self.order = order
-
-    def __call__(self, tree: Tree) -> T:
-        return tree.reduce(self.fn, self.initial, self.order)
-
-    def __repr__(self) -> str:
-        return f"ReduceShaper({self.fn}, initial={self.initial})"
-
-
-class FoldShaper(Shaper[T]):
-    """Fold tree bottom-up."""
-
-    def __init__(self, fn: Callable[[Node, List[T]], T]):
-        self.fn = fn
-
-    def __call__(self, tree: Tree) -> T:
-        return tree.fold(self.fn)
-
-    def __repr__(self) -> str:
-        return f"FoldShaper({self.fn})"
-
-
-class ExtractShaper(Shaper[List[T]]):
-    """Extract values from nodes."""
-
-    def __init__(
-        self,
-        extractor: Callable[[Node], T],
-        selector: Optional[Union[Selector, str, Callable[[Node], bool]]] = None
-    ):
-        self.extractor = extractor
-        self.selector = selector
-
-    def __call__(self, tree: Tree) -> List[T]:
-        if self.selector:
-            nodes = tree.find_all(self.selector)
-        else:
-            nodes = tree.nodes()
-
-        return [self.extractor(node) for node in nodes]
-
-    def __repr__(self) -> str:
-        return f"ExtractShaper({self.extractor}, {self.selector})"
-
-
-class ToDictShaper(Shaper[Dict[str, Any]]):
-    """Convert tree to dictionary."""
-
-    def __init__(self, children_key: str = 'children'):
-        self.children_key = children_key
-
-    def __call__(self, tree: Tree) -> Dict[str, Any]:
-        return tree.to_dict(self.children_key)
-
-    def __repr__(self) -> str:
-        return f"ToDictShaper(children_key={self.children_key!r})"
-
-
-class ToPathsShaper(Shaper[List[str]]):
-    """Convert tree to list of paths."""
-
-    def __init__(self, delimiter: str = '/', to_leaves_only: bool = True):
-        self.delimiter = delimiter
-        self.to_leaves_only = to_leaves_only
-
-    def __call__(self, tree: Tree) -> List[str]:
-        return tree.paths(to_leaves_only=self.to_leaves_only, delimiter=self.delimiter)
-
-    def __repr__(self) -> str:
-        return f"ToPathsShaper(delimiter={self.delimiter!r})"
-
-
-# Composite transformers
-
-class Pipeline(Transformer[Any, Any]):
-    """Sequential composition of transformers."""
-
-    def __init__(self, *transformers: Transformer):
-        self.transformers = []
-        for t in transformers:
-            if isinstance(t, Pipeline):
-                # Flatten nested pipelines
-                self.transformers.extend(t.transformers)
+    def normalize_node(node: Node) -> Node:
+        # Clean attributes if needed
+        if clean_attrs:
+            if allowed_attrs:
+                new_attrs = {k: v for k, v in node.attrs.items() if k in allowed_attrs}
+                node = Node(node.name, *node.children, attrs=new_attrs)
             else:
-                self.transformers.append(t)
+                node = Node(node.name, *node.children)
 
-    def __call__(self, tree: Any) -> Any:
-        """Apply all transformations in sequence."""
-        result = tree
-        for transformer in self.transformers:
-            result = transformer(result)
-        return result
+        # Sort children if needed
+        if sort_children and node.children:
+            sorted_children = sorted(node.children, key=_sort_key)
+            node = node.with_children(*sorted_children)
 
-    def __rshift__(self, other: Transformer) -> 'Pipeline':
-        """Add transformer to pipeline."""
-        return Pipeline(*self.transformers, other)
+        return node
 
-    def __or__(self, other: Transformer) -> 'Pipeline':
-        """Add transformer to pipeline (alternative syntax)."""
-        return Pipeline(*self.transformers, other)
-
-    def partial(self, tree: Any, steps: int) -> Any:
-        """Apply only first N steps of pipeline."""
-        result = tree
-        for transformer in self.transformers[:steps]:
-            result = transformer(result)
-        return result
-
-    def __repr__(self) -> str:
-        return f"Pipeline({' >> '.join(repr(t) for t in self.transformers)})"
+    return normalize_node
 
 
-class ParallelTransformer(Transformer[T, S], Generic[T, S]):
-    """Apply transformers in parallel and merge results."""
+def _annotate_node_factory(
+    selector: Optional[Any],
+    annotations: Dict[str, Any]
+) -> Callable:
+    predicate = _make_predicate_fn(selector) if selector is not None else None
 
-    def __init__(self, *transformers: Transformer[T, Tree]):
-        self.transformers = transformers
+    def annotate_node(node):
+        if predicate is None or predicate(node):
+            computed = {
+                key: value(node) if callable(value) else value
+                for key, value in annotations.items()
+            }
+            return node.with_attrs(**computed)
+        return node
 
-    def __call__(self, tree: T) -> Tree:
-        """Apply all transformers and merge results."""
-        results = [t(tree) for t in self.transformers]
-
-        # Merge trees (simplified - could be more sophisticated)
-        if all(isinstance(r, Tree) for r in results):
-            # Merge by combining children
-            merged_root = results[0].root
-            for result in results[1:]:
-                for child in result.root.children:
-                    merged_root = merged_root.with_child(child)
-            return Tree(merged_root)
-
-        # Return first result if not all trees
-        return results[0]
-
-    def __repr__(self) -> str:
-        return f"Parallel({' & '.join(repr(t) for t in self.transformers)})"
+    return annotate_node
 
 
-class RepeatTransformer(Transformer[T, T], Generic[T]):
-    """Apply transformer multiple times."""
+# ---------------------------------------------------------------------------
+# Factory functions (return Transformer; duck-typed on Node or Tree)
+# ---------------------------------------------------------------------------
 
-    def __init__(self, transformer: Transformer[T, T], times: int):
-        self.transformer = transformer
-        self.times = times
-
-    def __call__(self, tree: T) -> T:
-        result = tree
-        for _ in range(self.times):
-            result = self.transformer(result)
-        return result
-
-    def __repr__(self) -> str:
-        return f"Repeat({repr(self.transformer)}, times={self.times})"
+def map_(fn: Callable) -> Transformer:
+    """Create a transformer that maps fn over all nodes."""
+    return Transformer(lambda t: t.map(fn), f'map_({getattr(fn, "__name__", "fn")})')
 
 
-class ConditionalTransformer(Transformer[T, Union[T, S]], Generic[T, S]):
-    """Apply transformer conditionally."""
-
-    def __init__(
-        self,
-        transformer: Transformer[T, S],
-        condition: Callable[[T], bool],
-        else_transformer: Optional[Transformer[T, S]] = None
-    ):
-        self.transformer = transformer
-        self.condition = condition
-        self.else_transformer = else_transformer
-
-    def __call__(self, tree: T) -> Union[T, S]:
-        if self.condition(tree):
-            return self.transformer(tree)
-        elif self.else_transformer:
-            return self.else_transformer(tree)
-        else:
-            return tree
-
-    def __repr__(self) -> str:
-        return f"Conditional({repr(self.transformer)}, if={self.condition})"
+def filter_(predicate: Callable) -> Transformer:
+    """Create a transformer that filters nodes by predicate or Selector."""
+    return Transformer(
+        lambda t: t.filter(predicate),
+        f'filter_({getattr(predicate, "__name__", "pred")})'
+    )
 
 
-class DebugTransformer(Transformer):
-    """Transformer wrapper for debugging."""
-
-    def __init__(
-        self,
-        transformer: Transformer,
-        name: str = "",
-        callback: Optional[Callable[[Any], None]] = None
-    ):
-        self.transformer = transformer
-        self.name = name
-        self.callback = callback or print
-
-    def __call__(self, tree: Any) -> Any:
-        if self.name:
-            self.callback(f"[{self.name}] Before: {tree}")
-
-        result = self.transformer(tree)
-
-        if self.name:
-            self.callback(f"[{self.name}] After: {result}")
-
-        return result
-
-    def __repr__(self) -> str:
-        return f"Debug({repr(self.transformer)}, name={self.name!r})"
-
-
-# Factory functions for common transformers
-
-def map_(fn: Callable[[Node], Union[Node, Dict[str, Any], None]]) -> MapTransformer:
-    """Create map transformer."""
-    return MapTransformer(fn)
-
-
-def filter_(predicate: Union[Selector, Callable[[Node], bool]]) -> FilterTransformer:
-    """Create filter transformer."""
-    return FilterTransformer(predicate)
-
-
-def prune(selector: Union[Selector, str, Callable[[Node], bool]]) -> PruneTransformer:
-    """Create prune transformer."""
-    return PruneTransformer(selector)
+def prune(selector: Any) -> Transformer:
+    """Create a transformer that removes nodes matching selector."""
+    return Transformer(
+        lambda t: t.prune(selector),
+        f'prune({getattr(selector, "__name__", repr(selector))})'
+    )
 
 
 def graft(
-    selector: Union[Selector, str, Callable[[Node], bool]],
-    subtree: Union[Node, Tree, Callable[[Node], Node]]
-) -> GraftTransformer:
-    """Create graft transformer."""
-    return GraftTransformer(selector, subtree)
+    selector: Any,
+    subtree: Any
+) -> Transformer:
+    """
+    Create a transformer that grafts subtree onto nodes matching selector.
+
+    If subtree is callable (and not a Node/Tree), it is treated as a
+    dynamic-subtree factory: each matching node receives a child produced
+    by subtree(node).
+    """
+    from .node import Node
+
+    if callable(subtree) and not isinstance(subtree, Node) and not hasattr(subtree, 'root'):
+        _pred = _make_predicate_fn(selector)
+        _make_subtree = subtree
+
+        def _dynamic_graft(t):
+            def add_dynamic(node):
+                if _pred(node):
+                    return node.with_child(_make_subtree(node))
+                return node
+
+            # For Tree, map via the Tree wrapper; for Node, map directly.
+            if hasattr(t, 'root'):
+                from .tree import Tree
+                return Tree(t.root.map(add_dynamic))
+            else:
+                return t.map(add_dynamic)
+
+        return Transformer(_dynamic_graft, f'graft(..., dynamic)')
+    else:
+        return Transformer(
+            lambda t: t.graft(selector, subtree),
+            f'graft(..., {getattr(subtree, "name", repr(subtree))})'
+        )
 
 
-def flatten(max_depth: Optional[int] = None) -> FlattenTransformer:
-    """Create flatten transformer."""
-    return FlattenTransformer(max_depth)
+def flatten(max_depth: Optional[int] = None) -> Transformer:
+    """Create a transformer that flattens the tree to max_depth."""
+    return Transformer(
+        lambda t: t.flatten(max_depth),
+        f'flatten(max_depth={max_depth!r})'
+    )
 
 
-def normalize(**kwargs) -> NormalizeTransformer:
-    """Create normalize transformer."""
-    return NormalizeTransformer(**kwargs)
+def normalize(
+    sort_children: bool = True,
+    sort_key: Optional[Callable] = None,
+    clean_attrs: bool = False,
+    allowed_attrs: Optional[List[str]] = None
+) -> Transformer:
+    """
+    Create a transformer that normalizes tree structure.
+
+    Options:
+        sort_children: Sort children alphabetically by name (default True).
+        sort_key: Custom sort key callable (default: lambda n: n.name).
+        clean_attrs: Remove attributes not in allowed_attrs (default False).
+        allowed_attrs: Attribute names to keep when clean_attrs=True.
+    """
+    _fn = _normalize_node_factory(
+        sort_children=sort_children,
+        sort_key=sort_key,
+        clean_attrs=clean_attrs,
+        allowed_attrs=allowed_attrs,
+    )
+    return Transformer(lambda t: t.map(_fn), 'normalize')
 
 
 def annotate(
-    selector: Optional[Union[Selector, str, Callable[[Node], bool]]] = None,
-    **annotations
-) -> AnnotateTransformer:
-    """Create annotate transformer."""
-    return AnnotateTransformer(selector, **annotations)
+    selector: Optional[Any] = None,
+    **annotations: Any
+) -> Transformer:
+    """
+    Create a transformer that adds annotations to nodes.
+
+    Args:
+        selector: If provided, only annotate matching nodes.
+        **annotations: Key-value pairs; values may be callables node -> val.
+    """
+    _fn = _annotate_node_factory(selector, annotations)
+    return Transformer(lambda t: t.map(_fn), 'annotate')
 
 
-def reduce_(fn: Callable[[T, Node], T], initial: T, order: str = 'preorder') -> ReduceShaper[T]:
-    """Create reduce shaper."""
-    return ReduceShaper(fn, initial, order)
+def reduce_(fn: Callable, initial: Any, order: str = 'preorder') -> Transformer:
+    """Create a transformer that reduces the tree to a single value."""
+    return Transformer(
+        lambda t: t.reduce(fn, initial, order),
+        f'reduce_({getattr(fn, "__name__", "fn")}, order={order!r})'
+    )
 
 
-def fold(fn: Callable[[Node, List[T]], T]) -> FoldShaper[T]:
-    """Create fold shaper."""
-    return FoldShaper(fn)
+def fold(fn: Callable) -> Transformer:
+    """Create a transformer that folds the tree bottom-up."""
+    return Transformer(
+        lambda t: t.fold(fn),
+        f'fold({getattr(fn, "__name__", "fn")})'
+    )
 
 
 def extract(
-    extractor: Callable[[Node], T],
-    selector: Optional[Union[Selector, str, Callable[[Node], bool]]] = None
-) -> ExtractShaper[T]:
-    """Create extract shaper."""
-    return ExtractShaper(extractor, selector)
+    extractor: Callable,
+    selector: Optional[Any] = None
+) -> Transformer:
+    """
+    Create a transformer that extracts values from nodes.
+
+    Returns a list of extractor(node) for each matching node.
+    """
+    if selector is not None:
+        return Transformer(
+            lambda t: [extractor(n) for n in t.find_all(selector)],
+            f'extract({getattr(extractor, "__name__", "fn")}, sel)'
+        )
+    else:
+        return Transformer(
+            lambda t: [extractor(n) for n in t.nodes()],
+            f'extract({getattr(extractor, "__name__", "fn")})'
+        )
 
 
-def to_dict(children_key: str = 'children') -> ToDictShaper:
-    """Create to-dict shaper."""
-    return ToDictShaper(children_key)
+def to_dict(children_key: str = 'children') -> Transformer:
+    """Create a transformer that converts the tree to a nested dict."""
+    return Transformer(
+        lambda t: t.to_dict(children_key),
+        f'to_dict(children_key={children_key!r})'
+    )
 
 
-def to_paths(delimiter: str = '/', to_leaves_only: bool = True) -> ToPathsShaper:
-    """Create to-paths shaper."""
-    return ToPathsShaper(delimiter, to_leaves_only)
+def to_paths(delimiter: str = '/', to_leaves_only: bool = True) -> Transformer:
+    """Create a transformer that returns all paths in the tree."""
+    return Transformer(
+        lambda t: t.paths(to_leaves_only=to_leaves_only, delimiter=delimiter),
+        f'to_paths(delimiter={delimiter!r})'
+    )

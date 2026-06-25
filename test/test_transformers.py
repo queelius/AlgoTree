@@ -3,18 +3,14 @@ from AlgoTree.node import Node
 from AlgoTree.tree import Tree
 from AlgoTree.selectors import name, attrs, leaf
 from AlgoTree.transformers import (
-    Transformer, TreeTransformer,
-    MapTransformer, FilterTransformer, PruneTransformer,
-    GraftTransformer, FlattenTransformer, NormalizeTransformer, AnnotateTransformer,
-    ReduceShaper, FoldShaper, ExtractShaper, ToDictShaper, ToPathsShaper,
-    Pipeline, ParallelTransformer, RepeatTransformer, ConditionalTransformer, DebugTransformer,
+    Transformer, identity,
     map_, filter_, prune, graft, flatten, normalize, annotate,
     reduce_, fold, extract, to_dict, to_paths
 )
 
 
 class TestMapTransformer(unittest.TestCase):
-    """Test MapTransformer."""
+    """Test map_ factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -41,7 +37,7 @@ class TestMapTransformer(unittest.TestCase):
 
 
 class TestFilterTransformer(unittest.TestCase):
-    """Test FilterTransformer."""
+    """Test filter_ factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -69,7 +65,7 @@ class TestFilterTransformer(unittest.TestCase):
 
 
 class TestPruneTransformer(unittest.TestCase):
-    """Test PruneTransformer."""
+    """Test prune factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -90,7 +86,7 @@ class TestPruneTransformer(unittest.TestCase):
 
 
 class TestGraftTransformer(unittest.TestCase):
-    """Test GraftTransformer."""
+    """Test graft factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -123,7 +119,7 @@ class TestGraftTransformer(unittest.TestCase):
 
 
 class TestFlattenTransformer(unittest.TestCase):
-    """Test FlattenTransformer."""
+    """Test flatten factory."""
 
     def test_flatten_with_depth(self):
         """Test flattening with max depth."""
@@ -157,7 +153,7 @@ class TestFlattenTransformer(unittest.TestCase):
 
 
 class TestNormalizeTransformer(unittest.TestCase):
-    """Test NormalizeTransformer."""
+    """Test normalize factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -202,7 +198,7 @@ class TestNormalizeTransformer(unittest.TestCase):
 
 
 class TestAnnotateTransformer(unittest.TestCase):
-    """Test AnnotateTransformer."""
+    """Test annotate factory."""
 
     def setUp(self):
         """Set up test tree."""
@@ -248,7 +244,7 @@ class TestShapers(unittest.TestCase):
         ))
 
     def test_reduce_shaper(self):
-        """Test reduce shaper."""
+        """Test reduce_ transformer."""
         shaper = reduce_(
             lambda acc, node: acc + node.get("value", 0),
             initial=0
@@ -257,7 +253,7 @@ class TestShapers(unittest.TestCase):
         self.assertEqual(result, 6)  # 1 + 2 + 3
 
     def test_fold_shaper(self):
-        """Test fold shaper."""
+        """Test fold transformer."""
         shaper = fold(
             lambda node, child_results:
                 node.get("value", 0) + sum(child_results)
@@ -266,7 +262,7 @@ class TestShapers(unittest.TestCase):
         self.assertEqual(result, 6)
 
     def test_extract_shaper(self):
-        """Test extract shaper."""
+        """Test extract transformer."""
         shaper = extract(lambda n: n.name)
         result = shaper(self.tree)
         self.assertEqual(set(result), {"root", "a", "b", "c"})
@@ -277,7 +273,7 @@ class TestShapers(unittest.TestCase):
         self.assertEqual(set(result), {1, 2, 3})
 
     def test_to_dict_shaper(self):
-        """Test to-dict shaper."""
+        """Test to_dict transformer."""
         shaper = to_dict()
         result = shaper(self.tree)
 
@@ -285,7 +281,7 @@ class TestShapers(unittest.TestCase):
         self.assertEqual(len(result["children"]), 3)
 
     def test_to_paths_shaper(self):
-        """Test to-paths shaper."""
+        """Test to_paths transformer."""
         shaper = to_paths()
         result = shaper(self.tree)
 
@@ -304,8 +300,8 @@ class TestShapers(unittest.TestCase):
             self.assertNotIn("/", path)
 
 
-class TestPipeline(unittest.TestCase):
-    """Test Pipeline transformer."""
+class TestComposition(unittest.TestCase):
+    """Test >> composition operator."""
 
     def setUp(self):
         """Set up test tree."""
@@ -316,7 +312,7 @@ class TestPipeline(unittest.TestCase):
         ))
 
     def test_pipeline_basic(self):
-        """Test basic pipeline."""
+        """Test basic >> composition."""
         pipeline = map_(lambda n: {"value": n.get("value", 0) * 2}) >> \
                    filter_(lambda n: n.get("value", 0) > 2)
 
@@ -326,7 +322,7 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(len(result.root.children), 2)
 
     def test_pipeline_with_shaper(self):
-        """Test pipeline ending with shaper."""
+        """Test >> composition ending with shaper."""
         # Note: filter preserves ancestors (root), so extract gets root's value (None) too
         pipeline = filter_(lambda n: n.get("value", 0) > 1) >> \
                    extract(lambda n: n.get("value"))
@@ -336,35 +332,28 @@ class TestPipeline(unittest.TestCase):
         values = {v for v in result if v is not None}
         self.assertEqual(values, {2, 3})
 
-    def test_pipeline_or_operator(self):
-        """Test pipeline with | operator."""
-        pipeline = map_(lambda n: {"doubled": True}) | \
-                   annotate(marked=True)
+    def test_rshift_operator(self):
+        """Test >> operator for composition."""
+        t1 = map_(lambda n: {"value": n.get("value", 0) * 2})
+        t2 = filter_(lambda n: n.get("value", 0) > 2)
 
+        pipeline = t1 >> t2
         result = pipeline(self.tree)
-        self.assertTrue(result.root.get("doubled"))
-        self.assertTrue(result.root.get("marked"))
+
+        # setUp has a=1, b=2, c=3; after doubling: a=2, b=4, c=6
+        # After filter (>2): b=4 and c=6 both pass -> 2 children
+        self.assertEqual(len(result.root.children), 2)
+
+    def test_rshift_is_transformer(self):
+        """Test that >> returns a Transformer instance."""
+        t1 = map_(lambda n: n)
+        t2 = filter_(lambda n: True)
+        composed = t1 >> t2
+        self.assertIsInstance(composed, Transformer)
 
 
-class TestParallelTransformer(unittest.TestCase):
-    """Test ParallelTransformer."""
-
-    def test_parallel_execution(self):
-        """Test parallel transformer execution."""
-        tree = Tree(Node("root"))
-
-        parallel = ParallelTransformer(
-            graft("root", Node("from_t1")),
-            graft("root", Node("from_t2"))
-        )
-
-        result = parallel(tree)
-        # Both transformers should have added children
-        self.assertGreaterEqual(len(result.root.children), 1)
-
-
-class TestRepeatTransformer(unittest.TestCase):
-    """Test RepeatTransformer."""
+class TestRepeat(unittest.TestCase):
+    """Test .repeat() method."""
 
     def test_repeat(self):
         """Test repeating transformer."""
@@ -377,12 +366,17 @@ class TestRepeatTransformer(unittest.TestCase):
         # After 3 repeats: 1 * 2 * 2 * 2 = 8
         self.assertEqual(result.root.get("value"), 8)
 
+    def test_repeat_returns_transformer(self):
+        """Test that .repeat() returns a Transformer."""
+        t = map_(lambda n: n)
+        self.assertIsInstance(t.repeat(2), Transformer)
 
-class TestConditionalTransformer(unittest.TestCase):
-    """Test ConditionalTransformer."""
 
-    def test_conditional_when_true(self):
-        """Test conditional when condition is true."""
+class TestWhen(unittest.TestCase):
+    """Test .when() method."""
+
+    def test_when_true(self):
+        """Test when condition is true."""
         tree = Tree(Node("root", attrs={"value": 10}))
 
         transformer = map_(lambda n: {"value": 999})
@@ -391,8 +385,8 @@ class TestConditionalTransformer(unittest.TestCase):
         result = conditional(tree)
         self.assertEqual(result.root.get("value"), 999)
 
-    def test_conditional_when_false(self):
-        """Test conditional when condition is false."""
+    def test_when_false(self):
+        """Test when condition is false."""
         tree = Tree(Node("root", attrs={"value": 3}))
 
         transformer = map_(lambda n: {"value": 999})
@@ -401,87 +395,52 @@ class TestConditionalTransformer(unittest.TestCase):
         result = conditional(tree)
         self.assertEqual(result.root.get("value"), 3)  # Unchanged
 
-
-class TestDebugTransformer(unittest.TestCase):
-    """Test DebugTransformer."""
-
-    def test_debug_transformer(self):
-        """Test debug transformer with callback."""
-        tree = Tree(Node("root"))
-        messages = []
-
-        transformer = map_(lambda n: {"debugged": True})
-        debug_transformer = transformer.debug(
-            name="test",
-            callback=lambda msg: messages.append(msg)
-        )
-
-        result = debug_transformer(tree)
-
-        self.assertTrue(result.root.get("debugged"))
-        self.assertEqual(len(messages), 2)  # Before and after
+    def test_when_returns_transformer(self):
+        """Test that .when() returns a Transformer."""
+        t = map_(lambda n: n)
+        self.assertIsInstance(t.when(lambda _: True), Transformer)
 
 
-class TestTransformerComposition(unittest.TestCase):
-    """Test transformer composition operators."""
+class TestIdentity(unittest.TestCase):
+    """Test the identity transformer."""
 
     def setUp(self):
-        """Set up test tree."""
         self.tree = Tree(Node("root",
             Node("a", attrs={"value": 1}),
-            Node("b", attrs={"value": 2})
         ))
 
-    def test_rshift_operator(self):
-        """Test >> operator for composition."""
-        t1 = map_(lambda n: {"value": n.get("value", 0) * 2})
-        t2 = filter_(lambda n: n.get("value", 0) > 2)
+    def test_identity_is_noop(self):
+        """identity(tree) == tree."""
+        result = identity(self.tree)
+        self.assertIs(result, self.tree)
 
-        pipeline = t1 >> t2
-        result = pipeline(self.tree)
+    def test_identity_left_unit(self):
+        """(identity >> t)(x) behaves as t(x)."""
+        t = map_(lambda n: {"value": n.get("value", 0) * 2})
+        composed = identity >> t
+        self.assertEqual(composed(self.tree).root.children[0].get("value"),
+                         t(self.tree).root.children[0].get("value"))
 
-        # After doubling: a=2, b=4
-        # After filter: only b (4 > 2)
-        self.assertEqual(len(result.root.children), 1)
-
-    def test_or_operator(self):
-        """Test | operator for composition."""
-        t1 = map_(lambda n: {"doubled": True})
-        t2 = annotate(marked=True)
-
-        pipeline = t1 | t2
-        result = pipeline(self.tree)
-
-        self.assertTrue(result.root.get("doubled"))
-        self.assertTrue(result.root.get("marked"))
-
-    def test_and_operator(self):
-        """Test & operator for parallel composition."""
-        t1 = annotate(from_t1=True)
-        t2 = annotate(from_t2=True)
-
-        parallel = t1 & t2
-        result = parallel(self.tree)
-
-        # Both should be applied (parallel merge)
-        self.assertIsInstance(result, Tree)
+    def test_identity_right_unit(self):
+        """(t >> identity)(x) behaves as t(x)."""
+        t = map_(lambda n: {"value": n.get("value", 0) * 2})
+        composed = t >> identity
+        self.assertEqual(composed(self.tree).root.children[0].get("value"),
+                         t(self.tree).root.children[0].get("value"))
 
 
-class TestTransformerRepresentations(unittest.TestCase):
+class TestTransformerRepr(unittest.TestCase):
     """Test transformer string representations."""
 
-    def test_map_repr(self):
-        """Test MapTransformer repr."""
-        transformer = map_(lambda n: n)
-        repr_str = repr(transformer)
-        self.assertIn("MapTransformer", repr_str)
+    def test_transformer_repr(self):
+        """Test that Transformer repr includes label."""
+        t = map_(lambda n: n)
+        self.assertIn("Transformer", repr(t))
 
-    def test_pipeline_repr(self):
-        """Test Pipeline repr."""
-        pipeline = map_(lambda n: n) >> filter_(lambda n: True)
-        repr_str = repr(pipeline)
-        self.assertIn("Pipeline", repr_str)
-        self.assertIn(">>", repr_str)
+    def test_composed_repr(self):
+        """Test that >> repr includes >>."""
+        composed = map_(lambda n: n) >> filter_(lambda n: True)
+        self.assertIn(">>", repr(composed))
 
 
 if __name__ == "__main__":

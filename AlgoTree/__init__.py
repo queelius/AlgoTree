@@ -38,14 +38,7 @@ from .selectors import (
 
 # Transformers for tree manipulation
 from .transformers import (
-    Transformer,
-    # Tree -> Tree transformers
-    TreeTransformer, MapTransformer, FilterTransformer, PruneTransformer,
-    GraftTransformer, FlattenTransformer, NormalizeTransformer, AnnotateTransformer,
-    # Tree -> Any transformers (shapers)
-    Shaper, ReduceShaper, FoldShaper, ExtractShaper, ToDictShaper, ToPathsShaper,
-    # Composite transformers
-    Pipeline, ParallelTransformer, RepeatTransformer, ConditionalTransformer, DebugTransformer,
+    Transformer, identity,
     # Factory functions
     map_, filter_, prune, graft, flatten, normalize, annotate,
     reduce_, fold, extract, to_dict, to_paths
@@ -104,11 +97,7 @@ __all__ = [
     'name', 'glob', 'regex', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'none_', 'parse',
 
     # Transformers
-    'Transformer',
-    'TreeTransformer', 'MapTransformer', 'FilterTransformer', 'PruneTransformer',
-    'GraftTransformer', 'FlattenTransformer', 'NormalizeTransformer', 'AnnotateTransformer',
-    'Shaper', 'ReduceShaper', 'FoldShaper', 'ExtractShaper', 'ToDictShaper', 'ToPathsShaper',
-    'Pipeline', 'ParallelTransformer', 'RepeatTransformer', 'ConditionalTransformer', 'DebugTransformer',
+    'Transformer', 'identity',
     'map_', 'filter_', 'prune', 'graft', 'flatten', 'normalize', 'annotate',
     'reduce_', 'fold', 'extract', 'to_dict', 'to_paths',
 
