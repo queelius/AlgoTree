@@ -163,15 +163,7 @@ def _to_mermaid(
     **_opts: Any,
 ) -> str:
     """Render *node* as a Mermaid graph diagram."""
-    shapes = {
-        "round":   ("(", ")"),
-        "square":  ("[", "]"),
-        "circle":  ("((", "))"),
-        "rhombus": ("{", "}"),
-        "stadium": ("([", "])"),
-    }
-    left, right = shapes.get(node_shape, shapes["round"])
-
+    # node_shape is reserved for future styling; labels always use quoted ["..."] syntax.
     lines: List[str] = [f"graph {direction}"]
 
     # Pre-order traversal to assign stable IDs and emit declarations + edges.

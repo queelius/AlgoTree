@@ -72,8 +72,6 @@ class TreeExporter:
             return _render.render(node, "graphviz", name=name)
 
         # Legacy path: callbacks requested – build DOT with extra attributes.
-        from ._utils import make_predicate as _mp  # noqa: F401 (import guard only)
-        from . import render as _r
         from .render import _dot_escape
 
         lines = [f'digraph "{_dot_escape(name)}" {{']
@@ -89,7 +87,7 @@ class TreeExporter:
             counter[0] += 1
 
             label = _dot_escape(n.name)
-            attrs: Dict[str, str] = {f'label': f'"{label}"'}
+            attrs: Dict[str, str] = {"label": f'"{label}"'}
 
             if node_attr:
                 custom = node_attr(n)

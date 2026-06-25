@@ -29,6 +29,10 @@ class TestTreePrettyPrinter(unittest.TestCase):
         )
         self.assertEqual(out, expected_output, msg="Tree not displayed correctly")
 
+    def test_pretty_tree_consistent_with_PrettyTree(self):
+        """pretty_tree(node) must equal PrettyTree()(node) for all calls."""
+        self.assertEqual(pretty_tree(self.root), PrettyTree()(self.root))
+
     def test_mark_nodes(self):
         printer = PrettyTree()
         out = printer(self.root, mark=["child1", "child2.1"], markers=["(?)"])

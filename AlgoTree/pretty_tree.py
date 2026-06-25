@@ -113,18 +113,15 @@ class PrettyTree:
 
 def pretty_tree(node, **kwargs) -> str:
     """
-    Render a tree as a Unicode box-drawing string.
+    Render a tree using :class:`PrettyTree`.
 
-    Delegates to ``render(node, 'unicode')`` for the common case (no keyword
-    arguments).  When keyword arguments are supplied they are forwarded to
-    :class:`PrettyTree` so that the marker/indent features still work.
+    Always delegates to ``PrettyTree()(node, **kwargs)`` so behavior is
+    consistent whether or not keyword arguments are supplied.  Calling
+    ``pretty_tree(node)`` is therefore always equivalent to
+    ``PrettyTree()(node)``.
 
     :param node: Root node of the tree.
-    :param kwargs: Key-word arguments forwarded to :class:`PrettyTree` when
-        present.  If empty, the call is equivalent to ``node.render('unicode')``.
+    :param kwargs: Key-word arguments forwarded to :class:`PrettyTree.__call__`.
     :return: A string representation of the tree.
     """
-    if not kwargs:
-        from .render import render as _render
-        return _render(node, "unicode")
     return PrettyTree()(node, **kwargs)
