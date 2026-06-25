@@ -88,35 +88,39 @@ class TreeDSL:
         if not parsed_lines:
             raise ValueError("Empty tree")
 
-        # Build tree using a stack-based approach (same as indent parser)
-        def build_tree(lines, start_idx, parent_indent):
-            """Recursively build tree from lines starting at start_idx."""
-            if start_idx >= len(lines):
-                return None, start_idx
-
-            indent, name, attrs = lines[start_idx]
-
-            # Collect all children (nodes with greater indent until we hit same/lower indent)
-            children = []
-            idx = start_idx + 1
-
-            while idx < len(lines):
-                child_indent = lines[idx][0]
-
-                if child_indent <= indent:
-                    # Same or lower indent - not our child
-                    break
-
-                # This is a child - recursively build it
-                child_node, idx = build_tree(lines, idx, indent)
-                if child_node:
-                    children.append(child_node)
-
-            node = Node(name, *children, attrs=attrs)
-            return node, idx
-
-        root, _ = build_tree(parsed_lines, 0, -1)
+        root, _ = TreeDSL._assemble(parsed_lines, 0)
         return root
+
+    @staticmethod
+    def _assemble(lines: list, start_idx: int) -> tuple:
+        """
+        Recursively assemble a Node tree from a flat list of (indent, name, attrs)
+        tuples produced by either _parse_visual or _parse_indent.
+
+        Args:
+            lines: List of (indent, name, attrs) tuples.
+            start_idx: Index of the current root in *lines*.
+
+        Returns:
+            Tuple of (Node, next_idx) where next_idx is the index of the first
+            line that was NOT consumed (i.e., belongs to a sibling or ancestor).
+        """
+        if start_idx >= len(lines):
+            return None, start_idx
+
+        indent, name, attrs = lines[start_idx]
+        children = []
+        idx = start_idx + 1
+
+        while idx < len(lines):
+            child_indent = lines[idx][0]
+            if child_indent <= indent:
+                break
+            child_node, idx = TreeDSL._assemble(lines, idx)
+            if child_node is not None:
+                children.append(child_node)
+
+        return Node(name, *children, attrs=attrs), idx
 
     @staticmethod
     def _parse_indent(text: str) -> Node:
@@ -163,34 +167,7 @@ class TreeDSL:
         if not parsed_lines:
             raise ValueError("Empty tree")
 
-        # Build tree using a stack-based approach
-        def build_tree(lines, start_idx, parent_indent):
-            """Recursively build tree from lines starting at start_idx."""
-            if start_idx >= len(lines):
-                return None, start_idx
-
-            indent, name, attrs = lines[start_idx]
-
-            # Collect all children (nodes with greater indent until we hit same/lower indent)
-            children = []
-            idx = start_idx + 1
-
-            while idx < len(lines):
-                child_indent = lines[idx][0]
-
-                if child_indent <= indent:
-                    # Same or lower indent - not our child
-                    break
-
-                # This is a child - recursively build it
-                child_node, idx = build_tree(lines, idx, indent)
-                if child_node:
-                    children.append(child_node)
-
-            node = Node(name, *children, attrs=attrs)
-            return node, idx
-
-        root, _ = build_tree(parsed_lines, 0, -1)
+        root, _ = TreeDSL._assemble(parsed_lines, 0)
         return root
 
     @staticmethod

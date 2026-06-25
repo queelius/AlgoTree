@@ -13,7 +13,6 @@ Core components:
 - Tree (forwarder): Thin wrapper over Node; preserved for back-compat
 - Selectors: Composable pattern matching (work with bare Node or Tree)
 - Transformers: Composable tree transformations
-- Builders: Fluent API for tree construction
 """
 
 # Core classes
@@ -50,12 +49,6 @@ from .transformers import (
     # Factory functions
     map_, filter_, prune, graft, flatten, normalize, annotate,
     reduce_, fold, extract, to_dict, to_paths
-)
-
-# Builders for tree construction
-from .builders import (
-    TreeBuilder, FluentTree, TreeContext, QuickBuilder,
-    tree, branch, leaf as leaf_node  # renamed to avoid collision with selectors.leaf
 )
 
 # Render engine (Theme, registry, fold-based text tree)
@@ -118,10 +111,6 @@ __all__ = [
     'Pipeline', 'ParallelTransformer', 'RepeatTransformer', 'ConditionalTransformer', 'DebugTransformer',
     'map_', 'filter_', 'prune', 'graft', 'flatten', 'normalize', 'annotate',
     'reduce_', 'fold', 'extract', 'to_dict', 'to_paths',
-
-    # Builders
-    'TreeBuilder', 'FluentTree', 'TreeContext', 'QuickBuilder',
-    'tree', 'branch', 'leaf_node',
 
     # Render engine
     'render',           # the module
