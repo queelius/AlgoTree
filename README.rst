@@ -65,7 +65,7 @@ Building Trees
 
 .. code-block:: python
 
-   from AlgoTree import Node, node, Tree, TreeBuilder
+   from AlgoTree import Node, node
 
    # Simple construction with Node
    tree = Node("root",
@@ -83,15 +83,12 @@ Building Trees
        )
    )
 
-   # Fluent builder API
-   tree = (TreeBuilder("root", type="container")
-       .child("src")
-           .child("main.py", type="file", size=1024)
-           .child("utils.py", type="file", size=512)
-           .up()
-       .child("docs")
-           .child("README.md", type="file")
-       .build())
+   # From paths
+   tree = Node.from_paths([
+       "root/src/main.py",
+       "root/src/utils.py",
+       "root/docs/README.md",
+   ])
 
 Immutable Transformations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -500,56 +497,65 @@ Transformers provide composable tree transformations.
    # Debug intermediate results
    debug = pipeline.debug("after_filter")
 
-Builders
-^^^^^^^^
+Tree Construction
+^^^^^^^^^^^^^^^^^
 
-Builders provide fluent APIs for tree construction.
+AlgoTree provides several ways to construct trees (the ``builders.py`` module was
+removed in v2.0; use these approaches instead).
 
-**TreeBuilder:**
-
-.. code-block:: python
-
-   from AlgoTree import TreeBuilder
-
-   tree = (TreeBuilder("root", type="container")
-       .attr(version="1.0")
-       .child("src", type="directory")
-           .child("main.py", type="file", size=1024)
-           .child("utils.py", type="file", size=512)
-           .up()
-       .child("tests", type="directory")
-           .child("test_main.py", type="file")
-       .build())
-
-**DSL-style functions:**
+**Direct construction:**
 
 .. code-block:: python
 
-   from AlgoTree import tree, branch, leaf
+   from AlgoTree import Node, node
 
-   my_tree = tree("root",
-       tree("child1",
-           leaf("grandchild1", value=1),
-           leaf("grandchild2", value=2)
+   tree = Node("root", attrs={"type": "container", "version": "1.0"},
+       *(Node(name, attrs={"type": "directory"})
+         for name in ("src", "tests")))
+
+   # Or with the node() convenience function
+   my_tree = node("root",
+       node("child1",
+           node("grandchild1", value=1),
+           node("grandchild2", value=2)
        ),
-       tree("child2",
-           leaf("grandchild3", value=3)
+       node("child2",
+           node("grandchild3", value=3)
        )
-   ).build()
+   )
 
-**QuickBuilder (path-based):**
+**Path-based construction:**
 
 .. code-block:: python
 
-   from AlgoTree import QuickBuilder
+   from AlgoTree import Node
 
-   tree = (QuickBuilder()
-       .root("project")
-       .add("src/main.py", type="file", size=1024)
-       .add("src/utils.py", type="file", size=512)
-       .add("tests/test_main.py", type="file")
-       .add("docs/README.md", type="file")
-       .build())
+   tree = Node.from_paths([
+       "project/src/main.py",
+       "project/src/utils.py",
+       "project/tests/test_main.py",
+       "project/docs/README.md",
+   ])
+
+**From a dict:**
+
+.. code-block:: python
+
+   from AlgoTree import Node
+
+   tree = Node.from_dict({
+       "name": "root",
+       "type": "container",
+       "children": [
+           {"name": "src", "children": [
+               {"name": "main.py", "type": "file", "size": 1024},
+               {"name": "utils.py", "type": "file", "size": 512}
+           ]},
+           {"name": "tests", "children": [
+               {"name": "test_main.py", "type": "file"}
+           ]}
+       ]
+   })
 
 Examples
 --------
@@ -559,21 +565,21 @@ File System Tree
 
 .. code-block:: python
 
-   from AlgoTree import TreeBuilder, name, type_, export_tree
+   from AlgoTree import Node, node, name, export_tree
 
    # Build file system tree
-   fs = (TreeBuilder("home")
-       .child("user")
-           .child("documents", type="dir")
-               .child("report.pdf", type="file", size=1024)
-               .child("notes.txt", type="file", size=256)
-               .up()
-           .child("code", type="dir")
-               .child("main.py", type="file", size=512)
-               .child("test.py", type="file", size=128)
-               .up()
-           .up()
-       .build())
+   fs = node("home",
+       node("user",
+           node("documents", type="dir",
+               *[node("report.pdf", type="file", size=1024),
+                 node("notes.txt", type="file", size=256)]
+           ),
+           node("code", type="dir",
+               *[node("main.py", type="file", size=512),
+                 node("test.py", type="file", size=128)]
+           )
+       )
+   )
 
    # Find all Python files
    py_files = fs.find_all(name("*.py"))
@@ -758,49 +764,36 @@ AlgoTree v2.0 is a complete redesign. Here's how to migrate:
 
 .. code-block:: python
 
-   from AlgoTree import TreeBuilder
-
-   # v1.x - mutable operations
-   tree = (TreeBuilder()
-       .root("company")
-       .child("engineering")
-           .child("frontend")
-           .sibling("backend")
-           .up()
-       .sibling("sales")
-       .build())
-
-   # Mutable modification
-   tree.add_child(Node("marketing"))
+   # v1.x - mutable operations (no longer works in v2.0+)
+   # TreeBuilder, FlatForest, FlatForestNode, TreeNode are all removed.
 
 **New v2.0 API:**
 
 .. code-block:: python
 
-   from AlgoTree import TreeBuilder, Node
+   from AlgoTree import node, Node, Tree
 
-   # v2.0 - fluent builder
-   tree = (TreeBuilder("company")
-       .child("engineering")
-           .child("frontend")
-           .child("backend")
-           .up()
-       .child("sales")
-       .build())
+   # v2.0 - functional construction
+   tree = node("company",
+       node("engineering",
+           node("frontend"),
+           node("backend")
+       ),
+       node("sales")
+   )
 
    # Immutable operations
-   tree2 = Tree(tree.root.with_child(Node("marketing")))
+   tree2 = tree.with_child(Node("marketing"))
 
 **Key changes:**
 
-1. **TreeBuilder** now takes root name in constructor, no ``.root()`` method
-2. **No ``.sibling()`` method** - use ``.up()`` then ``.child()``
-3. **All operations are immutable** - return new trees instead of mutating
-4. **Node is immutable** - use ``.with_*()`` methods instead of property setters
-5. **No FlatForest, FlatForestNode, TreeNode** - removed entirely
-6. **Tree wrapper** provides functional API (map, filter, reduce, fold)
-7. **Selectors** replace string-based pattern matching
-8. **Transformers** provide composable pipelines
+1. **TreeBuilder removed** - use ``node()``, ``Node()``, ``Node.from_dict()``, ``Node.from_paths()``, or ``parse_tree()``
+2. **All operations are immutable** - return new trees instead of mutating
+3. **Node is immutable** - use ``.with_*()`` methods instead of property setters
+4. **No FlatForest, FlatForestNode, TreeNode** - removed entirely
+5. **Tree wrapper** provides functional API (map, filter, reduce, fold)
+6. **Selectors** replace string-based pattern matching
+7. **Transformers** provide composable pipelines
 
 Advanced Features
 -----------------

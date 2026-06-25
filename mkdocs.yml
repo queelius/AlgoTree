@@ -65,7 +65,7 @@ nav:
     - Tree API: guide/tree.md
     - Selectors: guide/selectors.md
     - Transformers: guide/transformers.md
-    - Builders: guide/builders.md
+    - Construction: guide/builders.md
     - DSL Parsing: guide/dsl.md
     - Export & Visualization: guide/export.md
   - Interoperability:

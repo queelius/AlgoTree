@@ -96,10 +96,13 @@ algotree select 'n.depth > 2' tree.json
    - Tree → Any shapers: `reduce_()`, `fold()`, `extract()`, `to_dict()`, `to_paths()`
    - Composite transformers: `Pipeline`, `ParallelTransformer`, `RepeatTransformer`
 
-4. **Builders** (AlgoTree/builders.py)
-   - Fluent API for tree construction
-   - `TreeBuilder`, `FluentTree`, `TreeContext`, `QuickBuilder`
-   - Factory functions: `tree()`, `branch()`, `leaf()`
+4. **Tree construction** (`builders.py` was removed in v2.0; use these instead):
+   - `Node("name", *children, attrs={})`: direct immutable constructor
+   - `node("name", *children, **attrs)`: convenience function; strings auto-convert
+   - `Node.from_dict(data)`: build from a nested dict with a `"children"` key
+   - `Node.from_list(data)`: build from a nested list `[name, [child, ...]]`
+   - `Node.from_paths(paths)`: build from slash-delimited path strings
+   - `parse_tree(text)`: build from indent, sexp, or visual-tree text (AlgoTree/dsl.py)
 
 5. **Tree Wrapper** (AlgoTree/tree.py)
    - `Tree`: Wrapper providing functional operations and consistent API
