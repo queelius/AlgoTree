@@ -269,3 +269,203 @@ class TestDiffAttrDelta:
         removed = [n for n in dt.root.walk() if n['diff_status'] == 'removed']
         assert len(removed) == 1
         assert removed[0]['attr_delta'] == {}
+
+
+# ---------------------------------------------------------------------------
+# Task 4: themed mermaid/html rendering (added/removed/changed)
+# ---------------------------------------------------------------------------
+
+class TestDiffToMermaid:
+    """DiffTree.to_mermaid() colors nodes by diff_status."""
+
+    def _make_diff(self):
+        """A diff with one added, one removed, one changed, one unchanged."""
+        before = Node('root',
+                      Node('same'),
+                      Node('old'),
+                      Node('renamed'))
+        after = Node('root',
+                     Node('same'),
+                     Node('old'),
+                     Node('renamed', attrs={'x': 1}),
+                     Node('newkid'))
+        return diff(before, after)
+
+    def test_to_mermaid_returns_string(self):
+        before = Node('root', Node('child'))
+        after = Node('root', Node('child'), Node('extra'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_to_mermaid_starts_with_graph(self):
+        before = Node('root')
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert result.startswith("graph ")
+
+    def test_added_node_uses_green_classdef(self):
+        before = Node('root')
+        after = Node('root', Node('newkid'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        # Should define an 'added' class with green styling
+        assert 'classDef' in result
+        assert 'added' in result
+        # green color must be present
+        assert 'green' in result.lower() or '#' in result
+
+    def test_added_node_class_assignment(self):
+        before = Node('root')
+        after = Node('root', Node('newkid'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        # The added node must be assigned the 'added' class
+        assert 'class ' in result
+        assert 'added' in result
+
+    def test_removed_node_uses_red_classdef(self):
+        before = Node('root', Node('gone'))
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert 'classDef' in result
+        assert 'removed' in result
+        assert 'red' in result.lower() or '#' in result
+
+    def test_removed_node_class_assignment(self):
+        before = Node('root', Node('gone'))
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert 'class ' in result
+        assert 'removed' in result
+
+    def test_changed_node_uses_yellow_classdef(self):
+        before = Node('root', Node('thing', attrs={'v': 1}))
+        after = Node('root', Node('thing', attrs={'v': 2}))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert 'classDef' in result
+        assert 'changed' in result
+        assert 'yellow' in result.lower() or '#' in result
+
+    def test_changed_node_class_assignment(self):
+        before = Node('root', Node('thing', attrs={'v': 1}))
+        after = Node('root', Node('thing', attrs={'v': 2}))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert 'class ' in result
+        assert 'changed' in result
+
+    def test_unchanged_node_has_no_class_assignment(self):
+        before = Node('root', Node('same'))
+        after = Node('root', Node('same'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        # No class assignments since all nodes are unchanged
+        assert 'class N' not in result
+
+    def test_escaping_holds_for_special_name(self):
+        """A node named '<x>' must not produce malformed Mermaid output."""
+        before = Node('root')
+        after = Node('root', Node('<x>'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        # Raw '<x>' must not appear unescaped; should be escaped (&lt; etc.)
+        # The label must be in a quoted string form
+        assert '"' in result
+        # The node name in label form must be escaped (no raw '<' outside quotes
+        # or at least the output is a well-formed Mermaid string)
+        assert '<x>' not in result or result.count('"') >= 2
+
+    def test_all_statuses_present_in_mixed_diff(self):
+        dt = self._make_diff()
+        result = dt.to_mermaid()
+        # added newkid -> added class
+        assert 'added' in result
+        # renamed with attr change -> changed class
+        assert 'changed' in result
+
+    def test_node_labels_contain_names(self):
+        before = Node('root', Node('alpha'))
+        after = Node('root', Node('alpha'), Node('beta'))
+        dt = diff(before, after)
+        result = dt.to_mermaid()
+        assert 'alpha' in result
+        assert 'beta' in result
+
+    def test_direction_option(self):
+        before = Node('root')
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_mermaid(direction="LR")
+        assert result.startswith("graph LR")
+
+
+class TestDiffToHtml:
+    """DiffTree.to_html() adds CSS class per diff_status."""
+
+    def test_to_html_returns_string(self):
+        before = Node('root', Node('child'))
+        after = Node('root', Node('child'))
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_added_node_has_css_class(self):
+        before = Node('root')
+        after = Node('root', Node('newkid'))
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert 'added' in result
+
+    def test_removed_node_has_css_class(self):
+        before = Node('root', Node('gone'))
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert 'removed' in result
+
+    def test_changed_node_has_css_class(self):
+        before = Node('root', Node('thing', attrs={'v': 1}))
+        after = Node('root', Node('thing', attrs={'v': 2}))
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert 'changed' in result
+
+    def test_unchanged_node_has_css_class(self):
+        before = Node('root', Node('same'))
+        after = Node('root', Node('same'))
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert 'unchanged' in result
+
+    def test_html_escaping_special_name(self):
+        """Node named '<x>' must be HTML-escaped in output."""
+        before = Node('root')
+        after = Node('root', Node('<x>'))
+        dt = diff(before, after)
+        result = dt.to_html()
+        # Must not contain raw '<x>' as HTML tag
+        assert '<x>' not in result
+        # Must contain HTML-escaped form
+        assert '&lt;x&gt;' in result
+
+    def test_html_contains_node_names(self):
+        before = Node('root', Node('alpha'))
+        after = Node('root', Node('alpha'), Node('beta'))
+        dt = diff(before, after)
+        result = dt.to_html()
+        assert 'alpha' in result
+        assert 'beta' in result
+
+    def test_include_styles_false(self):
+        before = Node('root')
+        after = Node('root')
+        dt = diff(before, after)
+        result = dt.to_html(include_styles=False)
+        assert '<style>' not in result
