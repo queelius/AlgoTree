@@ -25,11 +25,7 @@ from AlgoTree import (
     flatten, normalize, annotate,
     reduce_, fold, extract, to_dict, to_paths,
 
-    # Builders
-    TreeBuilder, FluentTree, TreeContext, QuickBuilder,
-    tree, branch, leaf_node,
-
-    # DSL
+    # DSL / construction
     parse_tree, TreeDSL,
 
     # Export
