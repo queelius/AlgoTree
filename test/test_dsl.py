@@ -318,5 +318,80 @@ class TestAttributeParsing(unittest.TestCase):
         self.assertEqual(attrs["key2"], "value2")
 
 
+class TestSharedAssembler(unittest.TestCase):
+    """Test that _parse_visual and _parse_indent both route through _assemble
+    and produce structurally identical results for equivalent trees."""
+
+    def _nodes_equal(self, a, b):
+        """Recursively check that two nodes have equal names, attrs, and children."""
+        if a.name != b.name:
+            return False
+        if dict(a.attrs) != dict(b.attrs):
+            return False
+        if len(a.children) != len(b.children):
+            return False
+        return all(self._nodes_equal(ac, bc) for ac, bc in zip(a.children, b.children))
+
+    def test_visual_and_indent_produce_equal_nodes(self):
+        """Visual and indent forms of the same structure produce equal Nodes."""
+        visual_text = """root
+├── a
+│   ├── b
+│   └── c
+└── d"""
+
+        indent_text = """root
+  a
+    b
+    c
+  d"""
+
+        visual_tree = TreeDSL.parse(visual_text, format='visual')
+        indent_tree = TreeDSL.parse(indent_text, format='indent')
+
+        self.assertTrue(self._nodes_equal(visual_tree, indent_tree))
+
+    def test_visual_and_indent_equal_with_attrs(self):
+        """Visual and indent forms with attributes produce equal Nodes."""
+        visual_text = """root[type:container]
+├── child1[value:1]
+└── child2[value:2]"""
+
+        indent_text = """root[type:container]
+  child1[value:1]
+  child2[value:2]"""
+
+        visual_tree = TreeDSL.parse(visual_text, format='visual')
+        indent_tree = TreeDSL.parse(indent_text, format='indent')
+
+        self.assertTrue(self._nodes_equal(visual_tree, indent_tree))
+
+    def test_syntax_kwarg_alias(self):
+        """syntax= kwarg is accepted as an alias for format=."""
+        text = "root\n  child1\n  child2"
+
+        tree_via_format = TreeDSL.parse(text, format='indent')
+        tree_via_syntax = TreeDSL.parse(text, syntax='indent')
+
+        self.assertTrue(self._nodes_equal(tree_via_format, tree_via_syntax))
+
+    def test_parse_tree_syntax_kwarg(self):
+        """parse_tree convenience function accepts syntax= kwarg."""
+        text = "(root (a) (b))"
+
+        tree_via_format = parse_tree(text, format='sexpr')
+        tree_via_syntax = parse_tree(text, syntax='sexpr')
+
+        self.assertTrue(self._nodes_equal(tree_via_format, tree_via_syntax))
+
+    def test_syntax_overrides_format(self):
+        """When both syntax= and format= are given, syntax= wins."""
+        # Give format='indent' but syntax='sexpr'; sexpr should win
+        text = "(root (a) (b))"
+        tree = TreeDSL.parse(text, format='indent', syntax='sexpr')
+        self.assertEqual(tree.name, "root")
+        self.assertEqual(len(tree.children), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

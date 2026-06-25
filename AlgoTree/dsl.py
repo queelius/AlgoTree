@@ -15,7 +15,7 @@ class TreeDSL:
     """Parser for various tree DSL formats."""
 
     @staticmethod
-    def parse(text: str, format: str = 'auto') -> Node:
+    def parse(text: str, format: str = 'auto', *, syntax: str = None) -> Node:
         """
         Parse tree from DSL text.
 
@@ -23,10 +23,14 @@ class TreeDSL:
             text: DSL text to parse.
             format: Format to use ('visual', 'indent', 'sexpr', 'auto').
                    'auto' tries to detect format automatically.
+            syntax: Alias for *format* (keyword-only). When both are given,
+                    *syntax* takes precedence.
 
         Returns:
             Root node of parsed tree.
         """
+        if syntax is not None:
+            format = syntax
         text = text.strip()
 
         if format == 'auto':
@@ -307,13 +311,15 @@ class TreeDSL:
         return value
 
 
-def parse_tree(text: str, format: str = 'auto') -> Node:
+def parse_tree(text: str, format: str = 'auto', *, syntax: str = None) -> Node:
     """
     Convenience function to parse tree from DSL text.
 
     Args:
         text: DSL text to parse.
         format: Format to use ('visual', 'indent', 'sexpr', 'auto').
+        syntax: Alias for *format* (keyword-only). When both are given,
+                *syntax* takes precedence.
 
     Returns:
         Root node of parsed tree.
@@ -346,4 +352,4 @@ def parse_tree(text: str, format: str = 'auto') -> Node:
               (sales))
         ''')
     """
-    return TreeDSL.parse(text, format)
+    return TreeDSL.parse(text, format, syntax=syntax)
