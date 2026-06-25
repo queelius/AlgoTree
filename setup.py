@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="AlgoTree",
-    version="3.0.0.dev0",
+    version="3.0.0",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="Immutable-by-default tree manipulation library with functional programming patterns and composable transformations",
