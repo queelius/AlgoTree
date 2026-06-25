@@ -204,13 +204,15 @@ class Node:
 
     def find(self, selector: Union[str, Callable[['Node'], bool], 'Selector']) -> Optional['Node']:
         """Find first node matching selector."""
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            for cursor in walk_cursors(Cursor(self)):
+                if selector.matches_at(cursor):
+                    return cursor.node
+            return None
         predicate = self._make_predicate(selector)
-
-        # Check self first
         if predicate(self):
             return self
-
-        # Then check descendants
         for node in self.descendants():
             if predicate(node):
                 return node
@@ -218,6 +220,9 @@ class Node:
 
     def find_all(self, selector: Union[str, Callable[['Node'], bool], 'Selector']) -> List['Node']:
         """Find all nodes matching selector."""
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            return [c.node for c in walk_cursors(Cursor(self)) if selector.matches_at(c)]
         predicate = self._make_predicate(selector)
         return [node for node in self.walk() if predicate(node)]
 

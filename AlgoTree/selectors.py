@@ -30,12 +30,17 @@ class Selector(ABC):
         """Check if node matches this selector."""
         pass
 
+    def matches_at(self, cursor) -> bool:
+        """Position-aware match. Default ignores position (value-local)."""
+        return self.matches(cursor.node)
+
     def select(self, tree: Union[Node, Tree]) -> Iterator[Node]:
-        """Select all matching nodes from tree."""
+        """Select all matching nodes from tree (position-aware)."""
         root = tree.root if isinstance(tree, Tree) else tree
-        for node in root.walk():
-            if self.matches(node):
-                yield node
+        from .cursor import Cursor, walk_cursors
+        for cursor in walk_cursors(Cursor(root)):
+            if self.matches_at(cursor):
+                yield cursor.node
 
     def first(self, tree: Union[Node, Tree]) -> Optional[Node]:
         """Get first matching node or None."""
@@ -204,6 +209,12 @@ class DepthSelector(Selector):
             return node_depth in self.depth
         return node_depth == self.depth
 
+    def matches_at(self, cursor) -> bool:
+        d = cursor.depth
+        if isinstance(self.depth, range):
+            return d in self.depth
+        return d == self.depth
+
     def __repr__(self) -> str:
         return f"DepthSelector({self.depth!r})"
 
@@ -224,6 +235,9 @@ class RootSelector(Selector):
     def matches(self, node: Node) -> bool:
         return node.is_root
 
+    def matches_at(self, cursor) -> bool:
+        return cursor.is_root
+
     def __repr__(self) -> str:
         return "RootSelector()"
 
@@ -239,6 +253,9 @@ class AndSelector(Selector):
     def matches(self, node: Node) -> bool:
         return all(s.matches(node) for s in self.selectors)
 
+    def matches_at(self, cursor) -> bool:
+        return all(s.matches_at(cursor) for s in self.selectors)
+
     def __repr__(self) -> str:
         return f"({' & '.join(repr(s) for s in self.selectors)})"
 
@@ -251,6 +268,9 @@ class OrSelector(Selector):
 
     def matches(self, node: Node) -> bool:
         return any(s.matches(node) for s in self.selectors)
+
+    def matches_at(self, cursor) -> bool:
+        return any(s.matches_at(cursor) for s in self.selectors)
 
     def __repr__(self) -> str:
         return f"({' | '.join(repr(s) for s in self.selectors)})"
@@ -265,6 +285,9 @@ class NotSelector(Selector):
     def matches(self, node: Node) -> bool:
         return not self.selector.matches(node)
 
+    def matches_at(self, cursor) -> bool:
+        return not self.selector.matches_at(cursor)
+
     def __repr__(self) -> str:
         return f"~{repr(self.selector)}"
 
@@ -278,6 +301,9 @@ class XorSelector(Selector):
     def matches(self, node: Node) -> bool:
         matches = sum(1 for s in self.selectors if s.matches(node))
         return matches == 1
+
+    def matches_at(self, cursor) -> bool:
+        return sum(1 for s in self.selectors if s.matches_at(cursor)) == 1
 
     def __repr__(self) -> str:
         return f"({' ^ '.join(repr(s) for s in self.selectors)})"
@@ -297,6 +323,13 @@ class ChildOfSelector(Selector):
             return False
         return node.parent and self.parent_selector.matches(node.parent)
 
+    def matches_at(self, cursor) -> bool:
+        if not self.child_selector.matches_at(cursor):
+            return False
+        if cursor.is_root:
+            return False
+        return self.parent_selector.matches_at(cursor.up())
+
     def __repr__(self) -> str:
         return f"{repr(self.child_selector)}.child_of({repr(self.parent_selector)})"
 
@@ -312,6 +345,14 @@ class ParentOfSelector(Selector):
         if not self.parent_selector.matches(node):
             return False
         return any(self.child_selector.matches(child) for child in node.children)
+
+    def matches_at(self, cursor) -> bool:
+        if not self.parent_selector.matches_at(cursor):
+            return False
+        return any(
+            self.child_selector.matches_at(cursor.down(i))
+            for i in range(len(cursor.node.children))
+        )
 
     def __repr__(self) -> str:
         return f"{repr(self.parent_selector)}.parent_of({repr(self.child_selector)})"
@@ -332,6 +373,14 @@ class DescendantOfSelector(Selector):
                 return True
         return False
 
+    def matches_at(self, cursor) -> bool:
+        if not self.descendant_selector.matches_at(cursor):
+            return False
+        return any(
+            self.ancestor_selector.matches_at(ancestor)
+            for ancestor in cursor.ancestors()
+        )
+
     def __repr__(self) -> str:
         return f"{repr(self.descendant_selector)}.descendant_of({repr(self.ancestor_selector)})"
 
@@ -351,6 +400,14 @@ class AncestorOfSelector(Selector):
                 return True
         return False
 
+    def matches_at(self, cursor) -> bool:
+        if not self.ancestor_selector.matches_at(cursor):
+            return False
+        from .cursor import walk_cursors
+        descendants = walk_cursors(cursor)
+        next(descendants)  # skip the focus itself
+        return any(self.descendant_selector.matches_at(d) for d in descendants)
+
     def __repr__(self) -> str:
         return f"{repr(self.ancestor_selector)}.ancestor_of({repr(self.descendant_selector)})"
 
@@ -369,6 +426,13 @@ class SiblingOfSelector(Selector):
             if self.sibling_selector.matches(sibling):
                 return True
         return False
+
+    def matches_at(self, cursor) -> bool:
+        if not self.node_selector.matches_at(cursor):
+            return False
+        return any(
+            self.sibling_selector.matches_at(sib) for sib in cursor.siblings()
+        )
 
     def __repr__(self) -> str:
         return f"{repr(self.node_selector)}.sibling_of({repr(self.sibling_selector)})"

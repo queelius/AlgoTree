@@ -325,6 +325,10 @@ class Tree:
 
     def select(self, selector: Union[str, Callable[[Node], bool]]) -> Iterator[Node]:
         """Select nodes matching selector (returns iterator)."""
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            return (c.node for c in walk_cursors(Cursor(self._root))
+                    if selector.matches_at(c))
         predicate = self._make_predicate(selector)
         return (node for node in self._root.walk() if predicate(node))
 
