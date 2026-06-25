@@ -3,15 +3,20 @@ Tree wrapper providing functional operations and consistent API.
 
 This module provides a clean, composable API for tree manipulation
 following functional programming principles.
+
+Tree is a thin forwarder over Node: every method body delegates to the
+corresponding Node method and wraps the result back into a Tree where the
+old API returned a Tree.  All traversal and transformation logic lives in
+Node; this class adds only the empty-sentinel convention and the
+Node|dict|None sniffing in map().
 """
 
 from typing import Any, Callable, Iterator, Optional, Union, TypeVar, List, Dict, TYPE_CHECKING
-from functools import reduce
 from .node import Node
-from ._utils import make_predicate as _make_predicate_fn
 
 if TYPE_CHECKING:
     from .selectors import Selector
+    from .cursor import Cursor
 
 T = TypeVar('T')
 TreeType = TypeVar('TreeType', bound='Tree')
@@ -23,6 +28,11 @@ class Tree:
 
     All operations return new Tree instances, enabling chaining.
     The tree itself is never mutated.
+
+    Tree is a thin forwarder: all logic resides in Node.  The only
+    Tree-specific concerns are:
+      - the ``<empty>`` sentinel for filter/prune results,
+      - the Node|dict|None runtime sniffing in map() for back-compat.
     """
 
     __slots__ = ('_root',)
@@ -64,15 +74,14 @@ class Tree:
                     {'name': 'child2', 'value': 3}
                 ]
             })
+
+        Note:
+            Uses Node.from_dict internally (non-mutating).  The old
+            Tree.from_dict mutated the input dict via pop(); the new
+            implementation does not.
         """
-        def build_node(d: Dict[str, Any]) -> Node:
-            children_data = d.pop(children_key, [])
-            name = d.pop('name', 'node')
-
-            children = [build_node(child) for child in children_data]
-            return Node(name, *children, attrs=d)
-
-        return cls(build_node(data))
+        import copy
+        return cls(Node.from_dict(copy.deepcopy(data), children_key=children_key))
 
     @classmethod
     def from_paths(cls, paths: List[str], delimiter: str = '/') -> 'Tree':
@@ -90,50 +99,7 @@ class Tree:
                 'root/d'
             ])
         """
-        if not paths:
-            return cls(Node('root'))
-
-        # Build tree structure using dict
-        tree_dict = {}
-
-        for path in paths:
-            parts = [p for p in path.split(delimiter) if p]
-            if not parts:
-                continue
-
-            # Build nested dict structure
-            current = tree_dict
-            for part in parts:
-                if part not in current:
-                    current[part] = {}
-                current = current[part]
-
-        # Convert dict to Node tree
-        def dict_to_node(name: str, children_dict: dict) -> Node:
-            if not children_dict:
-                return Node(name)
-
-            children = [
-                dict_to_node(child_name, child_dict)
-                for child_name, child_dict in sorted(children_dict.items())
-            ]
-            return Node(name, *children)
-
-        # Get root name (first part of first path)
-        root_name = paths[0].split(delimiter)[0] if paths else 'root'
-
-        # If root_name is in tree_dict, use it as root
-        if root_name in tree_dict:
-            root = dict_to_node(root_name, tree_dict[root_name])
-        else:
-            # Otherwise create root with all top-level entries as children
-            children = [
-                dict_to_node(name, children_dict)
-                for name, children_dict in sorted(tree_dict.items())
-            ]
-            root = Node(root_name, *children)
-
-        return cls(root)
+        return cls(Node.from_paths(paths, delimiter=delimiter))
 
     # Core functional operations
 
@@ -149,10 +115,13 @@ class Tree:
 
         Returns:
             New tree with mapped values
+
+        Note:
+            The Node|dict|None sniffing is preserved here for back-compat;
+            Node.map is strict (Node -> Node only).
         """
         def transform_node(node: Node) -> Node:
             result = fn(node)
-
             if result is None:
                 return node
             elif isinstance(result, dict):
@@ -169,18 +138,9 @@ class Tree:
         Filter tree to nodes matching predicate (or Selector).
 
         Preserves tree structure - keeps ancestors of matching nodes.
+        Returns a Tree wrapping the ``<empty>`` sentinel when nothing matches.
         """
-        if hasattr(predicate, 'matches_at'):
-            from .cursor import Cursor, walk_cursors
-            # Note: uses object identity; if the same Node object is aliased at
-            # multiple positions (structural sharing within one tree), all
-            # occurrences are kept.  Acceptable for now.
-            matched = {id(c.node) for c in walk_cursors(Cursor(self._root))
-                       if predicate.matches_at(c)}
-            pred = lambda n: id(n) in matched
-        else:
-            pred = predicate
-        filtered = self._root.filter(pred)
+        filtered = self._root.filter(predicate)
         if filtered is None:
             return Tree(Node('<empty>'))
         return Tree(filtered)
@@ -202,8 +162,7 @@ class Tree:
         Returns:
             Final reduced value
         """
-        nodes = self._root.walk(order)
-        return reduce(fn, nodes, initial)
+        return self._root.reduce(fn, initial, order=order)
 
     def fold(
         self,
@@ -218,11 +177,7 @@ class Tree:
         Returns:
             Final folded value
         """
-        def fold_node(node: Node) -> T:
-            child_results = [fold_node(child) for child in node.children]
-            return fn(node, child_results)
-
-        return fold_node(self._root)
+        return self._root.fold(fn)
 
     # Tree structure operations
 
@@ -230,13 +185,10 @@ class Tree:
         """
         Remove nodes matching selector.
         """
-        if hasattr(selector, 'matches_at'):
-            from .cursor import Cursor, walk_cursors
-            matched = {id(c.node) for c in walk_cursors(Cursor(self._root))
-                       if selector.matches_at(c)}
-            return self.filter(lambda n: id(n) not in matched)
-        predicate = _make_predicate_fn(selector)
-        return self.filter(lambda n: not predicate(n))
+        result = self._root.prune(selector)
+        if result is None:
+            return Tree(Node('<empty>'))
+        return Tree(result)
 
     def graft(
         self,
@@ -253,17 +205,7 @@ class Tree:
         Returns:
             New tree with subtrees grafted
         """
-        if isinstance(subtree, Tree):
-            subtree = subtree.root
-
-        predicate = _make_predicate_fn(selector)
-
-        def add_subtree(node: Node) -> Node:
-            if predicate(node):
-                return node.with_child(subtree)
-            return node
-
-        return Tree(self._root.map(add_subtree))
+        return Tree(self._root.graft(selector, subtree))
 
     def flatten(self, max_depth: Optional[int] = None) -> 'Tree':
         """
@@ -278,32 +220,7 @@ class Tree:
         Returns:
             New flattened tree
         """
-        def collect_descendants(node: Node) -> List[Node]:
-            """Collect all descendants as leaf nodes (no children)."""
-            if not node.children:
-                return [Node(node.name, attrs=node.attrs)]
-            result = []
-            for child in node.children:
-                result.extend(collect_descendants(child))
-            return result
-
-        def flatten_node(node: Node, current_depth: int = 0) -> Node:
-            if max_depth is not None and current_depth >= max_depth:
-                # At max depth, collect all descendants as direct children
-                all_descendants = []
-                for child in node.children:
-                    all_descendants.extend(collect_descendants(child))
-                if all_descendants:
-                    return Node(node.name, *all_descendants, attrs=node.attrs)
-                return node
-
-            # Not at max depth yet, recursively flatten children
-            new_children = [flatten_node(child, current_depth + 1) for child in node.children]
-            if new_children:
-                return Node(node.name, *new_children, attrs=node.attrs)
-            return node
-
-        return Tree(flatten_node(self._root, 0))
+        return Tree(self._root.flatten(max_depth=max_depth))
 
     # Query operations
 
@@ -317,42 +234,27 @@ class Tree:
 
     def exists(self, selector: Union[str, Callable[[Node], bool]]) -> bool:
         """Check if any node matches selector."""
-        return self.find(selector) is not None
+        return self._root.exists(selector)
 
     def count(self, selector: Optional[Union[str, Callable[[Node], bool]]] = None) -> int:
         """Count nodes matching selector (or all nodes if None)."""
-        if selector is None:
-            return self._root.size
-        return len(self.find_all(selector))
+        return self._root.count(selector)
 
     def select(self, selector: Union[str, Callable[[Node], bool]]) -> Iterator[Node]:
         """Select nodes matching selector (returns iterator)."""
-        if hasattr(selector, 'matches_at'):
-            from .cursor import Cursor, walk_cursors
-            return (c.node for c in walk_cursors(Cursor(self._root))
-                    if selector.matches_at(c))
-        predicate = self._make_predicate(selector)
-        return (node for node in self._root.walk() if predicate(node))
+        return self._root.select(selector)
 
     def locate(self, selector: Union[str, Callable[[Node], bool]]) -> Optional['Cursor']:
         """Return a Cursor at the first node matching selector, or None."""
-        from .cursor import Cursor, walk_cursors
-        for cursor in walk_cursors(Cursor(self._root)):
-            if self._cursor_matches(cursor, selector):
-                return cursor
-        return None
+        return self._root.locate(selector)
 
     def cursors_at(self, selector: Union[str, Callable[[Node], bool]]) -> List['Cursor']:
         """Return a Cursor at every node matching selector."""
-        from .cursor import Cursor, walk_cursors
-        return [c for c in walk_cursors(Cursor(self._root))
-                if self._cursor_matches(c, selector)]
+        return self._root.cursors_at(selector)
 
     @staticmethod
     def _cursor_matches(cursor: 'Cursor', selector) -> bool:
-        if hasattr(selector, 'matches_at'):
-            return selector.matches_at(cursor)
-        return _make_predicate_fn(selector)(cursor.node)
+        return Node._cursor_matches(cursor, selector)
 
     # Path operations
 
@@ -367,24 +269,7 @@ class Tree:
         Returns:
             Node at path or None
         """
-        parts = path.split(delimiter)
-        current = self._root
-
-        for part in parts:
-            if part == current.name:
-                continue  # Skip if it's the current node
-
-            found = False
-            for child in current.children:
-                if child.name == part:
-                    current = child
-                    found = True
-                    break
-
-            if not found:
-                return None
-
-        return current
+        return self._root.get_path(path, delimiter=delimiter)
 
     def paths(self, to_leaves_only: bool = True) -> List[str]:
         """
@@ -396,13 +281,7 @@ class Tree:
         Returns:
             List of path strings
         """
-        from .cursor import Cursor, walk_cursors
-        result = []
-        for cursor in walk_cursors(Cursor(self._root)):
-            if to_leaves_only and cursor.node.children:
-                continue
-            result.append('/'.join(cursor.path))
-        return result
+        return self._root.paths(to_leaves_only=to_leaves_only)
 
     # Tree properties
 
@@ -434,7 +313,7 @@ class Tree:
 
     def nodes(self) -> List[Node]:
         """Get all nodes as list."""
-        return list(self.walk())
+        return self._root.nodes()
 
     # Export operations
 
@@ -448,19 +327,11 @@ class Tree:
         Returns:
             Nested dictionary representation
         """
-        def node_to_dict(node: Node) -> Dict[str, Any]:
-            d = {'name': node.name, **node.attrs}
-
-            if node.children:
-                d[children_key] = [node_to_dict(child) for child in node.children]
-
-            return d
-
-        return node_to_dict(self._root)
+        return self._root.to_dict(children_key=children_key)
 
     def to_paths(self, delimiter: str = '/') -> List[str]:
         """Export tree as list of paths."""
-        return self.paths(to_leaves_only=False)
+        return self._root.to_paths(delimiter=delimiter)
 
     # Operators for composition
 
@@ -471,19 +342,6 @@ class Tree:
     def __rshift__(self, transformer: Callable[['Tree'], Any]) -> Any:
         """Transform tree with >> operator (can change type)."""
         return transformer(self)
-
-    # Helper methods
-
-    def _matches(self, node: Node, selector: Union[str, Callable[[Node], bool], 'Selector']) -> bool:
-        """Check if node matches selector."""
-        return _make_predicate_fn(selector)(node)
-
-    def _make_predicate(
-        self,
-        selector: Union[str, Callable[[Node], bool], 'Selector']
-    ) -> Callable[[Node], bool]:
-        """Convert selector to predicate function."""
-        return _make_predicate_fn(selector)
 
     # String representations
 
