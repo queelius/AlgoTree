@@ -62,3 +62,31 @@ def test_height_is_one_plus_max_child_height():
     tree = _sample()                                # root -> b -> c is the deepest path
     assert tree.height == 2
     assert tree.height == tree.fold(lambda n, cs: 0 if not cs else 1 + max(cs))
+
+
+def test_to_dict_shape_unchanged():
+    tree = Node("root",
+                Node("a", attrs={"value": 1}),
+                Node("b", Node("c", attrs={"value": 3}), attrs={"value": 2}))
+    assert tree.to_dict() == {
+        "name": "root",
+        "children": [
+            {"name": "a", "value": 1},
+            {"name": "b", "value": 2, "children": [{"name": "c", "value": 3}]},
+        ],
+    }
+
+
+def test_from_dict_to_dict_round_trip():
+    tree = Node("root",
+                Node("a", attrs={"value": 1}),
+                Node("b", Node("c", attrs={"value": 3}), attrs={"value": 2}))
+    assert Node.from_dict(tree.to_dict()) == tree        # from_dict . to_dict == id
+
+
+def test_to_dict_is_fold():
+    tree = Node("root", Node("a", attrs={"value": 1}))
+    via_fold = tree.fold(
+        lambda n, cs: {"name": n.name, **n.attrs, **({"children": cs} if cs else {})}
+    )
+    assert tree.to_dict() == via_fold

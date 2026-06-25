@@ -282,15 +282,15 @@ class Node:
         Convert tree to nested dictionary.
 
         Returns:
-            Dictionary with 'name', attributes, and 'children' list
+            Dictionary with 'name', attributes, and 'children' list.
         """
-        result = {'name': self._name}
-        result.update(self._attrs)
-
-        if self._children:
-            result['children'] = [child.to_dict() for child in self._children]
-
-        return result
+        return self.fold(
+            lambda node, child_results: {
+                'name': node.name,
+                **node.attrs,
+                **({'children': child_results} if child_results else {}),
+            }
+        )
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> 'Node':
