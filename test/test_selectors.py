@@ -1,13 +1,15 @@
 import unittest
 from AlgoTree.node import Node
 from AlgoTree.tree import Tree
+from AlgoTree._utils import make_predicate
 from AlgoTree.selectors import (
-    Selector, NameSelector, AttrsSelector, TypeSelector, PredicateSelector,
+    Selector, NameSelector, GlobSelector, RegexSelector,
+    AttrsSelector, TypeSelector, PredicateSelector,
     DepthSelector, LeafSelector, RootSelector,
     AndSelector, OrSelector, NotSelector, XorSelector,
     ChildOfSelector, ParentOfSelector, DescendantOfSelector,
     AncestorOfSelector, SiblingOfSelector,
-    name, attrs, type_, predicate, depth, leaf, root, any_, none, parse
+    name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, parse
 )
 
 
@@ -34,19 +36,31 @@ class TestBasicSelectors(unittest.TestCase):
         self.assertEqual(nodes[0].name, "file1.txt")
 
     def test_name_selector_wildcard(self):
-        """Test wildcard name matching."""
-        selector = name("*.txt")
+        """Test glob wildcard name matching (glob factory, not name)."""
+        selector = glob("*.txt")
         nodes = list(selector.select(self.tree))
         self.assertEqual(len(nodes), 2)
         names = {n.name for n in nodes}
         self.assertEqual(names, {"file1.txt", "file3.txt"})
 
     def test_name_selector_regex(self):
-        """Test regex name matching."""
-        selector = name(r"file\d+\.py")
+        """Test regex name matching (regex factory, not name)."""
+        selector = regex(r"file\d+\.py")
         nodes = list(selector.select(self.tree))
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].name, "file2.py")
+
+    def test_name_exact_semantics(self):
+        """name() is exact: name('*.txt') matches only the literal string '*.txt'."""
+        tree_with_literal = Tree(Node("root",
+            Node("*.txt"),
+            Node("a.txt"),
+            Node("file1.txt"),
+        ))
+        selector = name("*.txt")
+        nodes = list(selector.select(tree_with_literal))
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0].name, "*.txt")
 
     def test_attrs_selector(self):
         """Test attribute matching."""
@@ -126,7 +140,7 @@ class TestLogicalCombinators(unittest.TestCase):
 
     def test_and_selector(self):
         """Test AND combinator."""
-        selector = name("*.txt") & attrs(active=True)
+        selector = glob("*.txt") & attrs(active=True)
         nodes = list(selector.select(self.tree))
         self.assertEqual(len(nodes), 1)
         self.assertEqual(nodes[0].name, "file1.txt")
@@ -366,6 +380,42 @@ class TestAnyNoneSelectors(unittest.TestCase):
         selector = none()
         nodes = list(selector.select(self.tree))
         self.assertEqual(len(nodes), 0)
+
+
+class TestDeclaredMatchingBoundary(unittest.TestCase):
+    """Test that bare-string boundary is exact (no wildcard sniffing)."""
+
+    def test_make_predicate_exact_string(self):
+        """make_predicate('a+b') matches only the literal name 'a+b'."""
+        pred = make_predicate("a+b")
+        node_match = Node("a+b")
+        node_no_match = Node("ab")
+        self.assertTrue(pred(node_match))
+        self.assertFalse(pred(node_no_match))
+
+    def test_make_predicate_wildcard_string_is_exact(self):
+        """make_predicate('*.txt') matches only the literal name '*.txt', not 'a.txt'."""
+        pred = make_predicate("*.txt")
+        node_literal = Node("*.txt")
+        node_glob_match = Node("a.txt")
+        self.assertTrue(pred(node_literal))
+        self.assertFalse(pred(node_glob_match))
+
+    def test_glob_factory(self):
+        """glob('*.txt') matches fnmatch-style patterns."""
+        sel = glob("*.txt")
+        self.assertIsInstance(sel, GlobSelector)
+        self.assertTrue(sel.matches(Node("a.txt")))
+        self.assertTrue(sel.matches(Node("file1.txt")))
+        self.assertFalse(sel.matches(Node("a.py")))
+
+    def test_regex_factory(self):
+        """regex(pattern) uses re.fullmatch semantics."""
+        sel = regex(r"file\d+\.py")
+        self.assertIsInstance(sel, RegexSelector)
+        self.assertTrue(sel.matches(Node("file1.py")))
+        self.assertFalse(sel.matches(Node("file1.pyc")))  # fullmatch, not search
+        self.assertFalse(sel.matches(Node("afile1.py")))
 
 
 if __name__ == "__main__":

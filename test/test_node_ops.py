@@ -443,10 +443,11 @@ class TestNodeFilterWithSelector(unittest.TestCase):
     """Confirm Node.filter accepts Selector objects (cursor id-membership)."""
 
     def test_filter_with_selector(self):
-        from AlgoTree.selectors import NameSelector
+        from AlgoTree.selectors import GlobSelector
         root = _make_tree()
         tree = Tree(root)
-        sel = NameSelector("a*")
+        # name() is now exact; use GlobSelector for wildcard patterns.
+        sel = GlobSelector("a*")
         # Node.filter should route Selectors via cursor id-membership
         # just like Tree.filter
         node_filtered = root.filter(sel)

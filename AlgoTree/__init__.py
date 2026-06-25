@@ -26,7 +26,8 @@ from .cursor import Cursor, walk_cursors
 from .selectors import (
     Selector,
     # Basic selectors
-    NameSelector, AttrsSelector, TypeSelector, PredicateSelector,
+    NameSelector, GlobSelector, RegexSelector,
+    AttrsSelector, TypeSelector, PredicateSelector,
     DepthSelector, LeafSelector, RootSelector,
     # Logical combinators
     AndSelector, OrSelector, NotSelector, XorSelector,
@@ -34,7 +35,7 @@ from .selectors import (
     ChildOfSelector, ParentOfSelector, DescendantOfSelector,
     AncestorOfSelector, SiblingOfSelector,
     # Factory functions
-    name, attrs, type_, predicate, depth, leaf, root, any_, none, parse
+    name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, parse
 )
 
 # Transformers for tree manipulation
@@ -103,12 +104,13 @@ __all__ = [
 
     # Selectors
     'Selector',
-    'NameSelector', 'AttrsSelector', 'TypeSelector', 'PredicateSelector',
+    'NameSelector', 'GlobSelector', 'RegexSelector',
+    'AttrsSelector', 'TypeSelector', 'PredicateSelector',
     'DepthSelector', 'LeafSelector', 'RootSelector',
     'AndSelector', 'OrSelector', 'NotSelector', 'XorSelector',
     'ChildOfSelector', 'ParentOfSelector', 'DescendantOfSelector',
     'AncestorOfSelector', 'SiblingOfSelector',
-    'name', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'parse',
+    'name', 'glob', 'regex', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'parse',
 
     # Transformers
     'Transformer',

@@ -20,6 +20,7 @@ import os
 from AlgoTree import Node
 from AlgoTree import (
     name as sel_name,
+    glob as sel_glob,
     leaf as sel_leaf,
     depth as sel_depth,
     attrs as sel_attrs,
@@ -241,7 +242,8 @@ class TestNodeQueries:
 
     def test_select_name_pattern(self):
         root = make_tree()
-        results = list(root.select("leaf*"))
+        # Bare strings are exact at the boundary; use glob() for wildcard patterns.
+        results = list(root.select(sel_glob("leaf*")))
         assert len(results) == 3
 
     def test_locate_returns_cursor(self):

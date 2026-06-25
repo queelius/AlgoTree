@@ -117,28 +117,43 @@ class Selector(ABC):
 # Basic selectors
 
 class NameSelector(Selector):
-    """Select nodes by name pattern."""
+    """Select nodes by exact name match."""
 
     def __init__(self, pattern: str):
         self.pattern = pattern
-        # Check if it's a glob pattern (* or ?)
-        self._is_glob = ('*' in pattern or '?' in pattern)
-        # Check if it's a regex pattern (has other regex chars)
-        self._is_regex = bool(re.search(r'[\\^$+{}[\]|()\s]', pattern)) and not self._is_glob
-
-        if self._is_regex:
-            self._regex = re.compile(pattern)
 
     def matches(self, node: Node) -> bool:
-        if self._is_glob:
-            return fnmatch.fnmatch(node.name, self.pattern)
-        elif self._is_regex:
-            return bool(self._regex.match(node.name))
-        else:
-            return node.name == self.pattern
+        return node.name == self.pattern
 
     def __repr__(self) -> str:
         return f"NameSelector({self.pattern!r})"
+
+
+class GlobSelector(Selector):
+    """Select nodes by glob pattern (fnmatch semantics)."""
+
+    def __init__(self, pattern: str):
+        self.pattern = pattern
+
+    def matches(self, node: Node) -> bool:
+        return fnmatch.fnmatch(node.name, self.pattern)
+
+    def __repr__(self) -> str:
+        return f"GlobSelector({self.pattern!r})"
+
+
+class RegexSelector(Selector):
+    """Select nodes by regex pattern (re.fullmatch semantics)."""
+
+    def __init__(self, pattern: str):
+        self.pattern = pattern
+        self._regex = re.compile(pattern)
+
+    def matches(self, node: Node) -> bool:
+        return self._regex.fullmatch(node.name) is not None
+
+    def __repr__(self) -> str:
+        return f"RegexSelector({self.pattern!r})"
 
 
 class AttrsSelector(Selector):
@@ -441,8 +456,18 @@ class SiblingOfSelector(Selector):
 # Factory functions for common selectors
 
 def name(pattern: str) -> NameSelector:
-    """Create name selector."""
+    """Create exact name selector (matches node.name == pattern literally)."""
     return NameSelector(pattern)
+
+
+def glob(pattern: str) -> GlobSelector:
+    """Create glob selector (fnmatch.fnmatch semantics; * and ? are wildcards)."""
+    return GlobSelector(pattern)
+
+
+def regex(pattern: str) -> RegexSelector:
+    """Create regex selector (re.fullmatch semantics; full-string match)."""
+    return RegexSelector(pattern)
 
 
 def attrs(**kwargs) -> AttrsSelector:
@@ -538,5 +563,8 @@ def parse(selector_str: str) -> Selector:
         descendant_sel = parse(parts[1])
         return descendant_sel.descendant_of(ancestor_sel)
 
-    # Name selector (with wildcard support)
+    # Name/glob selector: glob for tokens with wildcards, else exact name.
+    # Sniffing wildcard syntax is acceptable inside the string DSL parser.
+    if '*' in selector_str or '?' in selector_str:
+        return glob(selector_str)
     return name(selector_str)
