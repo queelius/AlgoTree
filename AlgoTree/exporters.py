@@ -84,7 +84,7 @@ class TreeExporter:
 
         counter = [0]
 
-        def _visit(n: Node, parent_id: Optional[str]) -> None:
+        def _visit(n: Node, parent_id: Optional[str], parent_node: Optional[Node] = None) -> None:
             node_id = f"N{counter[0]}"
             counter[0] += 1
 
@@ -105,15 +105,7 @@ class TreeExporter:
             if parent_id is not None:
                 edge_extra = ""
                 if edge_attr:
-                    custom = edge_attr(
-                        next(
-                            nd
-                            for nd in node.walk()
-                            if nd.name == n.name
-                            or id(nd) == id(n)
-                        ),
-                        n,
-                    )
+                    custom = edge_attr(parent_node, n)
                     if custom:
                         edge_extra = " [" + ", ".join(
                             f"{k}={v}" for k, v in custom.items()
@@ -121,7 +113,7 @@ class TreeExporter:
                 lines.append(f"    {parent_id} -> {node_id}{edge_extra};")
 
             for child in n.children:
-                _visit(child, node_id)
+                _visit(child, node_id, n)
 
         _visit(node, None)
         lines.append("}")
