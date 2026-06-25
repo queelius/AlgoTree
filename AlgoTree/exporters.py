@@ -1,17 +1,24 @@
 """
-Tree export functionality for various formats.
+Tree export functionality - thin delegates to the render registry.
 
-This module provides exporters to convert trees to different representations
-including GraphViz, Mermaid, ASCII/Unicode trees, and more.
+All rendering is now performed by :mod:`AlgoTree.render`.  This module
+exists for backwards compatibility: the public names ``TreeExporter``,
+``export_tree``, and ``save_tree`` continue to work unchanged.
+
+The ``flat`` / ``graph`` formats are special cases that produce a
+path-keyed flat dictionary via :mod:`AlgoTree.interop`; they are NOT
+registered in the render backend (they don't produce text output).
 """
 
 from typing import Any, Dict, Optional, Callable
 import json
+import os
 from .node import Node
+from . import render as _render
 
 
 class TreeExporter:
-    """Base class for tree exporters."""
+    """Tree exporter - thin delegates to the render registry."""
 
     @staticmethod
     def to_dict(node: Node) -> Dict[str, Any]:
@@ -21,7 +28,7 @@ class TreeExporter:
     @staticmethod
     def to_json(node: Node, indent: int = 2) -> str:
         """Export tree to JSON string."""
-        return json.dumps(node.to_dict(), indent=indent)
+        return _render.render(node, "json", indent=indent)
 
     @staticmethod
     def to_ascii(node: Node, style: str = "ascii") -> str:
@@ -30,528 +37,286 @@ class TreeExporter:
 
         Args:
             node: Root node of tree
-            style: "ascii" for ASCII characters, "unicode" for box drawing
+            style: ``"ascii"`` for ASCII characters, ``"unicode"`` for box drawing.
 
         Returns:
-            String representation of tree
+            String representation of tree.
         """
-        if style == "unicode":
-            chars = {
-                "vertical": "│",
-                "horizontal": "─",
-                "branch": "├",
-                "last": "└"
-            }
-        else:
-            chars = {
-                "vertical": "|",
-                "horizontal": "-",
-                "branch": "+",
-                "last": "\\"
-            }
-
-        result = []
-
-        def render(node: Node, prefix: str = "", is_last: bool = True, is_root: bool = False):
-            # Current node
-            if is_root:
-                result.append(node.name)
-            else:
-                connector = chars["last"] if is_last else chars["branch"]
-                result.append(f"{prefix}{connector}{chars['horizontal']} {node.name}")
-
-            # Render children
-            for i, child in enumerate(node.children):
-                is_last_child = i == len(node.children) - 1
-
-                # Update prefix for children
-                if is_root:
-                    child_prefix = ""
-                else:
-                    extension = "    " if is_last else f"{chars['vertical']}   "
-                    child_prefix = prefix + extension
-
-                render(child, child_prefix, is_last_child, False)
-
-        render(node, is_root=True)
-        return "\n".join(result)
+        fmt = "unicode" if style == "unicode" else "ascii"
+        return _render.render(node, fmt)
 
     @staticmethod
     def to_unicode(node: Node) -> str:
         """Export tree to Unicode box drawing (alias for to_ascii with unicode style)."""
-        return TreeExporter.to_ascii(node, style="unicode")
+        return _render.render(node, "unicode")
 
     @staticmethod
-    def to_graphviz(node: Node,
-                    name: str = "Tree",
-                    node_attr: Optional[Callable[[Node], Dict[str, str]]] = None,
-                    edge_attr: Optional[Callable[[Node, Node], Dict[str, str]]] = None,
-                    graph_attr: Optional[Dict[str, str]] = None) -> str:
+    def to_graphviz(
+        node: Node,
+        name: str = "Tree",
+        node_attr: Optional[Callable[[Node], Dict[str, str]]] = None,
+        edge_attr: Optional[Callable[[Node, Node], Dict[str, str]]] = None,
+        graph_attr: Optional[Dict[str, str]] = None,
+    ) -> str:
         """
         Export tree to GraphViz DOT format.
 
-        Args:
-            node: Root node of tree
-            name: Graph name
-            node_attr: Function to generate node attributes
-            edge_attr: Function to generate edge attributes
-            graph_attr: Graph-level attributes
+        The base output is produced by ``render(node, 'graphviz', name=name)``.
+        Optional *node_attr*, *edge_attr*, and *graph_attr* callbacks extend it
+        with additional DOT attributes (kept for backwards compatibility).
 
-        Returns:
-            DOT format string
-
-        Example:
-            dot = TreeExporter.to_graphviz(tree,
-                node_attr=lambda n: {"label": f"{n.name}\\n{n.get('size', '')}"})
+        For the common case (no callbacks), output is identical to
+        ``render(node, 'graphviz', name=name)``.
         """
-        lines = [f"digraph {name} {{"]
+        if node_attr is None and edge_attr is None and graph_attr is None:
+            return _render.render(node, "graphviz", name=name)
 
-        # Add graph attributes
+        # Legacy path: callbacks requested – build DOT with extra attributes.
+        from ._utils import make_predicate as _mp  # noqa: F401 (import guard only)
+        from . import render as _r
+        from .render import _dot_escape
+
+        lines = [f'digraph "{_dot_escape(name)}" {{']
+
         if graph_attr:
             for key, value in graph_attr.items():
                 lines.append(f"    {key}={value};")
 
-        # Track node IDs
-        node_ids = {}
-        next_id = [0]
+        counter = [0]
 
-        def get_node_id(n: Node) -> str:
-            if n not in node_ids:
-                node_ids[n] = f"node{next_id[0]}"
-                next_id[0] += 1
-            return node_ids[n]
+        def _visit(n: Node, parent_id: Optional[str]) -> None:
+            node_id = f"N{counter[0]}"
+            counter[0] += 1
 
-        # Generate nodes and edges
-        def process_node(n: Node):
-            node_id = get_node_id(n)
+            label = _dot_escape(n.name)
+            attrs: Dict[str, str] = {f'label': f'"{label}"'}
 
-            # Node declaration
-            attrs = {}
-            attrs["label"] = f'"{n.name}"'
-
-            # Add custom attributes
             if node_attr:
                 custom = node_attr(n)
-                for key, value in custom.items():
-                    if key == "label":
-                        attrs[key] = f'"{value}"'
+                for k, v in custom.items():
+                    if k == "label":
+                        attrs[k] = f'"{v}"'
                     else:
-                        attrs[key] = value
+                        attrs[k] = str(v)
 
             attr_str = ", ".join(f"{k}={v}" for k, v in attrs.items())
             lines.append(f"    {node_id} [{attr_str}];")
 
-            # Edges to children
-            for child in n.children:
-                child_id = get_node_id(child)
-                edge_attrs = ""
-
+            if parent_id is not None:
+                edge_extra = ""
                 if edge_attr:
-                    custom = edge_attr(n, child)
+                    custom = edge_attr(
+                        next(
+                            nd
+                            for nd in node.walk()
+                            if nd.name == n.name
+                            or id(nd) == id(n)
+                        ),
+                        n,
+                    )
                     if custom:
-                        edge_attrs = " [" + ", ".join(f"{k}={v}" for k, v in custom.items()) + "]"
+                        edge_extra = " [" + ", ".join(
+                            f"{k}={v}" for k, v in custom.items()
+                        ) + "]"
+                lines.append(f"    {parent_id} -> {node_id}{edge_extra};")
 
-                lines.append(f"    {node_id} -> {child_id}{edge_attrs};")
-                process_node(child)
+            for child in n.children:
+                _visit(child, node_id)
 
-        process_node(node)
+        _visit(node, None)
         lines.append("}")
-
         return "\n".join(lines)
 
     @staticmethod
-    def to_mermaid(node: Node,
-                   direction: str = "TD",
-                   node_shape: str = "round",
-                   node_text: Optional[Callable[[Node], str]] = None) -> str:
+    def to_mermaid(
+        node: Node,
+        direction: str = "TD",
+        node_shape: str = "round",
+        node_text: Optional[Callable[[Node], str]] = None,
+    ) -> str:
         """
         Export tree to Mermaid diagram format.
 
-        Args:
-            node: Root node of tree
-            direction: Graph direction (TD, TB, BT, RL, LR)
-            node_shape: Shape style ("round", "square", "circle", "rhombus", "stadium")
-            node_text: Function to generate node text
-
-        Returns:
-            Mermaid format string
-
-        Example:
-            mermaid = TreeExporter.to_mermaid(tree,
-                node_text=lambda n: f"{n.name}<br/>{n.get('type', '')}")
+        Delegates to ``render(node, 'mermaid', direction=direction)``.
+        The *node_text* callback is a legacy option; when provided the output
+        uses the quoted-label syntax with the custom text substituted.
+        The *node_shape* option is accepted for API compatibility but the new
+        backend always uses Mermaid's double-quoted label syntax ``N0["..."]``
+        (which avoids mis-parsing of closing delimiters in node names).
         """
-        lines = [f"graph {direction}"]
+        if node_text is None:
+            return _render.render(node, "mermaid", direction=direction, node_shape=node_shape)
 
-        # Shape delimiters
-        shapes = {
-            "round": ("(", ")"),
-            "square": ("[", "]"),
-            "circle": ("((", "))"),
-            "rhombus": ("{", "}"),
-            "stadium": ("([", "])")
-        }
-        left, right = shapes.get(node_shape, shapes["round"])
+        # Legacy path: custom node_text callback.
+        from typing import List, Optional as Opt
+        from .render import _mermaid_escape
 
-        # Track node IDs
-        node_ids = {}
-        next_id = [0]
+        lines: List[str] = [f"graph {direction}"]
+        counter = [0]
 
-        def get_node_id(n: Node) -> str:
-            if n not in node_ids:
-                # Mermaid IDs must be alphanumeric
-                node_ids[n] = f"N{next_id[0]}"
-                next_id[0] += 1
-            return node_ids[n]
+        def _visit(n: Node, parent_id: Opt[str]) -> None:
+            node_id = f"N{counter[0]}"
+            counter[0] += 1
 
-        def escape_mermaid(text: str) -> str:
-            """Escape special characters for Mermaid."""
-            # Replace problematic characters
-            text = text.replace('"', "'")
-            text = text.replace("<", "&lt;")
-            text = text.replace(">", "&gt;")
-            return text
+            text = _mermaid_escape(node_text(n))
+            lines.append(f'    {node_id}["{text}"]')
 
-        def process_node(n: Node, parent_id: Optional[str] = None):
-            node_id = get_node_id(n)
-
-            # Node text
-            if node_text:
-                text = node_text(n)
-            else:
-                text = n.name
-            text = escape_mermaid(text)
-
-            # Node declaration
-            lines.append(f"    {node_id}{left}{text}{right}")
-
-            # Edge from parent
-            if parent_id:
+            if parent_id is not None:
                 lines.append(f"    {parent_id} --> {node_id}")
 
-            # Process children
             for child in n.children:
-                process_node(child, node_id)
+                _visit(child, node_id)
 
-        process_node(node)
-
+        _visit(node, None)
         return "\n".join(lines)
 
     @staticmethod
     def to_yaml(node: Node, indent: int = 2) -> str:
         """
-        Export tree to YAML-like indented format.
+        Export tree to YAML.
 
-        Args:
-            node: Root node of tree
-            indent: Number of spaces per level
+        Delegates to ``render(node, 'yaml')``, which uses PyYAML's
+        ``safe_dump``.  Raises ``ImportError`` if PyYAML is not installed.
 
-        Returns:
-            YAML-like string representation
+        Note: The *indent* parameter is accepted for API compatibility but
+        PyYAML's ``safe_dump`` manages indentation internally.
         """
-        lines = []
-
-        def render(n: Node, level: int = 0):
-            prefix = " " * (level * indent)
-
-            # Node name
-            lines.append(f"{prefix}- name: {n.name}")
-
-            # Attributes
-            if n._attrs:
-                for key, value in n._attrs.items():
-                    if isinstance(value, (dict, list)):
-                        value = json.dumps(value)
-                    lines.append(f"{prefix}  {key}: {value}")
-
-            # Children
-            if n.children:
-                lines.append(f"{prefix}  children:")
-                for child in n.children:
-                    render(child, level + 2)
-
-        render(node)
-        return "\n".join(lines)
+        return _render.render(node, "yaml")
 
     @staticmethod
     def to_xml(node: Node, root_tag: str = "tree", indent: int = 2) -> str:
         """
         Export tree to XML format.
 
-        Args:
-            node: Root node of tree
-            root_tag: Tag name for root element
-            indent: Number of spaces per level
+        Delegates to ``render(node, 'xml', root_tag=root_tag)``.
 
-        Returns:
-            XML string representation
+        Note: The *indent* parameter is accepted for API compatibility; the
+        actual indentation is controlled by the render backend (two spaces
+        on Python 3.9+, compact on 3.8).
         """
-        lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-
-        def escape_xml(text: str) -> str:
-            """Escape special XML characters."""
-            text = str(text)
-            text = text.replace("&", "&amp;")
-            text = text.replace("<", "&lt;")
-            text = text.replace(">", "&gt;")
-            text = text.replace('"', "&quot;")
-            text = text.replace("'", "&apos;")
-            return text
-
-        def render(n: Node, level: int = 0):
-            prefix = " " * (level * indent)
-
-            # Open tag with name attribute
-            attrs = [f'name="{escape_xml(n.name)}"']
-
-            # Add attrs as attributes (simple values only)
-            for key, value in n._attrs.items():
-                if not isinstance(value, (dict, list)):
-                    attrs.append(f'{key}="{escape_xml(value)}"')
-
-            attr_str = " ".join(attrs)
-
-            if n.children:
-                lines.append(f"{prefix}<node {attr_str}>")
-
-                # Add complex attrs as nested elements
-                for key, value in n._attrs.items():
-                    if isinstance(value, (dict, list)):
-                        lines.append(f"{prefix}  <{key}>{escape_xml(json.dumps(value))}</{key}>")
-
-                # Add children
-                for child in n.children:
-                    render(child, level + 1)
-
-                lines.append(f"{prefix}</node>")
-            else:
-                # Self-closing tag for leaves
-                lines.append(f"{prefix}<node {attr_str} />")
-
-        lines.append(f"<{root_tag}>")
-        render(node, 1)
-        lines.append(f"</{root_tag}>")
-
-        return "\n".join(lines)
+        return _render.render(node, "xml", root_tag=root_tag)
 
     @staticmethod
-    def to_html(node: Node,
-                include_styles: bool = True,
-                collapsible: bool = True) -> str:
-        """
-        Export tree to interactive HTML.
-
-        Args:
-            node: Root node of tree
-            include_styles: Include CSS styles
-            collapsible: Make tree nodes collapsible
-
-        Returns:
-            HTML string representation
-        """
-        html_parts = []
-
-        if include_styles:
-            html_parts.append("""
-<style>
-    .tree { font-family: monospace; }
-    .tree ul { list-style-type: none; position: relative; padding-left: 20px; }
-    .tree li { position: relative; padding: 5px 0; }
-    .tree li::before {
-        content: ''; position: absolute; top: 0; left: -15px;
-        width: 10px; height: 50%; border-left: 1px solid #ccc;
-        border-bottom: 1px solid #ccc;
-    }
-    .tree li::after {
-        content: ''; position: absolute; left: -15px; bottom: 50%;
-        width: 10px; height: 50%; border-left: 1px solid #ccc;
-    }
-    .tree li:last-child::after { display: none; }
-    .tree .node {
-        display: inline-block; padding: 3px 8px;
-        border: 1px solid #ddd; border-radius: 3px;
-        background: #f5f5f5; cursor: pointer;
-    }
-    .tree .attrs {
-        font-size: 0.9em; color: #666;
-        margin-left: 10px; font-style: italic;
-    }
-    .collapsed > ul { display: none; }
-    .tree .toggle { margin-right: 5px; }
-</style>
-""")
-
-        html_parts.append('<div class="tree">')
-
-        def render(n: Node) -> str:
-            parts = []
-
-            # Node content
-            node_class = "node"
-            toggle = ""
-            if collapsible and n.children:
-                toggle = '<span class="toggle">▼</span>'
-
-            attrs_str = ""
-            if n._attrs:
-                items = [f"{k}: {v}" for k, v in n._attrs.items()
-                         if not isinstance(v, (dict, list))]
-                if items:
-                    attrs_str = f'<span class="attrs">{", ".join(items)}</span>'
-
-            parts.append(f'<li><div class="{node_class}">{toggle}{n.name}{attrs_str}</div>')
-
-            # Children
-            if n.children:
-                parts.append('<ul>')
-                for child in n.children:
-                    parts.append(render(child))
-                parts.append('</ul>')
-
-            parts.append('</li>')
-
-            return "".join(parts)
-
-        html_parts.append('<ul>')
-        html_parts.append(render(node))
-        html_parts.append('</ul>')
-        html_parts.append('</div>')
-
-        if collapsible:
-            html_parts.append("""
-<script>
-document.querySelectorAll('.tree .node').forEach(node => {
-    if (node.querySelector('.toggle')) {
-        node.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const li = this.parentElement;
-            li.classList.toggle('collapsed');
-            const toggle = this.querySelector('.toggle');
-            toggle.textContent = li.classList.contains('collapsed') ? '▶' : '▼';
-        });
-    }
-});
-</script>
-""")
-
-        return "".join(html_parts)
+    def to_html(
+        node: Node,
+        include_styles: bool = True,
+        collapsible: bool = True,
+    ) -> str:
+        """Export tree to interactive HTML."""
+        return _render.render(
+            node, "html",
+            include_styles=include_styles,
+            collapsible=collapsible,
+        )
 
     @staticmethod
     def to_flat(node: Node, indent: int = 2) -> str:
         """
-        Export tree to flat/graph format.
+        Export tree to flat/graph format (path-keyed JSON dictionary).
 
-        Creates a flat dictionary where each node is a key mapping to a dict with:
-        - .name: node name (hidden metadata)
-        - .children: list of child node names (hidden metadata)
-        - .color: color attribute if present (hidden metadata)
-        - other attributes as regular key-value pairs
-
-        The dot-prefix indicates hidden metadata (like Unix hidden files).
-
-        Args:
-            node: Root node of tree
-            indent: JSON indentation level
-
-        Returns:
-            JSON string of flat representation
+        This format is not in the render registry (it produces a structured
+        dict, not a linear text layout).  Kept as a direct implementation.
         """
-        flat_dict = {}
+        flat_dict: Dict[str, Any] = {}
 
-        def flatten(n: Node, path_prefix: str = ""):
-            # Generate unique key (use path to handle duplicate names)
-            if path_prefix:
-                key = f"{path_prefix}/{n.name}"
-            else:
-                key = n.name
-
-            # Build node entry with dot-prefix for metadata
-            node_entry = {
+        def _flatten(n: Node, path_prefix: str = "") -> None:
+            key = f"{path_prefix}/{n.name}" if path_prefix else n.name
+            node_entry: Dict[str, Any] = {
                 ".name": n.name,
-                ".children": [child.name for child in n.children]
+                ".children": [child.name for child in n.children],
             }
-
-            # Add color if present in attrs
-            if '.color' in n.attrs:
-                node_entry[".color"] = n.attrs['.color']
-
-            # Add all other attributes (skip dot-prefixed ones)
+            if ".color" in n.attrs:
+                node_entry[".color"] = n.attrs[".color"]
             for k, v in n.attrs.items():
-                if not k.startswith('.'):
+                if not k.startswith("."):
                     node_entry[k] = v
-
             flat_dict[key] = node_entry
-
-            # Recursively flatten children
             for child in n.children:
-                flatten(child, key)
+                _flatten(child, key)
 
-        flatten(node)
+        _flatten(node)
         return json.dumps(flat_dict, indent=indent)
 
 
+# ---------------------------------------------------------------------------
 # Convenience functions
+# ---------------------------------------------------------------------------
+
 def export_tree(node: Node, format: str, **kwargs) -> str:
     """
-    Export tree to specified format.
+    Export tree to the specified format.
+
+    Delegates to the render registry for all standard formats.
+    ``"flat"`` / ``"graph"`` use :meth:`TreeExporter.to_flat`.
 
     Args:
-        node: Root node of tree
-        format: Export format (json, ascii, unicode, graphviz, mermaid, yaml, xml, html)
-        **kwargs: Format-specific options
+        node: Root node of tree.
+        format: One of ``json``, ``ascii``, ``unicode``, ``graphviz``,
+            ``dot``, ``mermaid``, ``yaml``, ``xml``, ``html``, ``flat``,
+            ``graph``.
+        **kwargs: Format-specific options forwarded to the backend.
 
     Returns:
-        String representation in specified format
+        String representation in the requested format.
+
+    Raises:
+        ValueError: For unknown format strings.
     """
-    exporters = {
-        'json': TreeExporter.to_json,
-        'flat': TreeExporter.to_flat,
-        'graph': TreeExporter.to_flat,  # Alias
-        'ascii': TreeExporter.to_ascii,
-        'unicode': TreeExporter.to_unicode,
-        'graphviz': TreeExporter.to_graphviz,
-        'dot': TreeExporter.to_graphviz,  # Alias
-        'mermaid': TreeExporter.to_mermaid,
-        'yaml': TreeExporter.to_yaml,
-        'xml': TreeExporter.to_xml,
-        'html': TreeExporter.to_html,
+    # flat / graph are not in the render registry
+    if format in ("flat", "graph"):
+        return TreeExporter.to_flat(node, **kwargs)
+
+    # TreeExporter shim methods handle legacy kwargs (node_attr, node_text, …)
+    # but for the simple cases we can go directly to render.
+    _shim = {
+        "json": TreeExporter.to_json,
+        "ascii": TreeExporter.to_ascii,
+        "unicode": TreeExporter.to_unicode,
+        "graphviz": TreeExporter.to_graphviz,
+        "dot": TreeExporter.to_graphviz,
+        "mermaid": TreeExporter.to_mermaid,
+        "yaml": TreeExporter.to_yaml,
+        "xml": TreeExporter.to_xml,
+        "html": TreeExporter.to_html,
     }
-
-    exporter = exporters.get(format)
-    if not exporter:
-        raise ValueError(f"Unknown export format: {format}")
-
-    return exporter(node, **kwargs)
+    shim_fn = _shim.get(format)
+    if shim_fn is None:
+        raise ValueError(f"Unknown export format: {format!r}")
+    return shim_fn(node, **kwargs)
 
 
-def save_tree(node: Node, filepath: str, format: Optional[str] = None, **kwargs):
+def save_tree(
+    node: Node,
+    filepath: str,
+    format: Optional[str] = None,
+    **kwargs: Any,
+) -> None:
     """
-    Save tree to file in specified format.
+    Save tree to file in the specified format.
 
     Args:
-        node: Root node of tree
-        filepath: Output file path
-        format: Export format (auto-detected from extension if not specified)
-        **kwargs: Format-specific options
+        node: Root node of tree.
+        filepath: Output file path.
+        format: Export format; auto-detected from file extension if not given.
+        **kwargs: Format-specific options forwarded to the backend.
     """
     if format is None:
-        # Auto-detect from file extension
-        import os
         ext = os.path.splitext(filepath)[1].lower()
         format_map = {
-            '.json': 'json',
-            '.dot': 'graphviz',
-            '.gv': 'graphviz',
-            '.mmd': 'mermaid',
-            '.mermaid': 'mermaid',
-            '.yaml': 'yaml',
-            '.yml': 'yaml',
-            '.xml': 'xml',
-            '.html': 'html',
-            '.txt': 'ascii',
+            ".json": "json",
+            ".dot": "graphviz",
+            ".gv": "graphviz",
+            ".mmd": "mermaid",
+            ".mermaid": "mermaid",
+            ".yaml": "yaml",
+            ".yml": "yaml",
+            ".xml": "xml",
+            ".html": "html",
+            ".txt": "ascii",
         }
-        format = format_map.get(ext, 'ascii')
+        format = format_map.get(ext, "ascii")
 
     content = export_tree(node, format, **kwargs)
 
-    with open(filepath, 'w', encoding='utf-8') as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write(content)

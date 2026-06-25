@@ -52,7 +52,12 @@ from .builders import (
 
 # Render engine (Theme, registry, fold-based text tree)
 from . import render
-from .render import Theme, ASCII_THEME, UNICODE_THEME, register as register_renderer, extension_for
+from .render import (
+    Theme, ASCII_THEME, UNICODE_THEME,
+    render as render_tree,          # the dispatch function
+    register as register_renderer,
+    extension_for,
+)
 
 # Visualization and export
 from .pretty_tree import PrettyTree, pretty_tree
@@ -107,7 +112,8 @@ __all__ = [
     'tree', 'branch', 'leaf_node',
 
     # Render engine
-    'render',
+    'render',           # the module
+    'render_tree',      # the dispatch function (render.render)
     'Theme', 'ASCII_THEME', 'UNICODE_THEME',
     'register_renderer', 'extension_for',
 

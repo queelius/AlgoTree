@@ -492,29 +492,6 @@ class Tree:
         return f"Tree(root={self._root.name!r}, size={self.size})"
 
     def __str__(self) -> str:
-        """Pretty string representation."""
-        return self._simple_tree_str()
-
-    def _simple_tree_str(self) -> str:
-        """Generate simple ASCII tree representation."""
-        lines = []
-
-        def add_node(node: Node, prefix: str = '', is_last: bool = True):
-            # Add current node
-            connector = '└── ' if is_last else '├── '
-            lines.append(prefix + connector + node.name)
-
-            # Add children
-            if node.children:
-                extension = '    ' if is_last else '│   '
-                for i, child in enumerate(node.children):
-                    is_last_child = i == len(node.children) - 1
-                    add_node(child, prefix + extension, is_last_child)
-
-        # Start with root
-        lines.append(self._root.name)
-        for i, child in enumerate(self._root.children):
-            is_last = i == len(self._root.children) - 1
-            add_node(child, '', is_last)
-
-        return '\n'.join(lines)
+        """Pretty string representation (Unicode box-drawing tree)."""
+        from .render import render as _render
+        return _render(self._root, "unicode")
