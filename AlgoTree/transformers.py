@@ -295,7 +295,7 @@ class ToPathsShaper(Shaper[List[str]]):
         self.to_leaves_only = to_leaves_only
 
     def __call__(self, tree: Tree) -> List[str]:
-        return tree.paths(to_leaves_only=self.to_leaves_only)
+        return tree.paths(to_leaves_only=self.to_leaves_only, delimiter=self.delimiter)
 
     def __repr__(self) -> str:
         return f"ToPathsShaper(delimiter={self.delimiter!r})"

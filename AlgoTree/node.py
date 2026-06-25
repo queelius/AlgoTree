@@ -361,7 +361,7 @@ class Node:
     # List-AST bridge (name-as-operator convention)
 
     @staticmethod
-    def from_list(data, parse_scalar=str) -> 'Node':
+    def from_list(data) -> 'Node':
         """
         Build a Node tree from a nested-list AST (name-as-operator).
 
@@ -370,8 +370,6 @@ class Node:
 
         Args:
             data: A nested list or scalar.  An empty list raises ValueError.
-            parse_scalar: Only used in the signature for symmetry with to_list;
-                          names are always stringified via str().
 
         Returns:
             Root Node of the constructed tree.
@@ -383,7 +381,7 @@ class Node:
             if not data:
                 raise ValueError("cannot build a Node from an empty list")
             head, *rest = data
-            return Node(str(head), *[Node.from_list(x, parse_scalar) for x in rest])
+            return Node(str(head), *[Node.from_list(x) for x in rest])
         return Node(str(data))
 
     def to_list(self, parse_scalar=None):

@@ -292,6 +292,17 @@ class TestShapers(unittest.TestCase):
         self.assertEqual(len(result), 3)  # Leaves only by default
         self.assertIn("root/a", result)
 
+    def test_to_paths_shaper_delimiter(self):
+        """Test that to_paths(delimiter='.') returns dot-delimited paths."""
+        shaper = to_paths(delimiter='.')
+        result = shaper(self.tree)
+
+        self.assertEqual(len(result), 3)  # Leaves only by default
+        self.assertIn("root.a", result)
+        # No slash-delimited paths should appear
+        for path in result:
+            self.assertNotIn("/", path)
+
 
 class TestPipeline(unittest.TestCase):
     """Test Pipeline transformer."""
