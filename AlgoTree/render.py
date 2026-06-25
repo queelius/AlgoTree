@@ -13,6 +13,9 @@ tree that returns a function of *inherited* context (prefix, is_last,
 is_root) — the classic "synthesized vs. inherited attributes" technique,
 which avoids any mutable state while still threading parent-context
 downward.
+
+Structural backends (mermaid, graphviz/dot) use pre-order node counters
+for stable IDs and route all node text through their respective escapers.
 """
 
 from typing import Any, Callable, Dict, List, NamedTuple, Optional
@@ -119,3 +122,108 @@ def _text_tree(node: Node, theme: Theme) -> str:
 
 register("ascii",   lambda node, **o: _text_tree(node, ASCII_THEME),   ".txt")
 register("unicode", lambda node, **o: _text_tree(node, UNICODE_THEME), ".txt")
+
+
+# ---------------------------------------------------------------------------
+# Escapers for structured formats
+# ---------------------------------------------------------------------------
+
+def _mermaid_escape(text: str) -> str:
+    """Escape text for safe embedding inside a Mermaid node label."""
+    text = str(text)
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "'")   # double-quote -> single (Mermaid convention)
+    return text
+
+
+def _dot_escape(text: str) -> str:
+    """Escape text for safe embedding inside a DOT label string."""
+    text = str(text)
+    text = text.replace("\\", "\\\\")  # backslash first
+    text = text.replace('"', '\\"')    # then double-quote
+    text = text.replace("\n", "\\n")
+    return text
+
+
+# ---------------------------------------------------------------------------
+# Mermaid backend
+# ---------------------------------------------------------------------------
+
+def _to_mermaid(
+    node: Node,
+    direction: str = "TD",
+    node_shape: str = "round",
+    **_opts: Any,
+) -> str:
+    """Render *node* as a Mermaid graph diagram."""
+    shapes = {
+        "round":   ("(", ")"),
+        "square":  ("[", "]"),
+        "circle":  ("((", "))"),
+        "rhombus": ("{", "}"),
+        "stadium": ("([", "])"),
+    }
+    left, right = shapes.get(node_shape, shapes["round"])
+
+    lines: List[str] = [f"graph {direction}"]
+
+    # Pre-order traversal to assign stable IDs and emit declarations + edges.
+    counter = [0]
+
+    def _visit(n: Node, parent_id: Optional[str]) -> None:
+        node_id = f"N{counter[0]}"
+        counter[0] += 1
+
+        label = _mermaid_escape(n.name)
+        lines.append(f"    {node_id}{left}{label}{right}")
+
+        if parent_id is not None:
+            lines.append(f"    {parent_id} --> {node_id}")
+
+        for child in n.children:
+            _visit(child, node_id)
+
+    _visit(node, None)
+    return "\n".join(lines)
+
+
+register("mermaid", _to_mermaid, ".mmd")
+
+
+# ---------------------------------------------------------------------------
+# GraphViz / DOT backend
+# ---------------------------------------------------------------------------
+
+def _to_graphviz(
+    node: Node,
+    name: str = "Tree",
+    **_opts: Any,
+) -> str:
+    """Render *node* as a GraphViz DOT digraph."""
+    lines: List[str] = [f"digraph {name} {{"]
+
+    # Pre-order traversal to assign stable IDs and emit nodes + edges.
+    counter = [0]
+
+    def _visit(n: Node, parent_id: Optional[str]) -> None:
+        node_id = f"N{counter[0]}"
+        counter[0] += 1
+
+        label = _dot_escape(n.name)
+        lines.append(f'    {node_id} [label="{label}"];')
+
+        if parent_id is not None:
+            lines.append(f"    {parent_id} -> {node_id};")
+
+        for child in n.children:
+            _visit(child, node_id)
+
+    _visit(node, None)
+    lines.append("}")
+    return "\n".join(lines)
+
+
+register("graphviz", _to_graphviz, ".dot")
+register("dot",      _to_graphviz, ".dot")  # alias
