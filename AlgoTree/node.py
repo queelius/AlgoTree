@@ -171,6 +171,24 @@ class Node:
             return self._rebuild(children=tuple(filtered_children))
         return None
 
+    def render(self, fmt: str = "unicode", **opts) -> str:
+        """
+        Render this node as a string using the named format.
+
+        Delegates to :func:`AlgoTree.render.render`.  Built-in formats are
+        ``"ascii"`` and ``"unicode"``; additional backends can be registered
+        with :func:`AlgoTree.render.register`.
+
+        Args:
+            fmt: Render format name (default: ``"unicode"``).
+            **opts: Format-specific keyword arguments.
+
+        Returns:
+            String representation of this subtree.
+        """
+        from . import render as _render_mod
+        return _render_mod.render(self, fmt, **opts)
+
     def fold(self, fn: Callable[['Node', List[T]], T]) -> T:
         """
         Catamorphism: reduce the tree bottom-up.

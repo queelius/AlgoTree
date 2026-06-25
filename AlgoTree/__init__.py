@@ -50,6 +50,10 @@ from .builders import (
     tree, branch, leaf as leaf_node  # renamed to avoid collision with selectors.leaf
 )
 
+# Render engine (Theme, registry, fold-based text tree)
+from . import render
+from .render import Theme, ASCII_THEME, UNICODE_THEME, register as register_renderer, extension_for
+
 # Visualization and export
 from .pretty_tree import PrettyTree, pretty_tree
 from .exporters import TreeExporter, export_tree, save_tree
@@ -101,6 +105,11 @@ __all__ = [
     # Builders
     'TreeBuilder', 'FluentTree', 'TreeContext', 'QuickBuilder',
     'tree', 'branch', 'leaf_node',
+
+    # Render engine
+    'render',
+    'Theme', 'ASCII_THEME', 'UNICODE_THEME',
+    'register_renderer', 'extension_for',
 
     # Visualization
     'PrettyTree', 'pretty_tree',
