@@ -340,14 +340,14 @@ class Node:
     @property
     def height(self) -> int:
         """Get height of subtree rooted at this node."""
-        if not self._children:
-            return 0
-        return 1 + max(child.height for child in self._children)
+        return self.fold(
+            lambda _node, child_results: 0 if not child_results else 1 + max(child_results)
+        )
 
     @property
     def size(self) -> int:
         """Get total number of nodes in subtree."""
-        return sum(1 for _ in self.walk())
+        return self.fold(lambda _node, child_results: 1 + sum(child_results))
 
     @property
     def path(self) -> str:

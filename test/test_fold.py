@@ -42,3 +42,23 @@ def test_fold_on_leaf_gets_empty_child_results():
     seen = []
     Node("solo").fold(lambda node, child_results: seen.append(child_results))
     assert seen == [[]]
+
+
+def test_size_equals_walk_count():
+    tree = _sample()
+    assert tree.size == len(list(tree.walk()))      # size is node count
+
+
+def test_size_is_fold():
+    tree = _sample()
+    assert tree.size == tree.fold(lambda n, cs: 1 + sum(cs))
+
+
+def test_height_of_leaf_is_zero():
+    assert Node("leaf").height == 0
+
+
+def test_height_is_one_plus_max_child_height():
+    tree = _sample()                                # root -> b -> c is the deepest path
+    assert tree.height == 2
+    assert tree.height == tree.fold(lambda n, cs: 0 if not cs else 1 + max(cs))
