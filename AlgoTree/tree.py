@@ -332,6 +332,26 @@ class Tree:
         predicate = self._make_predicate(selector)
         return (node for node in self._root.walk() if predicate(node))
 
+    def locate(self, selector: Union[str, Callable[[Node], bool]]) -> Optional['Cursor']:
+        """Return a Cursor at the first node matching selector, or None."""
+        from .cursor import Cursor, walk_cursors
+        for cursor in walk_cursors(Cursor(self._root)):
+            if self._cursor_matches(cursor, selector):
+                return cursor
+        return None
+
+    def cursors_at(self, selector: Union[str, Callable[[Node], bool]]) -> List['Cursor']:
+        """Return a Cursor at every node matching selector."""
+        from .cursor import Cursor, walk_cursors
+        return [c for c in walk_cursors(Cursor(self._root))
+                if self._cursor_matches(c, selector)]
+
+    @staticmethod
+    def _cursor_matches(cursor: 'Cursor', selector) -> bool:
+        if hasattr(selector, 'matches_at'):
+            return selector.matches_at(cursor)
+        return _make_predicate_fn(selector)(cursor.node)
+
     # Path operations
 
     def get_path(self, path: str, delimiter: str = '/') -> Optional[Node]:
