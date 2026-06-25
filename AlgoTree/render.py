@@ -236,3 +236,92 @@ def _to_graphviz(
 
 register("graphviz", _to_graphviz, ".dot")
 register("dot",      _to_graphviz, ".dot")  # alias
+
+
+# ---------------------------------------------------------------------------
+# JSON backend
+# ---------------------------------------------------------------------------
+
+def _to_json(node: Node, indent: int = 2, **_opts: Any) -> str:
+    """Render *node* as a JSON string via node.to_dict()."""
+    import json as _json
+    return _json.dumps(node.to_dict(), indent=indent)
+
+
+register("json", _to_json, ".json")
+
+
+# ---------------------------------------------------------------------------
+# YAML backend  (requires PyYAML; degrades gracefully if absent)
+# ---------------------------------------------------------------------------
+
+def _to_yaml(node: Node, **_opts: Any) -> str:
+    """Render *node* as YAML via yaml.safe_dump(node.to_dict(), ...).
+
+    Requires PyYAML.  Raises ImportError with an install hint if it is not
+    available.  We deliberately do NOT hand-roll YAML: real YAML has too many
+    edge cases (multi-line strings, special scalars, unicode) to emit correctly
+    by string concatenation.
+    """
+    try:
+        import yaml as _yaml  # type: ignore[import]
+    except ImportError as exc:
+        raise ImportError(
+            "PyYAML is required for the 'yaml' render backend. "
+            "Install it with:  pip install pyyaml"
+        ) from exc
+    return _yaml.safe_dump(node.to_dict(), sort_keys=False)
+
+
+register("yaml", _to_yaml, ".yaml")
+
+
+# ---------------------------------------------------------------------------
+# XML backend  (stdlib xml.etree.ElementTree for building; never parses)
+# ---------------------------------------------------------------------------
+
+def _to_xml(node: Node, root_tag: str = "tree", **_opts: Any) -> str:
+    """Render *node* as an XML document.
+
+    Uses xml.etree.ElementTree to *construct* (not parse) the element tree,
+    so there is no XXE or billion-laughs exposure.  Node names and attrs are
+    set via the ElementTree API, which handles all necessary XML escaping.
+    Numeric/bool attr values are coerced to str for use as XML attributes.
+    Complex (dict/list) attrs are skipped as XML attributes and emitted as
+    nested ``<{key}>...</{key}>`` child elements instead.
+    """
+    import json as _json
+    import xml.etree.ElementTree as _ET
+    import sys
+
+    def _build(n: Node) -> _ET.Element:
+        elem = _ET.Element("node")
+        # node name as an XML attribute; ET handles escaping
+        elem.set("name", n.name)
+        # simple attrs → XML attributes (str-coerced); complex → child elements
+        complex_attrs = {}
+        for k, v in n._attrs.items():
+            if isinstance(v, (dict, list)):
+                complex_attrs[k] = v
+            else:
+                elem.set(k, str(v))
+        # complex attrs as nested text elements
+        for k, v in complex_attrs.items():
+            child_elem = _ET.SubElement(elem, k)
+            child_elem.text = _json.dumps(v)
+        # children
+        for child in n.children:
+            elem.append(_build(child))
+        return elem
+
+    root_elem = _ET.Element(root_tag)
+    root_elem.append(_build(node))
+
+    # Pretty-print: ElementTree.indent() was added in Python 3.9.
+    if sys.version_info >= (3, 9):
+        _ET.indent(root_elem, space="  ")
+
+    return _ET.tostring(root_elem, encoding="unicode")
+
+
+register("xml", _to_xml, ".xml")

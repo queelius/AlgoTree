@@ -372,3 +372,257 @@ class TestGraphvizBackend:
         from AlgoTree.render import render
         result = render(self._simple_tree(), "graphviz", name="MyGraph")
         assert "MyGraph" in result
+
+
+# ---------------------------------------------------------------------------
+# Task 3 – Data backends: json, yaml, xml
+# ---------------------------------------------------------------------------
+
+class TestJsonBackend:
+    """render('json') emits valid JSON that round-trips name/attrs/children."""
+
+    def _tree_with_attrs(self) -> Node:
+        return Node(
+            "root",
+            Node("child1", attrs={"x": 1, "y": "hello"}),
+            Node("child2", Node("grandchild", attrs={"z": True})),
+            attrs={"kind": "container"},
+        )
+
+    def test_json_registered(self):
+        from AlgoTree.render import extension_for
+        assert extension_for("json") == ".json"
+
+    def test_json_parses(self):
+        import json
+        from AlgoTree.render import render
+        result = render(self._tree_with_attrs(), "json")
+        data = json.loads(result)
+        assert isinstance(data, dict)
+
+    def test_json_root_name(self):
+        import json
+        from AlgoTree.render import render
+        data = json.loads(render(self._tree_with_attrs(), "json"))
+        assert data["name"] == "root"
+
+    def test_json_root_attrs(self):
+        import json
+        from AlgoTree.render import render
+        data = json.loads(render(self._tree_with_attrs(), "json"))
+        assert data["kind"] == "container"
+
+    def test_json_children_present(self):
+        import json
+        from AlgoTree.render import render
+        data = json.loads(render(self._tree_with_attrs(), "json"))
+        assert "children" in data
+        assert len(data["children"]) == 2
+
+    def test_json_child_attrs(self):
+        import json
+        from AlgoTree.render import render
+        data = json.loads(render(self._tree_with_attrs(), "json"))
+        child1 = data["children"][0]
+        assert child1["name"] == "child1"
+        assert child1["x"] == 1
+        assert child1["y"] == "hello"
+
+    def test_json_leaf_has_no_children_key(self):
+        import json
+        from AlgoTree.render import render
+        # leaf nodes should NOT include a 'children' key (matches node.to_dict())
+        tree = Node("root", Node("leaf"))
+        data = json.loads(render(tree, "json"))
+        leaf = data["children"][0]
+        assert "children" not in leaf
+
+    def test_json_round_trips_via_node_from_dict(self):
+        import json
+        from AlgoTree.render import render
+        tree = self._tree_with_attrs()
+        data = json.loads(render(tree, "json"))
+        restored = Node.from_dict(data)
+        assert restored == tree
+
+    def test_json_indent_option(self):
+        from AlgoTree.render import render
+        result = render(Node("x"), "json", indent=4)
+        # indent=4 produces multi-line output (well, single node, but at least
+        # the output is valid JSON)
+        import json
+        assert json.loads(result)["name"] == "x"
+
+    def test_json_matches_node_to_dict(self):
+        import json
+        from AlgoTree.render import render
+        tree = self._tree_with_attrs()
+        assert json.loads(render(tree, "json")) == tree.to_dict()
+
+
+class TestYamlBackend:
+    """render('yaml') emits YAML that round-trips via yaml.safe_load."""
+
+    def _simple_tree(self) -> Node:
+        return Node(
+            "root",
+            Node("child", attrs={"val": 42}),
+            attrs={"kind": "root"},
+        )
+
+    def test_yaml_registered(self):
+        pytest.importorskip("yaml")
+        from AlgoTree.render import extension_for
+        assert extension_for("yaml") == ".yaml"
+
+    def test_yaml_round_trips(self):
+        yaml = pytest.importorskip("yaml")
+        from AlgoTree.render import render
+        tree = self._simple_tree()
+        result = render(tree, "yaml")
+        data = yaml.safe_load(result)
+        assert data == tree.to_dict()
+
+    def test_yaml_root_name(self):
+        yaml = pytest.importorskip("yaml")
+        from AlgoTree.render import render
+        data = yaml.safe_load(render(self._simple_tree(), "yaml"))
+        assert data["name"] == "root"
+
+    def test_yaml_child_attrs(self):
+        yaml = pytest.importorskip("yaml")
+        from AlgoTree.render import render
+        data = yaml.safe_load(render(self._simple_tree(), "yaml"))
+        assert data["children"][0]["val"] == 42
+
+    def test_yaml_absent_raises_with_hint(self):
+        """If PyYAML is not installed, render('yaml') raises ImportError with install hint."""
+        # We can only test this branch if we can mock the import.
+        import sys
+        import importlib
+        from unittest.mock import patch
+
+        # Patch the yaml import inside the render module to raise ImportError
+        with patch.dict(sys.modules, {"yaml": None}):
+            # Force reload to pick up the patched module dict
+            import AlgoTree.render as render_mod
+            importlib.reload(render_mod)
+            try:
+                with pytest.raises((ImportError, ModuleNotFoundError)):
+                    render_mod.render(Node("x"), "yaml")
+            finally:
+                # Reload back to normal
+                importlib.reload(render_mod)
+
+    def test_yaml_uses_safe_dump_not_hand_rolled(self):
+        """The yaml output must be parseable by yaml.safe_load (not hand-rolled)."""
+        yaml = pytest.importorskip("yaml")
+        from AlgoTree.render import render
+        tree = Node("root", Node("child", attrs={"list_val": [1, 2, 3]}), attrs={"nested": {"a": 1}})
+        result = render(tree, "yaml")
+        # If hand-rolled, complex attrs would likely be broken; safe_load must succeed
+        data = yaml.safe_load(result)
+        assert data["name"] == "root"
+
+
+class TestXmlBackend:
+    """render('xml') emits valid XML parseable by ElementTree."""
+
+    def _simple_tree(self) -> Node:
+        return Node(
+            "root",
+            Node("child1", attrs={"val": "10"}),
+            Node("child2", Node("grandchild")),
+            attrs={"kind": "container"},
+        )
+
+    def test_xml_registered(self):
+        from AlgoTree.render import extension_for
+        assert extension_for("xml") == ".xml"
+
+    def test_xml_parses(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        assert root is not None
+
+    def test_xml_has_root_tag(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        assert root.tag == "tree"
+
+    def test_xml_custom_root_tag(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml", root_tag="forest")
+        root = ET.fromstring(result)
+        assert root.tag == "forest"
+
+    def test_xml_has_node_elements(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        # Should have child <node> elements under <tree>
+        nodes = list(root.iter("node"))
+        assert len(nodes) > 0
+
+    def test_xml_node_names_as_attribute(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        names = [n.get("name") for n in root.iter("node")]
+        assert "root" in names
+        assert "child1" in names
+
+    def test_xml_attrs_as_element_attributes(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        child1_elem = next(n for n in root.iter("node") if n.get("name") == "child1")
+        assert child1_elem.get("val") == "10"
+
+    def test_xml_children_nested(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        result = render(self._simple_tree(), "xml")
+        root = ET.fromstring(result)
+        # child2 should contain grandchild
+        child2_elem = next(n for n in root.iter("node") if n.get("name") == "child2")
+        grandchild_elem = child2_elem.find("node")
+        assert grandchild_elem is not None
+        assert grandchild_elem.get("name") == "grandchild"
+
+    def test_xml_escapes_special_chars_in_name(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        evil = Node('root<&>"', Node("child's node"))
+        result = render(evil, "xml")
+        # Must be parseable despite special characters (ET handles this)
+        root = ET.fromstring(result)
+        names = [n.get("name") for n in root.iter("node")]
+        assert 'root<&>"' in names
+
+    def test_xml_escapes_special_chars_in_attrs(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        evil = Node("root", attrs={"key": 'val<&>"'})
+        result = render(evil, "xml")
+        root = ET.fromstring(result)
+        node_elem = next(n for n in root.iter("node") if n.get("name") == "root")
+        assert node_elem.get("key") == 'val<&>"'
+
+    def test_xml_str_values_for_attrs(self):
+        import xml.etree.ElementTree as ET
+        from AlgoTree.render import render
+        # Numeric attrs should be str()-converted for XML attributes
+        node = Node("root", attrs={"count": 42, "flag": True})
+        result = render(node, "xml")
+        root = ET.fromstring(result)
+        elem = next(n for n in root.iter("node") if n.get("name") == "root")
+        assert elem.get("count") == "42"
