@@ -128,9 +128,42 @@ def _annotate_node_factory(
 # Factory functions (return Transformer; duck-typed on Node or Tree)
 # ---------------------------------------------------------------------------
 
+def _adapt_map_fn(fn: Callable) -> Callable:
+    """
+    Wrap *fn* so it is safe for strict Node.map (Node -> Node only).
+
+    Tree.map already handles dict/None returns; Node.map is strict.  By
+    adapting fn here, map_() works uniformly for both callers:
+
+    - None return  -> keep node unchanged
+    - dict return  -> merge attrs onto the node (same as Tree.map behaviour)
+    - Node return  -> use as-is
+
+    This makes the dict-shorthand pattern work with bare Node callers too.
+    """
+    from .node import Node as _Node
+
+    def _adapted(node: _Node) -> _Node:
+        result = fn(node)
+        if result is None:
+            return node
+        if isinstance(result, dict):
+            return node.with_attrs(**result)
+        return result  # assumed Node
+
+    return _adapted
+
+
 def map_(fn: Callable) -> Transformer:
-    """Create a transformer that maps fn over all nodes."""
-    return Transformer(lambda t: t.map(fn), f'map_({getattr(fn, "__name__", "fn")})')
+    """
+    Create a transformer that maps fn over all nodes.
+
+    fn may return a Node, a dict of attribute updates, or None (keep
+    unchanged).  The transformer works identically on bare Node and Tree
+    inputs (duck-typed).
+    """
+    _fn = _adapt_map_fn(fn)
+    return Transformer(lambda t: t.map(_fn), f'map_({getattr(fn, "__name__", "fn")})')
 
 
 def filter_(predicate: Callable) -> Transformer:

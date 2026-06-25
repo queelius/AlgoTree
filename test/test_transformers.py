@@ -443,5 +443,119 @@ class TestTransformerRepr(unittest.TestCase):
         self.assertIn(">>", repr(composed))
 
 
+class TestTransformersOnBareNode(unittest.TestCase):
+    """T1: every factory must work on a bare Node (duck-typing claim)."""
+
+    def setUp(self):
+        self.node = Node("root",
+            Node("a", attrs={"value": 1}),
+            Node("b", attrs={"value": 2})
+        )
+
+    def test_map_node_returning_fn_on_bare_node(self):
+        """map_(Node-returning fn) on bare Node returns a Node."""
+        result = map_(lambda n: n.with_attrs(x=1))(self.node)
+        self.assertIsInstance(result, Node)
+        self.assertEqual(result.get("x"), 1)
+
+    def test_map_dict_fn_on_bare_node(self):
+        """map_(dict-shorthand fn) on bare Node works like on Tree."""
+        result = map_(lambda n: {"doubled": n.get("value", 0) * 2})(self.node)
+        self.assertIsInstance(result, Node)
+        self.assertEqual(result.children[0].get("doubled"), 2)
+        self.assertEqual(result.children[1].get("doubled"), 4)
+
+    def test_map_none_fn_on_bare_node(self):
+        """map_(None-returning fn) on bare Node keeps nodes unchanged."""
+        result = map_(lambda n: None)(self.node)
+        self.assertIsInstance(result, Node)
+        self.assertEqual(result.children[0].get("value"), 1)
+
+    def test_filter_on_bare_node(self):
+        """filter_ on bare Node returns a Node."""
+        result = filter_(lambda n: n.get("value", 0) > 1)(self.node)
+        # filter returns None if nothing matches at root; root is kept as ancestor
+        self.assertIsInstance(result, Node)
+
+    def test_prune_on_bare_node(self):
+        """prune on bare Node returns a Node."""
+        result = prune("a")(self.node)
+        self.assertIsInstance(result, Node)
+        self.assertEqual(len(result.children), 1)
+        self.assertEqual(result.children[0].name, "b")
+
+    def test_graft_on_bare_node(self):
+        """graft on bare Node returns a Node."""
+        result = graft("a", Node("child_of_a"))(self.node)
+        self.assertIsInstance(result, Node)
+        a_node = next(c for c in result.children if c.name == "a")
+        self.assertEqual(len(a_node.children), 1)
+        self.assertEqual(a_node.children[0].name, "child_of_a")
+
+    def test_normalize_on_bare_node(self):
+        """normalize on bare Node returns a Node."""
+        unordered = Node("root", Node("z"), Node("a"), Node("m"))
+        result = normalize()(unordered)
+        self.assertIsInstance(result, Node)
+        self.assertEqual([c.name for c in result.children], ["a", "m", "z"])
+
+    def test_annotate_on_bare_node(self):
+        """annotate on bare Node returns a Node."""
+        result = annotate(tagged=True)(self.node)
+        self.assertIsInstance(result, Node)
+        self.assertTrue(result.get("tagged"))
+
+    def test_flatten_on_bare_node(self):
+        """flatten on bare Node returns a Node."""
+        deep = Node("root", Node("a", Node("b", Node("c"))))
+        result = flatten(max_depth=1)(deep)
+        self.assertIsInstance(result, Node)
+
+
+class TestCompositionAssociativity(unittest.TestCase):
+    """T2: >> is associative: ((a >> b) >> c)(x) == (a >> (b >> c))(x)."""
+
+    def setUp(self):
+        self.tree = Tree(Node("root",
+            Node("a", attrs={"value": 1}),
+            Node("b", attrs={"value": 2}),
+            Node("c", attrs={"value": 3}),
+        ))
+
+    def test_associativity_on_tree(self):
+        """((a >> b) >> c)(tree) == (a >> (b >> c))(tree)."""
+        a = map_(lambda n: {"value": n.get("value", 0) * 2})
+        b = filter_(lambda n: n.get("value", 0) > 2)
+        c = annotate(processed=True)
+
+        lhs = (a >> b) >> c
+        rhs = a >> (b >> c)
+
+        lhs_result = lhs(self.tree)
+        rhs_result = rhs(self.tree)
+
+        # Both compositions must produce identical trees
+        self.assertEqual(lhs_result.root, rhs_result.root)
+
+    def test_associativity_on_bare_node(self):
+        """((a >> b) >> c)(node) == (a >> (b >> c))(node) for bare Node."""
+        node = Node("root",
+            Node("a", attrs={"value": 1}),
+            Node("b", attrs={"value": 2}),
+        )
+        a = map_(lambda n: {"value": n.get("value", 0) + 10})
+        b = annotate(step1=True)
+        c = annotate(step2=True)
+
+        lhs = (a >> b) >> c
+        rhs = a >> (b >> c)
+
+        lhs_result = lhs(node)
+        rhs_result = rhs(node)
+
+        self.assertIsInstance(lhs_result, Node)
+        self.assertEqual(lhs_result, rhs_result)
+
+
 if __name__ == "__main__":
     unittest.main()
