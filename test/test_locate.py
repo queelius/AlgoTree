@@ -25,3 +25,14 @@ def test_cursors_at_returns_all():
 
 def test_locate_accepts_string():
     assert _tree().locate("b").node.name == "b"
+
+
+def test_locate_accepts_callable():
+    cur = _tree().locate(lambda n: n.name == "a")
+    assert cur.node.name == "a"
+    assert cur.path == ("root", "a")
+
+
+def test_cursors_at_accepts_callable():
+    curs = _tree().cursors_at(lambda n: n.name in {"a", "b"})
+    assert [c.node.name for c in curs] == ["a", "b"]
