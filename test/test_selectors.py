@@ -7,8 +7,7 @@ from AlgoTree.selectors import (
     AttrsSelector, TypeSelector, PredicateSelector,
     DepthSelector, LeafSelector, RootSelector,
     AndSelector, OrSelector, NotSelector, XorSelector,
-    ChildOfSelector, ParentOfSelector, DescendantOfSelector,
-    AncestorOfSelector, SiblingOfSelector,
+    AxisSelector,
     name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, parse
 )
 

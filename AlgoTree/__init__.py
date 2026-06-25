@@ -32,8 +32,7 @@ from .selectors import (
     # Logical combinators
     AndSelector, OrSelector, NotSelector, XorSelector,
     # Structural combinators
-    ChildOfSelector, ParentOfSelector, DescendantOfSelector,
-    AncestorOfSelector, SiblingOfSelector,
+    AxisSelector,
     # Factory functions
     name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, parse
 )
@@ -108,8 +107,7 @@ __all__ = [
     'AttrsSelector', 'TypeSelector', 'PredicateSelector',
     'DepthSelector', 'LeafSelector', 'RootSelector',
     'AndSelector', 'OrSelector', 'NotSelector', 'XorSelector',
-    'ChildOfSelector', 'ParentOfSelector', 'DescendantOfSelector',
-    'AncestorOfSelector', 'SiblingOfSelector',
+    'AxisSelector',
     'name', 'glob', 'regex', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'parse',
 
     # Transformers

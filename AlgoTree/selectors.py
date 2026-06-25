@@ -78,23 +78,23 @@ class Selector(ABC):
 
     def child_of(self, parent_selector: 'Selector') -> 'Selector':
         """Match nodes that are direct children of parent matching selector."""
-        return ChildOfSelector(self, parent_selector)
+        return AxisSelector(self, 'child_of', parent_selector)
 
     def parent_of(self, child_selector: 'Selector') -> 'Selector':
         """Match nodes that are direct parents of children matching selector."""
-        return ParentOfSelector(self, child_selector)
+        return AxisSelector(self, 'parent_of', child_selector)
 
     def descendant_of(self, ancestor_selector: 'Selector') -> 'Selector':
         """Match nodes that are descendants of nodes matching selector."""
-        return DescendantOfSelector(self, ancestor_selector)
+        return AxisSelector(self, 'descendant_of', ancestor_selector)
 
     def ancestor_of(self, descendant_selector: 'Selector') -> 'Selector':
         """Match nodes that are ancestors of nodes matching selector."""
-        return AncestorOfSelector(self, descendant_selector)
+        return AxisSelector(self, 'ancestor_of', descendant_selector)
 
     def sibling_of(self, sibling_selector: 'Selector') -> 'Selector':
         """Match nodes that are siblings of nodes matching selector."""
-        return SiblingOfSelector(self, sibling_selector)
+        return AxisSelector(self, 'sibling_of', sibling_selector)
 
     def at_depth(self, depth: int) -> 'Selector':
         """Match nodes at specific depth."""
@@ -329,128 +329,78 @@ class XorSelector(Selector):
 
 # Structural combinators
 
-class ChildOfSelector(Selector):
-    """Select nodes that are children of parent matching selector."""
+_VALID_AXES = frozenset({
+    'child_of', 'parent_of', 'descendant_of', 'ancestor_of', 'sibling_of'
+})
 
-    def __init__(self, child_selector: Selector, parent_selector: Selector):
-        self.child_selector = child_selector
-        self.parent_selector = parent_selector
+
+class AxisSelector(Selector):
+    """
+    Unified structural selector that replaces the five separate axis classes.
+
+    ``inner.matches_at(cursor)`` is evaluated first; if it passes, the axis
+    relation against ``other`` is checked using cursor navigation.
+
+    Parameters
+    ----------
+    inner : Selector
+        The selector applied to the focus node itself.
+    axis : str
+        One of ``'child_of'``, ``'parent_of'``, ``'descendant_of'``,
+        ``'ancestor_of'``, ``'sibling_of'``.
+    other : Selector
+        The selector evaluated against the related position(s).
+    """
+
+    def __init__(self, inner: Selector, axis: str, other: Selector):
+        if axis not in _VALID_AXES:
+            raise ValueError(
+                f"axis must be one of {sorted(_VALID_AXES)!r}, got {axis!r}"
+            )
+        self.inner = inner
+        self.axis = axis
+        self.other = other
 
     def matches(self, node: Node) -> bool:
         raise NotImplementedError(
-            "ChildOfSelector is position-dependent; use .select()/.first() "
+            "AxisSelector is position-dependent; use .select()/.first() "
             "or matches_at(cursor)"
         )
 
     def matches_at(self, cursor) -> bool:
-        if not self.child_selector.matches_at(cursor):
+        if not self.inner.matches_at(cursor):
             return False
-        if cursor.is_root:
-            return False
-        return self.parent_selector.matches_at(cursor.up())
+
+        if self.axis == 'child_of':
+            if cursor.is_root:
+                return False
+            return self.other.matches_at(cursor.up())
+
+        elif self.axis == 'parent_of':
+            return any(
+                self.other.matches_at(cursor.down(i))
+                for i in range(len(cursor.node.children))
+            )
+
+        elif self.axis == 'descendant_of':
+            return any(
+                self.other.matches_at(ancestor)
+                for ancestor in cursor.ancestors()
+            )
+
+        elif self.axis == 'ancestor_of':
+            from .cursor import walk_cursors
+            descendants = walk_cursors(cursor)
+            next(descendants)  # skip the focus itself
+            return any(self.other.matches_at(d) for d in descendants)
+
+        else:  # sibling_of
+            return any(
+                self.other.matches_at(sib) for sib in cursor.siblings()
+            )
 
     def __repr__(self) -> str:
-        return f"{repr(self.child_selector)}.child_of({repr(self.parent_selector)})"
-
-
-class ParentOfSelector(Selector):
-    """Select nodes that are parents of children matching selector."""
-
-    def __init__(self, parent_selector: Selector, child_selector: Selector):
-        self.parent_selector = parent_selector
-        self.child_selector = child_selector
-
-    def matches(self, node: Node) -> bool:
-        if not self.parent_selector.matches(node):
-            return False
-        return any(self.child_selector.matches(child) for child in node.children)
-
-    def matches_at(self, cursor) -> bool:
-        if not self.parent_selector.matches_at(cursor):
-            return False
-        return any(
-            self.child_selector.matches_at(cursor.down(i))
-            for i in range(len(cursor.node.children))
-        )
-
-    def __repr__(self) -> str:
-        return f"{repr(self.parent_selector)}.parent_of({repr(self.child_selector)})"
-
-
-class DescendantOfSelector(Selector):
-    """Select nodes that are descendants of ancestor matching selector."""
-
-    def __init__(self, descendant_selector: Selector, ancestor_selector: Selector):
-        self.descendant_selector = descendant_selector
-        self.ancestor_selector = ancestor_selector
-
-    def matches(self, node: Node) -> bool:
-        raise NotImplementedError(
-            "DescendantOfSelector is position-dependent; use .select()/.first() "
-            "or matches_at(cursor)"
-        )
-
-    def matches_at(self, cursor) -> bool:
-        if not self.descendant_selector.matches_at(cursor):
-            return False
-        return any(
-            self.ancestor_selector.matches_at(ancestor)
-            for ancestor in cursor.ancestors()
-        )
-
-    def __repr__(self) -> str:
-        return f"{repr(self.descendant_selector)}.descendant_of({repr(self.ancestor_selector)})"
-
-
-class AncestorOfSelector(Selector):
-    """Select nodes that are ancestors of descendant matching selector."""
-
-    def __init__(self, ancestor_selector: Selector, descendant_selector: Selector):
-        self.ancestor_selector = ancestor_selector
-        self.descendant_selector = descendant_selector
-
-    def matches(self, node: Node) -> bool:
-        if not self.ancestor_selector.matches(node):
-            return False
-        for descendant in node.descendants():
-            if self.descendant_selector.matches(descendant):
-                return True
-        return False
-
-    def matches_at(self, cursor) -> bool:
-        if not self.ancestor_selector.matches_at(cursor):
-            return False
-        from .cursor import walk_cursors
-        descendants = walk_cursors(cursor)
-        next(descendants)  # skip the focus itself
-        return any(self.descendant_selector.matches_at(d) for d in descendants)
-
-    def __repr__(self) -> str:
-        return f"{repr(self.ancestor_selector)}.ancestor_of({repr(self.descendant_selector)})"
-
-
-class SiblingOfSelector(Selector):
-    """Select nodes that are siblings of node matching selector."""
-
-    def __init__(self, node_selector: Selector, sibling_selector: Selector):
-        self.node_selector = node_selector
-        self.sibling_selector = sibling_selector
-
-    def matches(self, node: Node) -> bool:
-        raise NotImplementedError(
-            "SiblingOfSelector is position-dependent; use .select()/.first() "
-            "or matches_at(cursor)"
-        )
-
-    def matches_at(self, cursor) -> bool:
-        if not self.node_selector.matches_at(cursor):
-            return False
-        return any(
-            self.sibling_selector.matches_at(sib) for sib in cursor.siblings()
-        )
-
-    def __repr__(self) -> str:
-        return f"{repr(self.node_selector)}.sibling_of({repr(self.sibling_selector)})"
+        return f"AxisSelector({self.inner!r}, {self.axis!r}, {self.other!r})"
 
 
 # Factory functions for common selectors
