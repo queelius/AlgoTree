@@ -77,6 +77,10 @@ from .serialization import save, load, dumps, loads
 # DSL support
 from .dsl import parse_tree, TreeDSL
 
+# Trace and Diff (P3)
+from .trace import Trace
+from .diff import diff, DiffTree
+
 # Interoperability with AlgoGraph (optional)
 from .interop import (
     tree_to_graph,
@@ -139,4 +143,8 @@ __all__ = [
     'tree_to_graph', 'graph_to_tree',
     'node_to_flat_dict', 'flat_dict_to_node',
     'tree_to_flat_dict', 'flat_dict_to_tree',
+
+    # Trace and Diff (P3)
+    'Trace',
+    'diff', 'DiffTree',
 ]
