@@ -6,7 +6,7 @@ needed to rebuild the path back to the root. Position lives here, not on
 Node, so a Node stays a context-free value and structural sharing is sound.
 All moves and edits return new Cursors; nothing is mutated.
 """
-from typing import Any, Dict, NamedTuple, Tuple, Union
+from typing import Any, Dict, Iterator, NamedTuple, Tuple, Union
 from .node import Node
 
 
@@ -102,6 +102,35 @@ class Cursor:
             cursor = cursor.up()
         return cursor
 
+    # --- edits (rebuild the spine only; untouched subtrees are shared) ---
+
+    def replace(self, node: Node) -> 'Cursor':
+        """Return a new cursor with the focus replaced by `node`."""
+        return Cursor(node, self._spine)
+
+    def set_attr(self, **attrs: Any) -> 'Cursor':
+        """Return a new cursor with attributes merged into the focus node."""
+        return Cursor(self._focus.with_attrs(**attrs), self._spine)
+
+    # --- relatives ---
+
+    def ancestors(self) -> Iterator['Cursor']:
+        """Yield parent, grandparent, ... up to and including the root."""
+        cursor = self
+        while cursor._spine:
+            cursor = cursor.up()
+            yield cursor
+
+    def siblings(self) -> Iterator['Cursor']:
+        """Yield a cursor for each sibling of the focus (excludes the focus)."""
+        if not self._spine:
+            return
+        focus_index = len(self._spine[0].left)
+        parent = self.up()
+        for i in range(len(parent.node.children)):
+            if i != focus_index:
+                yield parent.down(i)
+
     # --- identity ---
 
     def __eq__(self, other: Any) -> bool:
@@ -111,3 +140,10 @@ class Cursor:
 
     def __repr__(self) -> str:
         return f"Cursor(focus={self._focus.name!r}, depth={self.depth})"
+
+
+def walk_cursors(cursor: Cursor) -> Iterator[Cursor]:
+    """Pre-order traversal yielding a Cursor at the focus and every descendant."""
+    yield cursor
+    for i in range(len(cursor.node.children)):
+        yield from walk_cursors(cursor.down(i))

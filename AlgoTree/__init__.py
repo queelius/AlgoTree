@@ -12,7 +12,7 @@ Core components:
 # Core classes
 from .node import Node, node
 from .tree import Tree
-from .cursor import Cursor
+from .cursor import Cursor, walk_cursors
 
 # Selectors for pattern matching
 from .selectors import (
@@ -78,7 +78,7 @@ __all__ = [
     # Core
     'Node', 'node',
     'Tree',
-    'Cursor',
+    'Cursor', 'walk_cursors',
 
     # Selectors
     'Selector',
