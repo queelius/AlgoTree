@@ -241,6 +241,46 @@ class Node:
         child_results = [child.fold(fn) for child in self._children]
         return fn(self, child_results)
 
+    def fold_traced(self, fn: Callable[['Node', List[T]], T]) -> Tuple[T, Any]:
+        """
+        Instrumented catamorphism: same recursion as fold, but also builds a
+        parallel trace tree recording per-node step/value/arity information.
+
+        Each trace node mirrors the original in name and children structure,
+        and carries attrs:
+          - step  (int): post-order visit index, 0-based
+          - value (Any): the result of fn at that node
+          - arity (int): number of children
+
+        Args:
+            fn: Combine step (node, [child_results]) -> result.
+
+        Returns:
+            A tuple (result, Trace) where result is the same value fold(fn)
+            would return, and Trace is a parallel annotated tree.
+        """
+        from .trace import Trace
+        counter = [0]
+
+        def go(node: 'Node') -> Tuple[T, 'Node']:
+            child_results, child_traces = [], []
+            for c in node._children:
+                r, t = go(c)
+                child_results.append(r)
+                child_traces.append(t)
+            value = fn(node, child_results)
+            step = counter[0]
+            counter[0] += 1
+            tnode = Node(
+                node._name,
+                *child_traces,
+                attrs={'step': step, 'value': value, 'arity': len(node._children)},
+            )
+            return value, tnode
+
+        result, troot = go(self)
+        return result, Trace(troot)
+
     def find(self, selector: Union[str, Callable[['Node'], bool], 'Selector']) -> Optional['Node']:
         """Find first node matching selector."""
         if hasattr(selector, 'matches_at'):
