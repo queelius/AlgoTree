@@ -2,13 +2,13 @@ from setuptools import find_packages, setup
 
 setup(
     name="AlgoTree",
-    version="2.0.2",
+    version="3.0.0.dev0",
     author="Alex Towell",
     author_email="lex@metafunctor.com",
     description="Immutable-by-default tree manipulation library with functional programming patterns and composable transformations",
     long_description=open("README.rst").read(),
     long_description_content_type="text/x-rst",
-    packages=find_packages() + ['bin'],
+    packages=find_packages(),
     url='https://github.com/queelius/AlgoTree',
     project_urls={
         "Documentation": "https://queelius.github.io/AlgoTree/",
@@ -17,9 +17,7 @@ setup(
         "Changelog": "https://github.com/queelius/AlgoTree/blob/main/CHANGELOG.md",
     },
     python_requires=">=3.8",
-    install_requires=[
-        'prompt_toolkit>=3.0.0',
-    ],
+    install_requires=[],
     extras_require={
         'dev': [
             'sphinx',
@@ -39,13 +37,6 @@ setup(
         ],
     },
     test_suite="test",
-    entry_points={
-        'console_scripts': [
-            'jt=bin.jt:main',
-            'algotree=AlgoTree.shell.cli:main',
-            'algotree-shell=AlgoTree.shell.shell:main',
-        ],
-    },
     include_package_data=True,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
