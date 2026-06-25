@@ -235,11 +235,12 @@ class TestMermaidBackend:
         result = render(self._simple_tree(), "mermaid")
         assert "-->" in result
 
-    def test_mermaid_has_round_parens(self):
+    def test_mermaid_uses_quoted_label_syntax(self):
         from AlgoTree.render import render
-        # Default shape is round: (text)
+        # Labels are emitted as N0["..."] regardless of node_shape, so that
+        # closing delimiters inside label text cannot be mis-parsed.
         result = render(self._simple_tree(), "mermaid")
-        assert "N0(" in result
+        assert 'N0["' in result
 
     def test_mermaid_contains_node_names(self):
         from AlgoTree.render import render
@@ -249,19 +250,22 @@ class TestMermaidBackend:
         assert "child2" in result
         assert "grandchild" in result
 
-    def test_mermaid_escapes_angle_brackets(self):
+    def test_mermaid_angle_brackets_safe_in_quoted_syntax(self):
         from AlgoTree.render import render
+        # Inside Mermaid quoted-string labels N0["..."], angle brackets are
+        # safe as-is — they are not shape delimiters.  The escaper only needs
+        # to escape the double-quote character (as &quot;).
         evil = Node('a<b>"c', Node("normal"))
         result = render(evil, "mermaid")
-        # Raw < and > must NOT appear in the node text
-        # (they appear in Mermaid labels quoted by parentheses)
-        # The escaper must convert < -> &lt; and > -> &gt;
         lines = result.splitlines()
-        # Find the line with N0 declaration
         node_line = next(l for l in lines if "N0" in l and "-->" not in l)
-        assert "<b>" not in node_line
-        assert "&lt;" in node_line
-        assert "&gt;" in node_line
+        # Angle brackets pass through unchanged inside the quoted label
+        assert "<b>" in node_line
+        # Double-quote in the name must be escaped as &quot;
+        assert "&quot;" in node_line
+        # The raw double-quote from the source name must not appear unescaped
+        # (note: the surrounding quotes of the label syntax are expected)
+        assert 'a"c' not in node_line
 
     def test_mermaid_escapes_double_quotes(self):
         from AlgoTree.render import render

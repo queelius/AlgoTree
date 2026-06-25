@@ -129,12 +129,17 @@ register("unicode", lambda node, **o: _text_tree(node, UNICODE_THEME), ".txt")
 # ---------------------------------------------------------------------------
 
 def _mermaid_escape(text: str) -> str:
-    """Escape text for safe embedding inside a Mermaid node label."""
+    """Escape text for safe embedding inside a Mermaid quoted-string label.
+
+    Mermaid supports quoted labels of the form N0["..."], where the only
+    character that needs escaping inside the double-quote delimiters is the
+    double-quote itself.  Using this form avoids the closing-delimiter
+    ambiguity that occurs with shape-based syntax (round/square/etc.): a
+    node named 'end)', 'arr[0]', or 'f(x)' would otherwise produce malformed
+    output such as 'N0(end))' or 'N0[arr[0]]'.
+    """
     text = str(text)
-    text = text.replace("&", "&amp;")
-    text = text.replace("<", "&lt;")
-    text = text.replace(">", "&gt;")
-    text = text.replace('"', "'")   # double-quote -> single (Mermaid convention)
+    text = text.replace('"', "&quot;")   # only character that breaks the delimiter
     return text
 
 
@@ -177,7 +182,11 @@ def _to_mermaid(
         counter[0] += 1
 
         label = _mermaid_escape(n.name)
-        lines.append(f"    {node_id}{left}{label}{right}")
+        # Always use quoted-string syntax so closing delimiters inside the
+        # label text cannot be mis-parsed as the end of the shape.
+        # The node_shape option is retained for future use / styling but the
+        # label delimiter is always a double-quoted string.
+        lines.append(f'    {node_id}["{label}"]')
 
         if parent_id is not None:
             lines.append(f"    {parent_id} --> {node_id}")
@@ -202,7 +211,7 @@ def _to_graphviz(
     **_opts: Any,
 ) -> str:
     """Render *node* as a GraphViz DOT digraph."""
-    lines: List[str] = [f"digraph {name} {{"]
+    lines: List[str] = [f'digraph "{_dot_escape(name)}" {{']
 
     # Pre-order traversal to assign stable IDs and emit nodes + edges.
     counter = [0]
