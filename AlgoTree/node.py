@@ -10,7 +10,6 @@ This module provides the core Node class for AlgoTree with:
 
 from typing import Any, Dict, Iterator, Optional, Union, Callable, TypeVar, Tuple, List, TYPE_CHECKING
 from collections import deque
-import weakref
 
 from ._utils import make_predicate as _make_predicate_fn
 
@@ -29,33 +28,26 @@ class Node:
     Uses structural sharing for efficiency.
     """
 
-    __slots__ = ('_name', '_attrs', '_children', '_parent_ref', '_hash', '__weakref__')
+    __slots__ = ('_name', '_attrs', '_children', '_hash')
 
     def __init__(
         self,
         name: str,
         *children: 'Node',
-        attrs: Optional[Dict[str, Any]] = None,
-        parent: Optional['Node'] = None
+        attrs: Optional[Dict[str, Any]] = None
     ):
         """
-        Create an immutable node.
+        Create an immutable, context-free node.
 
         Args:
             name: Node name/identifier
             *children: Child nodes
             attrs: Node attributes/payload
-            parent: Parent node (internal use - managed automatically)
         """
         self._name = name
         self._attrs = attrs or {}
         self._children = tuple(children)
-        self._parent_ref = weakref.ref(parent) if parent else lambda: None
         self._hash = None  # Cached hash
-
-        # Set parent references for children
-        for child in children:
-            object.__setattr__(child, '_parent_ref', weakref.ref(self))
 
     @property
     def name(self) -> str:
@@ -71,11 +63,6 @@ class Node:
     def children(self) -> Tuple['Node', ...]:
         """Children nodes (immutable tuple)."""
         return self._children
-
-    @property
-    def parent(self) -> Optional['Node']:
-        """Parent node (weak reference)."""
-        return self._parent_ref()
 
     # Attribute access shortcuts
 
@@ -258,13 +245,6 @@ class Node:
             yield child
             yield from child.descendants()
 
-    def ancestors(self, include_self: bool = False) -> Iterator['Node']:
-        """Iterate from this node up to root."""
-        current = self if include_self else self.parent
-        while current:
-            yield current
-            current = current.parent
-
     def leaves(self) -> Iterator['Node']:
         """Iterate over all leaf nodes."""
         if not self._children:
@@ -272,13 +252,6 @@ class Node:
         else:
             for child in self._children:
                 yield from child.leaves()
-
-    def siblings(self) -> Iterator['Node']:
-        """Iterate over sibling nodes."""
-        if self.parent:
-            for child in self.parent.children:
-                if child != self:
-                    yield child
 
     # Conversion methods
 
@@ -328,19 +301,9 @@ class Node:
     # Query properties
 
     @property
-    def is_root(self) -> bool:
-        """Check if this is root node."""
-        return self.parent is None
-
-    @property
     def is_leaf(self) -> bool:
         """Check if this is leaf node."""
         return len(self._children) == 0
-
-    @property
-    def depth(self) -> int:
-        """Get depth from root (root has depth 0)."""
-        return sum(1 for _ in self.ancestors())
 
     @property
     def height(self) -> int:
@@ -353,12 +316,6 @@ class Node:
     def size(self) -> int:
         """Get total number of nodes in subtree."""
         return self.fold(lambda _node, child_results: 1 + sum(child_results))
-
-    @property
-    def path(self) -> str:
-        """Get path from root as string."""
-        parts = [node.name for node in self.ancestors(include_self=True)]
-        return '/'.join(reversed(parts))
 
     # Helper methods
 
@@ -416,7 +373,7 @@ class Node:
     # Pickle support (handle weakrefs)
 
     def __getstate__(self):
-        """Get state for pickling (exclude parent weakref)."""
+        """Get state for pickling."""
         return {
             'name': self._name,
             'attrs': self._attrs,
@@ -424,17 +381,11 @@ class Node:
         }
 
     def __setstate__(self, state):
-        """Restore state from pickling (reconstruct parent weakrefs)."""
+        """Restore state from pickling."""
         object.__setattr__(self, '_name', state['name'])
         object.__setattr__(self, '_attrs', state['attrs'])
         object.__setattr__(self, '_children', state['children'])
-        object.__setattr__(self, '_parent_ref', lambda: None)
         object.__setattr__(self, '_hash', None)
-
-        # Rebuild parent references for children
-        for child in self._children:
-            if hasattr(child, '_parent_ref'):
-                object.__setattr__(child, '_parent_ref', weakref.ref(self))
 
 
 def node(name: str, *children: Union[Node, str], **attrs) -> Node:

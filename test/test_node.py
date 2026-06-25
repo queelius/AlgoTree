@@ -15,7 +15,6 @@ class TestNodeCreation(unittest.TestCase):
         self.assertEqual(n.name, "root")
         self.assertEqual(n.attrs, {})
         self.assertEqual(len(n.children), 0)
-        self.assertIsNone(n.parent)
 
     def test_node_with_attrs(self):
         """Test creating node with attributes."""
@@ -34,10 +33,6 @@ class TestNodeCreation(unittest.TestCase):
         self.assertEqual(len(parent.children), 2)
         self.assertEqual(parent.children[0].name, "child1")
         self.assertEqual(parent.children[1].name, "child2")
-
-        # Check parent references
-        self.assertEqual(parent.children[0].parent, parent)
-        self.assertEqual(parent.children[1].parent, parent)
 
     def test_node_convenience_function(self):
         """Test the node() convenience function."""
@@ -238,15 +233,6 @@ class TestNodeIteration(unittest.TestCase):
 class TestNodeProperties(unittest.TestCase):
     """Test node query properties."""
 
-    def test_is_root(self):
-        """Test is_root property."""
-        parent = Node("parent")
-        child = Node("child")
-        parent = parent.with_child(child)
-
-        self.assertTrue(parent.is_root)
-        self.assertFalse(parent.children[0].is_root)
-
     def test_is_leaf(self):
         """Test is_leaf property."""
         parent = Node("parent")
@@ -255,18 +241,6 @@ class TestNodeProperties(unittest.TestCase):
 
         self.assertFalse(parent.is_leaf)
         self.assertTrue(parent.children[0].is_leaf)
-
-    def test_depth(self):
-        """Test depth property."""
-        tree = Node("root",
-            Node("child",
-                Node("grandchild")
-            )
-        )
-
-        self.assertEqual(tree.depth, 0)
-        self.assertEqual(tree.children[0].depth, 1)
-        self.assertEqual(tree.children[0].children[0].depth, 2)
 
     def test_height(self):
         """Test height property."""

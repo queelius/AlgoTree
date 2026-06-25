@@ -394,16 +394,13 @@ class Tree:
         Returns:
             List of path strings
         """
-        paths = []
-
-        if to_leaves_only:
-            for leaf in self._root.leaves():
-                paths.append(leaf.path)
-        else:
-            for node in self._root.walk():
-                paths.append(node.path)
-
-        return paths
+        from .cursor import Cursor, walk_cursors
+        result = []
+        for cursor in walk_cursors(Cursor(self._root)):
+            if to_leaves_only and cursor.node.children:
+                continue
+            result.append('/'.join(cursor.path))
+        return result
 
     # Tree properties
 

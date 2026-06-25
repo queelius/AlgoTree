@@ -204,10 +204,10 @@ class DepthSelector(Selector):
         self.depth = depth
 
     def matches(self, node: Node) -> bool:
-        node_depth = node.depth
-        if isinstance(self.depth, range):
-            return node_depth in self.depth
-        return node_depth == self.depth
+        raise NotImplementedError(
+            "DepthSelector is position-dependent; use .select()/.first() "
+            "or matches_at(cursor)"
+        )
 
     def matches_at(self, cursor) -> bool:
         d = cursor.depth
@@ -233,7 +233,10 @@ class RootSelector(Selector):
     """Select root node."""
 
     def matches(self, node: Node) -> bool:
-        return node.is_root
+        raise NotImplementedError(
+            "RootSelector is position-dependent; use .select()/.first() "
+            "or matches_at(cursor)"
+        )
 
     def matches_at(self, cursor) -> bool:
         return cursor.is_root
@@ -319,9 +322,10 @@ class ChildOfSelector(Selector):
         self.parent_selector = parent_selector
 
     def matches(self, node: Node) -> bool:
-        if not self.child_selector.matches(node):
-            return False
-        return node.parent and self.parent_selector.matches(node.parent)
+        raise NotImplementedError(
+            "ChildOfSelector is position-dependent; use .select()/.first() "
+            "or matches_at(cursor)"
+        )
 
     def matches_at(self, cursor) -> bool:
         if not self.child_selector.matches_at(cursor):
@@ -366,12 +370,10 @@ class DescendantOfSelector(Selector):
         self.ancestor_selector = ancestor_selector
 
     def matches(self, node: Node) -> bool:
-        if not self.descendant_selector.matches(node):
-            return False
-        for ancestor in node.ancestors():
-            if self.ancestor_selector.matches(ancestor):
-                return True
-        return False
+        raise NotImplementedError(
+            "DescendantOfSelector is position-dependent; use .select()/.first() "
+            "or matches_at(cursor)"
+        )
 
     def matches_at(self, cursor) -> bool:
         if not self.descendant_selector.matches_at(cursor):
@@ -420,12 +422,10 @@ class SiblingOfSelector(Selector):
         self.sibling_selector = sibling_selector
 
     def matches(self, node: Node) -> bool:
-        if not self.node_selector.matches(node):
-            return False
-        for sibling in node.siblings():
-            if self.sibling_selector.matches(sibling):
-                return True
-        return False
+        raise NotImplementedError(
+            "SiblingOfSelector is position-dependent; use .select()/.first() "
+            "or matches_at(cursor)"
+        )
 
     def matches_at(self, cursor) -> bool:
         if not self.node_selector.matches_at(cursor):
