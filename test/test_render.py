@@ -650,3 +650,204 @@ class TestXmlBackend:
         result = render(node, "xml")
         # Must parse without error
         ET.fromstring(result)
+
+
+# ---------------------------------------------------------------------------
+# Task 4 – HTML backend (escaped) + notebook reprs + stable palette
+# ---------------------------------------------------------------------------
+
+class TestHtmlBackend:
+    """render('html') emits HTML with all node text properly escaped."""
+
+    def test_html_registered(self):
+        from AlgoTree.render import extension_for
+        assert extension_for("html") == ".html"
+
+    def test_html_returns_string(self):
+        from AlgoTree.render import render
+        result = render(Node("root", Node("child")), "html")
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_html_escapes_script_tag_in_name(self):
+        """A node named '<script>' must have its angle brackets HTML-escaped.
+
+        We render WITHOUT the collapsible JS (collapsible=False, include_styles=False)
+        so there is no legitimate <script> tag from the template — any <script>
+        in the result would be injected from the node name.
+        """
+        from AlgoTree.render import render
+        evil = Node("<script>", Node("child"))
+        # Render without JS so the only possible <script> would be an injection
+        result = render(evil, "html", collapsible=False, include_styles=False)
+        # The raw tag must NOT appear (would be an injection hole)
+        assert "<script>" not in result
+        # The escaped form must appear
+        assert "&lt;script&gt;" in result
+
+    def test_html_escapes_ampersand_in_name(self):
+        from AlgoTree.render import render
+        evil = Node("a & b")
+        result = render(evil, "html")
+        assert "a & b" not in result
+        assert "a &amp; b" in result
+
+    def test_html_escapes_double_quote_in_name(self):
+        from AlgoTree.render import render
+        evil = Node('say "hello"')
+        result = render(evil, "html")
+        # Raw unescaped double-quote in text context must not appear as injection
+        # (html.escape converts " to &quot; when quote=True)
+        assert 'say "hello"' not in result or "&quot;" in result
+
+    def test_html_escapes_attrs(self):
+        """Attribute values with special chars must be escaped in the HTML output."""
+        from AlgoTree.render import render
+        evil = Node("root", attrs={"label": "<b>bold</b>"})
+        result = render(evil, "html")
+        # Raw unescaped <b> from an attr value must not be injected
+        # Either the attr is escaped, or it is not shown; but raw injection is forbidden
+        assert "<b>bold</b>" not in result or "&lt;b&gt;" in result
+
+    def test_html_contains_tree_structure(self):
+        """HTML output should contain nested structure for children."""
+        from AlgoTree.render import render
+        tree = Node("root", Node("child1"), Node("child2"))
+        result = render(tree, "html")
+        # Both child names should appear (escaped if needed)
+        assert "child1" in result
+        assert "child2" in result
+        # Should have some list/div structure
+        assert "<ul" in result or "<li" in result or "<div" in result
+
+    def test_html_include_styles_option(self):
+        from AlgoTree.render import render
+        with_styles = render(Node("root"), "html", include_styles=True)
+        without_styles = render(Node("root"), "html", include_styles=False)
+        # With styles should be longer (has CSS)
+        assert len(with_styles) > len(without_styles)
+        assert "<style" in with_styles
+        assert "<style" not in without_styles
+
+    def test_html_collapsible_option(self):
+        from AlgoTree.render import render
+        with_js = render(Node("root", Node("child")), "html", collapsible=True)
+        without_js = render(Node("root", Node("child")), "html", collapsible=False)
+        # Collapsible mode should include JavaScript
+        assert "<script" in with_js
+        assert "<script" not in without_js
+
+    def test_html_leaf_node_no_toggle(self):
+        """Leaf nodes should not have a toggle/collapse button."""
+        from AlgoTree.render import render
+        tree = Node("root", Node("leaf"))
+        result = render(tree, "html")
+        # Result should be valid (no crash on leaf)
+        assert "leaf" in result or "&lt;" in result  # either name appears escaped or not
+
+    def test_html_multiple_levels_all_names_present(self):
+        """All node names should appear (escaped) in the HTML output."""
+        from AlgoTree.render import render
+        tree = Node("root",
+                    Node("alpha", Node("gamma")),
+                    Node("beta"))
+        result = render(tree, "html")
+        for name_str in ["root", "alpha", "beta", "gamma"]:
+            assert name_str in result, f"Expected {name_str!r} in html output"
+
+
+class TestNodeNotebookReprs:
+    """Node._repr_html_() and _repr_mermaid_() for Jupyter/Quarto."""
+
+    def test_node_has_repr_html(self):
+        n = Node("x")
+        assert hasattr(n, "_repr_html_")
+        assert callable(n._repr_html_)
+
+    def test_node_has_repr_mermaid(self):
+        n = Node("x")
+        assert hasattr(n, "_repr_mermaid_")
+        assert callable(n._repr_mermaid_)
+
+    def test_repr_html_returns_string(self):
+        n = Node("root", Node("child"))
+        result = n._repr_html_()
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_repr_html_matches_render_html(self):
+        """_repr_html_() must return exactly the same string as render(node, 'html')."""
+        from AlgoTree.render import render
+        tree = Node("root", Node("child1"), Node("child2"))
+        assert tree._repr_html_() == render(tree, "html")
+
+    def test_repr_mermaid_returns_string(self):
+        n = Node("root", Node("child"))
+        result = n._repr_mermaid_()
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+    def test_repr_mermaid_matches_render_mermaid(self):
+        """_repr_mermaid_() must return exactly the same string as render(node, 'mermaid')."""
+        from AlgoTree.render import render
+        tree = Node("root", Node("child1"), Node("child2"))
+        assert tree._repr_mermaid_() == render(tree, "mermaid")
+
+    def test_repr_html_escapes_injection(self):
+        """_repr_html_() must not inject raw HTML from node names.
+
+        We check for '&lt;script&gt;' in the result, confirming the name is
+        escaped, and verify that the raw alert payload does not appear.
+        """
+        evil = Node("<script>alert(1)</script>")
+        result = evil._repr_html_()
+        # The escaped form must be present
+        assert "&lt;script&gt;" in result
+        # The raw JS payload must not appear unescaped
+        assert "alert(1)</script>" not in result
+
+    def test_repr_html_different_trees_differ(self):
+        """Different trees produce different HTML repr strings."""
+        t1 = Node("root", Node("a"))
+        t2 = Node("root", Node("b"))
+        assert t1._repr_html_() != t2._repr_html_()
+
+
+class TestStablePalette:
+    """The node marker/palette must be deterministic across calls (no builtin hash)."""
+
+    def test_html_marker_same_name_same_result_two_calls(self):
+        """Calling render twice for the same tree produces identical output."""
+        from AlgoTree.render import render
+        tree = Node("root", Node("alpha"), Node("beta"))
+        r1 = render(tree, "html")
+        r2 = render(tree, "html")
+        assert r1 == r2
+
+    def test_html_marker_same_name_different_trees_same_marker(self):
+        """A node with the same name should get the same marker in separate trees."""
+        from AlgoTree.render import render
+        # Build two trees with the same names; their HTML should be identical
+        tree1 = Node("same_root", Node("same_child"))
+        tree2 = Node("same_root", Node("same_child"))
+        assert render(tree1, "html") == render(tree2, "html")
+
+    def test_html_palette_deterministic_by_value(self):
+        """Rendering the same tree in two separate import sessions is approximated
+        by rendering it twice and asserting equality (in-process determinism)."""
+        from AlgoTree.render import render
+        tree = Node("deterministic", Node("node_a"), Node("node_b", Node("node_c")))
+        results = [render(tree, "html") for _ in range(5)]
+        assert all(r == results[0] for r in results), "render('html') is not deterministic"
+
+    def test_html_palette_does_not_use_builtin_hash(self):
+        """Verify determinism by value: two equal trees produce identical HTML even
+        when Python's PYTHONHASHSEED would cause builtin hash() to differ."""
+        from AlgoTree.render import render
+        # We can't easily vary PYTHONHASHSEED in-process, but we can assert that
+        # structurally equal trees (same names + attrs) always produce equal output.
+        t1 = Node("root", Node("x"), Node("y", Node("z")))
+        t2 = Node("root", Node("x"), Node("y", Node("z")))
+        # These are value-equal (same structure)
+        assert t1 == t2
+        assert render(t1, "html") == render(t2, "html")

@@ -189,6 +189,24 @@ class Node:
         from . import render as _render_mod
         return _render_mod.render(self, fmt, **opts)
 
+    def _repr_html_(self) -> str:
+        """Return an HTML representation for Jupyter/Quarto notebook display.
+
+        Delegates to :func:`AlgoTree.render.render` with ``fmt='html'``.
+        All node names and attribute values are HTML-escaped, so this method
+        is safe to use with untrusted node names.
+        """
+        from . import render as _render_mod
+        return _render_mod.render(self, "html")
+
+    def _repr_mermaid_(self) -> str:
+        """Return a Mermaid diagram string for notebook display.
+
+        Delegates to :func:`AlgoTree.render.render` with ``fmt='mermaid'``.
+        """
+        from . import render as _render_mod
+        return _render_mod.render(self, "mermaid")
+
     def fold(self, fn: Callable[['Node', List[T]], T]) -> T:
         """
         Catamorphism: reduce the tree bottom-up.

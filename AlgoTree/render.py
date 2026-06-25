@@ -330,3 +330,153 @@ def _to_xml(node: Node, root_tag: str = "tree", **_opts: Any) -> str:
 
 
 register("xml", _to_xml, ".xml")
+
+
+# ---------------------------------------------------------------------------
+# HTML backend  (escaped; deterministic palette via zlib.crc32)
+# ---------------------------------------------------------------------------
+
+# Marker palette for node icons.  We use zlib.crc32(name.encode()) — which is
+# fully deterministic across Python versions and PYTHONHASHSEED values — to
+# pick a marker from a fixed list, so the same name always gets the same icon.
+_MARKERS = [
+    "&#x25CF;",  # ● BLACK CIRCLE
+    "&#x25A0;",  # ■ BLACK SQUARE
+    "&#x25B2;",  # ▲ BLACK UP-POINTING TRIANGLE
+    "&#x25C6;",  # ◆ BLACK DIAMOND
+    "&#x2605;",  # ★ BLACK STAR
+    "&#x25D7;",  # ◗ RIGHT HALF BLACK CIRCLE
+    "&#x29BF;",  # ⦿ CIRCLED BULLET
+    "&#x2756;",  # ❖ BLACK DIAMOND MINUS WHITE X
+]
+
+
+def _stable_marker(name: str) -> str:
+    """Return a deterministic marker for *name* (zlib.crc32, not builtin hash)."""
+    import zlib as _zlib
+    idx = _zlib.crc32(name.encode("utf-8")) % len(_MARKERS)
+    return _MARKERS[idx]
+
+
+def _html_escape(text: str) -> str:
+    """Escape *text* for safe embedding in HTML (text nodes and attribute values)."""
+    import html as _html
+    return _html.escape(str(text), quote=True)
+
+
+def _to_html(
+    node: "Node",
+    include_styles: bool = True,
+    collapsible: bool = True,
+    **_opts: Any,
+) -> str:
+    """Render *node* as an interactive HTML tree.
+
+    All node names and attribute values are routed through :func:`_html_escape`
+    (stdlib ``html.escape``), closing the HTML-injection hole present in the
+    old hand-rolled exporter.  The marker palette is keyed by
+    ``zlib.crc32(name.encode())`` — deterministic across runs and
+    PYTHONHASHSEED values, unlike Python's builtin ``hash()``.
+    """
+    parts: List[str] = []
+
+    if include_styles:
+        parts.append("""<style>
+    .tree { font-family: monospace; }
+    .tree ul { list-style-type: none; position: relative; padding-left: 20px; }
+    .tree li { position: relative; padding: 5px 0; }
+    .tree li::before {
+        content: ''; position: absolute; top: 0; left: -15px;
+        width: 10px; height: 50%; border-left: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+    }
+    .tree li::after {
+        content: ''; position: absolute; left: -15px; bottom: 50%;
+        width: 10px; height: 50%; border-left: 1px solid #ccc;
+    }
+    .tree li:last-child::after { display: none; }
+    .tree .node {
+        display: inline-block; padding: 3px 8px;
+        border: 1px solid #ddd; border-radius: 3px;
+        background: #f5f5f5; cursor: pointer;
+    }
+    .tree .attrs {
+        font-size: 0.9em; color: #666;
+        margin-left: 10px; font-style: italic;
+    }
+    .collapsed > ul { display: none; }
+    .tree .toggle { margin-right: 5px; }
+</style>
+""")
+
+    parts.append('<div class="tree">')
+
+    def _render_node(n: "Node") -> str:
+        node_parts: List[str] = []
+
+        # Toggle arrow (only for non-leaf nodes in collapsible mode)
+        toggle = ""
+        if collapsible and n.children:
+            toggle = '<span class="toggle">&#x25BC;</span>'  # ▼
+
+        # Safe name (HTML-escaped)
+        safe_name = _html_escape(n.name)
+
+        # Marker from stable palette
+        marker = _stable_marker(n.name)
+
+        # Safe attribute display (HTML-escaped)
+        attrs_str = ""
+        if n._attrs:
+            items = []
+            for k, v in n._attrs.items():
+                if not isinstance(v, (dict, list)):
+                    items.append(f"{_html_escape(str(k))}: {_html_escape(str(v))}")
+            if items:
+                attrs_str = (
+                    '<span class="attrs">'
+                    + ", ".join(items)
+                    + "</span>"
+                )
+
+        node_parts.append(
+            f'<li><div class="node">'
+            f'{toggle}{marker} {safe_name}'
+            f"{attrs_str}"
+            f"</div>"
+        )
+
+        if n.children:
+            node_parts.append("<ul>")
+            for child in n.children:
+                node_parts.append(_render_node(child))
+            node_parts.append("</ul>")
+
+        node_parts.append("</li>")
+        return "".join(node_parts)
+
+    parts.append("<ul>")
+    parts.append(_render_node(node))
+    parts.append("</ul>")
+    parts.append("</div>")
+
+    if collapsible:
+        parts.append("""<script>
+document.querySelectorAll('.tree .node').forEach(node => {
+    if (node.querySelector('.toggle')) {
+        node.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const li = this.parentElement;
+            li.classList.toggle('collapsed');
+            const toggle = this.querySelector('.toggle');
+            toggle.textContent = li.classList.contains('collapsed') ? '\\u25B6' : '\\u25BC';
+        });
+    }
+});
+</script>
+""")
+
+    return "".join(parts)
+
+
+register("html", _to_html, ".html")
