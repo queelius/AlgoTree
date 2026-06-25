@@ -138,19 +138,18 @@ class TestTraceHelpers:
         assert n.name == 'add'
 
     def test_frontier_step_0(self):
-        # Only the first leaf is visible
+        # Only the first leaf (step 0) is visible; frontier returns step indices
         f = self.trace.frontier(0)
-        assert '1' in f
-        assert len(f) == 1
+        assert f == {0}
 
     def test_frontier_step_2(self):
-        # Leaves 1, 3, 2 are all visited
+        # Steps 0, 1, 2 are all visited
         f = self.trace.frontier(2)
-        assert set(f) == {'1', '3', '2'}
+        assert f == {0, 1, 2}
 
     def test_frontier_step_4_is_all(self):
         f = self.trace.frontier(4)
-        assert len(f) == 5  # all 5 nodes
+        assert f == {0, 1, 2, 3, 4}  # all 5 steps
 
 
 class TestTraceRender:
@@ -310,3 +309,75 @@ class TestTraceFrames:
         frames1 = list(self.trace.frames())
         frames2 = list(self.trace.frames())
         assert frames1 == frames2
+
+
+# ---------------------------------------------------------------------------
+# Regression: duplicate node names must not bleed across identity boundaries
+# ---------------------------------------------------------------------------
+
+class TestFramesDuplicateNames:
+    """frames() must highlight only nodes whose step <= k, not every node
+    that shares a name with one of them.
+
+    Tree: add(x, x)  — two sibling leaves both named 'x'.
+
+    Post-order steps:
+      step 0 -> left  'x'  (leaf)
+      step 1 -> right 'x'  (leaf)
+      step 2 -> 'add'       (root)
+
+    At frame k=0 only step-0 should be highlighted.  The name-based bug would
+    highlight *both* 'x' leaves because they share the name 'x'.
+    """
+
+    def setup_method(self):
+        tree = Node('add', Node('x'), Node('x'))
+        fn = lambda n, cs: n.name if n.is_leaf else '+'.join(cs)
+        self.result, self.trace = tree.fold_traced(fn)
+
+    def test_result(self):
+        assert self.result == 'x+x'
+
+    def test_three_nodes(self):
+        assert len(self.trace) == 3
+
+    def test_frontier_step0_is_single_step(self):
+        """frontier(0) returns exactly {0}, not both leaf steps."""
+        f = self.trace.frontier(0)
+        assert f == {0}
+
+    def test_frontier_step1_is_two_steps(self):
+        f = self.trace.frontier(1)
+        assert f == {0, 1}
+
+    def test_frame0_highlights_only_one_x(self):
+        """Frame 0 must highlight exactly one leaf, not both, despite shared name."""
+        frames = list(self.trace.frames())
+        frame0 = frames[0]
+        # Count how many nodes are marked as highlighted.
+        # Each highlighted node contributes exactly one 'class Txx highlighted' line.
+        highlighted_lines = [ln for ln in frame0.splitlines()
+                             if 'class T' in ln and 'highlighted' in ln]
+        assert len(highlighted_lines) == 1, (
+            f"Expected 1 highlighted node in frame 0, got {len(highlighted_lines)}:\n{frame0}"
+        )
+
+    def test_frame1_highlights_both_leaves(self):
+        """Frame 1 must highlight exactly two nodes (both leaves evaluated)."""
+        frames = list(self.trace.frames())
+        frame1 = frames[1]
+        highlighted_lines = [ln for ln in frame1.splitlines()
+                             if 'class T' in ln and 'highlighted' in ln]
+        assert len(highlighted_lines) == 2, (
+            f"Expected 2 highlighted nodes in frame 1, got {len(highlighted_lines)}:\n{frame1}"
+        )
+
+    def test_frame2_highlights_all_nodes(self):
+        """Frame 2 (final) must highlight all 3 nodes."""
+        frames = list(self.trace.frames())
+        frame2 = frames[2]
+        highlighted_lines = [ln for ln in frame2.splitlines()
+                             if 'class T' in ln and 'highlighted' in ln]
+        assert len(highlighted_lines) == 3, (
+            f"Expected 3 highlighted nodes in frame 2, got {len(highlighted_lines)}:\n{frame2}"
+        )

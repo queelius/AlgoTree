@@ -43,9 +43,13 @@ class Trace:
         """Return the trace node with the given step index."""
         return next(n for n in self._root.walk() if n['step'] == step)
 
-    def frontier(self, step: int) -> List[str]:
-        """Return names of all nodes with step index <= *step*."""
-        return [n.name for n in self._root.walk() if n['step'] <= step]
+    def frontier(self, step: int) -> Set[int]:
+        """Return the set of step indices for nodes with step index <= *step*.
+
+        Returns step indices (not names) so that identity-based highlighting
+        works correctly even when multiple nodes share the same name.
+        """
+        return {n['step'] for n in self._root.walk() if n['step'] <= step}
 
     def __len__(self) -> int:
         """Number of nodes in the trace (equals the original tree size)."""
@@ -63,28 +67,45 @@ class Trace:
         self,
         direction: str = "TD",
         highlight: Optional[Union[List[str], Set[str]]] = None,
+        highlight_steps: Optional[Set[int]] = None,
     ) -> str:
         """Render trace as a Mermaid diagram with ``name = value`` labels.
 
         Each node is labelled ``<name> = <value>`` so readers can follow the
-        fold evaluation.  Pass *highlight* (a collection of node names) to
-        visually distinguish those nodes with a ``highlighted`` Mermaid class.
+        fold evaluation.
+
+        Highlighting priority (first match wins):
+
+        1. *highlight_steps* – a set of step indices; nodes whose ``step``
+           attribute is in the set are highlighted.  This is identity-based
+           and therefore correct for trees that contain duplicate node names.
+        2. *highlight* – a collection of node *names* (legacy, kept for
+           backward compatibility).  Any node whose name is in the set is
+           highlighted; for trees with unique names this is equivalent to
+           *highlight_steps*, but for duplicate names it highlights every node
+           sharing a matched name.
 
         Args:
             direction: Mermaid graph direction (default: ``"TD"``).
             highlight: Names of nodes to mark with the ``highlighted`` class.
-                       If None or empty, no highlighting is applied.
+                       Ignored when *highlight_steps* is provided.
+            highlight_steps: Step indices of nodes to mark.  Preferred over
+                             *highlight* because matching is identity-based.
 
         Returns:
             Mermaid diagram string.
         """
         from .render import _mermaid_escape  # reuse P2a escaper
 
-        highlight_set: Set[str] = set(highlight) if highlight else set()
+        use_step_ids = highlight_steps is not None
+        step_ids: Set[int] = highlight_steps if use_step_ids else set()
+        highlight_names: Set[str] = set() if use_step_ids else (set(highlight) if highlight else set())
+
+        any_highlight = bool(step_ids or highlight_names)
 
         lines: List[str] = [f"graph {direction}"]
 
-        if highlight_set:
+        if any_highlight:
             lines.append("    classDef highlighted fill:#ffffaa,stroke:#888,stroke-width:2px")
 
         counter = [0]
@@ -98,7 +119,11 @@ class Trace:
             label = f"{name_esc} = {value_esc}"
             lines.append(f'    {node_id}["{label}"]')
 
-            if n.name in highlight_set:
+            should_highlight = (
+                (use_step_ids and n['step'] in step_ids)
+                or (not use_step_ids and n.name in highlight_names)
+            )
+            if should_highlight:
                 lines.append(f"    class {node_id} highlighted")
 
             for child in n.children:
@@ -186,5 +211,4 @@ class Trace:
         """
         n = len(self)
         for step in range(n):
-            frontier_names = set(self.frontier(step))
-            yield self.to_mermaid(direction=direction, highlight=frontier_names)
+            yield self.to_mermaid(direction=direction, highlight_steps=self.frontier(step))
