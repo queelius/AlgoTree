@@ -10,11 +10,13 @@ This module provides the core Node class for AlgoTree with:
 
 from typing import Any, Dict, Iterator, Optional, Union, Callable, TypeVar, Tuple, List, TYPE_CHECKING
 from collections import deque
+from functools import reduce as _functools_reduce
 
 from ._utils import make_predicate as _make_predicate_fn
 
 if TYPE_CHECKING:
     from .selectors import Selector
+    from .cursor import Cursor
 
 T = TypeVar('T')
 NodeType = TypeVar('NodeType', bound='Node')
@@ -152,22 +154,36 @@ class Node:
         # Then apply function to this node
         return fn(new_node)
 
-    def filter(self, predicate: Callable[['Node'], bool]) -> Optional['Node']:
+    def filter(
+        self,
+        predicate: Union[Callable[['Node'], bool], 'Selector']
+    ) -> Optional['Node']:
         """
-        Filter tree to nodes matching predicate.
+        Filter tree to nodes matching predicate or Selector.
+
+        For position-aware Selectors, uses cursor id-membership (identical
+        to Tree.filter behaviour).
 
         Returns None if this node doesn't match and has no matching descendants.
         Preserves structure for matching nodes and their ancestors.
         """
+        if hasattr(predicate, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            matched = {id(c.node) for c in walk_cursors(Cursor(self))
+                       if predicate.matches_at(c)}
+            pred: Callable[['Node'], bool] = lambda n: id(n) in matched
+        else:
+            pred = predicate
+
         # Filter children first
         filtered_children = []
         for child in self._children:
-            filtered_child = child.filter(predicate)
+            filtered_child = child.filter(pred)
             if filtered_child is not None:
                 filtered_children.append(filtered_child)
 
         # Check if this node or any descendant matches
-        if predicate(self) or filtered_children:
+        if pred(self) or filtered_children:
             return self._rebuild(children=tuple(filtered_children))
         return None
 
@@ -307,15 +323,19 @@ class Node:
         )
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> 'Node':
+    def from_dict(data: Dict[str, Any], children_key: str = 'children') -> 'Node':
         """
         Create node tree from nested dictionary.
 
         Args:
-            data: Dictionary with 'name', optional attributes, and optional 'children' list
+            data: Dictionary with 'name', optional attributes, and optional children list
+            children_key: Key name for children list (default: 'children')
 
         Returns:
             Root node of reconstructed tree
+
+        Note:
+            This method does NOT mutate the input dictionary (unlike Tree.from_dict).
         """
         if not isinstance(data, dict):
             raise TypeError(f"Expected dict, got {type(data)}")
@@ -325,14 +345,350 @@ class Node:
 
         name = data['name']
 
-        # Extract children if present
-        children_data = data.get('children', [])
-        children = [Node.from_dict(child) for child in children_data]
+        # Extract children if present (non-mutating read)
+        children_data = data.get(children_key, [])
+        children = [Node.from_dict(child, children_key=children_key) for child in children_data]
 
-        # Extract attributes (everything except 'name' and 'children')
-        attrs = {k: v for k, v in data.items() if k not in ('name', 'children')}
+        # Extract attributes (everything except 'name' and the children key)
+        attrs = {k: v for k, v in data.items() if k not in ('name', children_key)}
 
         return Node(name, *children, attrs=attrs)
+
+    @classmethod
+    def from_paths(cls, paths: List[str], delimiter: str = '/') -> 'Node':
+        """
+        Create node tree from list of paths.
+
+        Args:
+            paths: List of path strings
+            delimiter: Path delimiter (default: '/')
+
+        Returns:
+            Root node of constructed tree
+        """
+        if not paths:
+            return cls('root')
+
+        # Build tree structure using nested dicts
+        tree_dict: Dict[str, Any] = {}
+
+        for path in paths:
+            parts = [p for p in path.split(delimiter) if p]
+            if not parts:
+                continue
+
+            current = tree_dict
+            for part in parts:
+                if part not in current:
+                    current[part] = {}
+                current = current[part]
+
+        # Convert dict to Node tree
+        def dict_to_node(name: str, children_dict: dict) -> 'Node':
+            if not children_dict:
+                return cls(name)
+            children = [
+                dict_to_node(child_name, child_dict)
+                for child_name, child_dict in sorted(children_dict.items())
+            ]
+            return cls(name, *children)
+
+        # Get root name (first part of first path)
+        root_name = paths[0].split(delimiter)[0] if paths else 'root'
+
+        if root_name in tree_dict:
+            return dict_to_node(root_name, tree_dict[root_name])
+        else:
+            children = [
+                dict_to_node(name, children_dict)
+                for name, children_dict in sorted(tree_dict.items())
+            ]
+            return cls(root_name, *children)
+
+    # Tree-equivalent operations (ported from Tree, returning Node instead of Tree)
+
+    def reduce(
+        self,
+        fn: Callable[[T, 'Node'], T],
+        initial: T,
+        order: str = 'preorder'
+    ) -> T:
+        """
+        Reduce tree to a single value by iterating in the given order.
+
+        Args:
+            fn: Reduction function (accumulator, node) -> new_accumulator
+            initial: Initial accumulator value
+            order: Traversal order ('preorder', 'postorder', 'levelorder')
+
+        Returns:
+            Final reduced value
+        """
+        return _functools_reduce(fn, self.walk(order), initial)
+
+    def prune(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector']
+    ) -> Optional['Node']:
+        """
+        Remove nodes matching selector from this tree.
+
+        Uses cursor id-membership for position-aware Selectors.
+
+        Args:
+            selector: Nodes to prune (predicate, name pattern, or Selector)
+
+        Returns:
+            Pruned tree, or None if everything was pruned.
+        """
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            matched = {id(c.node) for c in walk_cursors(Cursor(self))
+                       if selector.matches_at(c)}
+            return self.filter(lambda n: id(n) not in matched)
+        predicate = _make_predicate_fn(selector)
+        return self.filter(lambda n: not predicate(n))
+
+    def graft(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector'],
+        subtree: Union['Node', Any]
+    ) -> 'Node':
+        """
+        Add subtree as a child to every node matching selector.
+
+        Args:
+            selector: Where to graft (predicate, name pattern, or Selector)
+            subtree: Node (or Tree) to graft; if a Tree, its .root is used
+
+        Returns:
+            New tree with subtrees grafted
+        """
+        # Accept Tree objects by unwrapping
+        if hasattr(subtree, 'root'):
+            subtree = subtree.root
+
+        predicate = _make_predicate_fn(selector)
+
+        def add_subtree(node: 'Node') -> 'Node':
+            if predicate(node):
+                return node.with_child(subtree)
+            return node
+
+        return self.map(add_subtree)
+
+    def flatten(self, max_depth: Optional[int] = None) -> 'Node':
+        """
+        Flatten tree to specified depth.
+
+        Nodes beyond max_depth have their descendants moved up to become
+        direct children of the node at max_depth.
+
+        Args:
+            max_depth: Maximum depth (None for complete flattening)
+
+        Returns:
+            New flattened tree
+        """
+        def collect_descendants(node: 'Node') -> List['Node']:
+            if not node.children:
+                return [Node(node.name, attrs=node.attrs)]
+            result = []
+            for child in node.children:
+                result.extend(collect_descendants(child))
+            return result
+
+        def flatten_node(node: 'Node', current_depth: int = 0) -> 'Node':
+            if max_depth is not None and current_depth >= max_depth:
+                all_descendants: List['Node'] = []
+                for child in node.children:
+                    all_descendants.extend(collect_descendants(child))
+                if all_descendants:
+                    return Node(node.name, *all_descendants, attrs=node.attrs)
+                return node
+
+            new_children = [flatten_node(child, current_depth + 1) for child in node.children]
+            if new_children:
+                return Node(node.name, *new_children, attrs=node.attrs)
+            return node
+
+        return flatten_node(self, 0)
+
+    def select(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector']
+    ) -> Iterator['Node']:
+        """
+        Select nodes matching selector (returns iterator).
+
+        Uses cursor id-membership for position-aware Selectors.
+
+        Args:
+            selector: Nodes to select (predicate, name pattern, or Selector)
+
+        Returns:
+            Iterator of matching nodes
+        """
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            return (c.node for c in walk_cursors(Cursor(self))
+                    if selector.matches_at(c))
+        predicate = _make_predicate_fn(selector)
+        return (node for node in self.walk() if predicate(node))
+
+    def locate(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector']
+    ) -> Optional['Cursor']:
+        """
+        Return a Cursor at the first node matching selector, or None.
+
+        Args:
+            selector: Match criterion (predicate, name pattern, or Selector)
+
+        Returns:
+            Cursor at matching position, or None
+        """
+        from .cursor import Cursor, walk_cursors
+        for cursor in walk_cursors(Cursor(self)):
+            if self._cursor_matches(cursor, selector):
+                return cursor
+        return None
+
+    def cursors_at(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector']
+    ) -> List['Cursor']:
+        """
+        Return a Cursor at every node matching selector.
+
+        Args:
+            selector: Match criterion (predicate, name pattern, or Selector)
+
+        Returns:
+            List of Cursors at matching positions
+        """
+        from .cursor import Cursor, walk_cursors
+        return [c for c in walk_cursors(Cursor(self))
+                if self._cursor_matches(c, selector)]
+
+    @staticmethod
+    def _cursor_matches(cursor: 'Cursor', selector) -> bool:
+        """Check if cursor matches selector (position-aware)."""
+        if hasattr(selector, 'matches_at'):
+            return selector.matches_at(cursor)
+        return _make_predicate_fn(selector)(cursor.node)
+
+    def exists(
+        self,
+        selector: Union[str, Callable[['Node'], bool], 'Selector']
+    ) -> bool:
+        """
+        Check if any node matches selector.
+
+        Args:
+            selector: Match criterion
+
+        Returns:
+            True if at least one node matches
+        """
+        return self.find(selector) is not None
+
+    def count(
+        self,
+        selector: Optional[Union[str, Callable[['Node'], bool], 'Selector']] = None
+    ) -> int:
+        """
+        Count nodes matching selector (or all nodes if None).
+
+        Args:
+            selector: Match criterion, or None to count all nodes
+
+        Returns:
+            Number of matching nodes
+        """
+        if selector is None:
+            return self.size
+        return len(self.find_all(selector))
+
+    def get_path(self, path: str, delimiter: str = '/') -> Optional['Node']:
+        """
+        Get node at path (e.g., 'root/child/grandchild').
+
+        Args:
+            path: Path string
+            delimiter: Path delimiter (default: '/')
+
+        Returns:
+            Node at path, or None if not found
+        """
+        parts = path.split(delimiter)
+        current: 'Node' = self
+
+        for part in parts:
+            if part == current.name:
+                continue
+
+            found = False
+            for child in current.children:
+                if child.name == part:
+                    current = child
+                    found = True
+                    break
+
+            if not found:
+                return None
+
+        return current
+
+    def paths(self, to_leaves_only: bool = True) -> List[str]:
+        """
+        Get all paths in this tree.
+
+        Args:
+            to_leaves_only: If True, only return paths to leaves
+
+        Returns:
+            List of path strings (delimiter '/')
+        """
+        from .cursor import Cursor, walk_cursors
+        result = []
+        for cursor in walk_cursors(Cursor(self)):
+            if to_leaves_only and cursor.node.children:
+                continue
+            result.append('/'.join(cursor.path))
+        return result
+
+    def to_paths(self, delimiter: str = '/') -> List[str]:
+        """Export tree as list of paths (all nodes, not just leaves)."""
+        return self.paths(to_leaves_only=False)
+
+    def nodes(self) -> List['Node']:
+        """Get all nodes as a list (preorder)."""
+        return list(self.walk())
+
+    def update_attrs(self, **kw) -> 'Node':
+        """
+        Return new node with updated attributes (named helper for with_attrs).
+
+        This is an alias of with_attrs, provided as a named convenience for
+        the common attr-delta pattern.
+
+        Args:
+            **kw: Attribute key-value pairs to add/update
+
+        Returns:
+            New node with updated attributes
+        """
+        return self.with_attrs(**kw)
+
+    def __or__(self, transformer: Callable[['Node'], Any]) -> Any:
+        """Pipe node through transformer with | operator."""
+        return transformer(self)
+
+    def __rshift__(self, transformer: Callable[['Node'], Any]) -> Any:
+        """Transform node with >> operator (can change type)."""
+        return transformer(self)
 
     # Query properties
 
