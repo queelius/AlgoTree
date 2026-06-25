@@ -34,7 +34,7 @@ from .selectors import (
     # Structural combinators
     AxisSelector,
     # Factory functions
-    name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, parse
+    name, glob, regex, attrs, type_, predicate, depth, leaf, root, any_, none, none_, parse
 )
 
 # Transformers for tree manipulation
@@ -108,7 +108,7 @@ __all__ = [
     'DepthSelector', 'LeafSelector', 'RootSelector',
     'AndSelector', 'OrSelector', 'NotSelector', 'XorSelector',
     'AxisSelector',
-    'name', 'glob', 'regex', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'parse',
+    'name', 'glob', 'regex', 'attrs', 'type_', 'predicate', 'depth', 'leaf', 'root', 'any_', 'none', 'none_', 'parse',
 
     # Transformers
     'Transformer',

@@ -456,8 +456,12 @@ def any_() -> Selector:
 
 
 def none() -> Selector:
-    """Select no nodes."""
+    """Select no nodes (lattice bottom)."""
     return PredicateSelector(lambda _: False, "none")
+
+
+# Alias: none_() mirrors the naming style of any_() for lattice symmetry.
+none_ = none
 
 
 # CSS-like selector parser (simplified)
