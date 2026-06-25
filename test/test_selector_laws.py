@@ -97,10 +97,9 @@ class TestSelectorLattice(unittest.TestCase):
         self.assertEqual(matched, frozenset())
 
     def test_none_alias_matches_none(self):
-        """none_() is the same bottom element as none()."""
-        a_ids = _matched_ids(none_(), self.cursors)
-        b_ids = _matched_ids(none(), self.cursors)
-        self.assertEqual(a_ids, b_ids)
+        """none_() matches NO nodes; any_() matches ALL nodes."""
+        self.assertEqual(_matched_ids(none_(), self.cursors), frozenset())
+        self.assertEqual(_matched_ids(any_(), self.cursors), _all_ids(self.cursors))
 
     # -----------------------------------------------------------------------
     # Identity laws

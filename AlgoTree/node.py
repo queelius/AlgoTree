@@ -479,7 +479,7 @@ class Node:
         Uses cursor id-membership for position-aware Selectors.
 
         Args:
-            selector: Nodes to prune (predicate, name pattern, or Selector)
+            selector: Nodes to prune (predicate, exact name (str), or Selector)
 
         Returns:
             Pruned tree, or None if everything was pruned.
@@ -500,8 +500,10 @@ class Node:
         """
         Add subtree as a child to every node matching selector.
 
+        Uses cursor id-membership for position-aware Selectors.
+
         Args:
-            selector: Where to graft (predicate, name pattern, or Selector)
+            selector: Where to graft (predicate, exact name (str), or Selector)
             subtree: Node (or Tree) to graft; if a Tree, its .root is used
 
         Returns:
@@ -511,7 +513,13 @@ class Node:
         if hasattr(subtree, 'root'):
             subtree = subtree.root
 
-        predicate = _make_predicate_fn(selector)
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            matched = {id(c.node) for c in walk_cursors(Cursor(self))
+                       if selector.matches_at(c)}
+            predicate = lambda n: id(n) in matched
+        else:
+            predicate = _make_predicate_fn(selector)
 
         def add_subtree(node: 'Node') -> 'Node':
             if predicate(node):
@@ -567,7 +575,7 @@ class Node:
         Uses cursor id-membership for position-aware Selectors.
 
         Args:
-            selector: Nodes to select (predicate, name pattern, or Selector)
+            selector: Nodes to select (predicate, exact name (str), or Selector)
 
         Returns:
             Iterator of matching nodes
@@ -587,7 +595,7 @@ class Node:
         Return a Cursor at the first node matching selector, or None.
 
         Args:
-            selector: Match criterion (predicate, name pattern, or Selector)
+            selector: Match criterion (predicate, exact name (str), or Selector)
 
         Returns:
             Cursor at matching position, or None
@@ -606,7 +614,7 @@ class Node:
         Return a Cursor at every node matching selector.
 
         Args:
-            selector: Match criterion (predicate, name pattern, or Selector)
+            selector: Match criterion (predicate, exact name (str), or Selector)
 
         Returns:
             List of Cursors at matching positions

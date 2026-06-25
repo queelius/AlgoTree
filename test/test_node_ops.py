@@ -468,5 +468,53 @@ class TestNodeFilterWithSelector(unittest.TestCase):
         self.assertEqual(node_filtered.to_dict(), tree_filtered.root.to_dict())
 
 
+class TestGraftWithPositionalSelector(unittest.TestCase):
+    """graft() must not blow up on position-aware (AxisSelector) selectors."""
+
+    def test_graft_depth_selector_no_raise(self):
+        """Node.graft(depth_(1), tag) must not raise NotImplementedError."""
+        from AlgoTree.selectors import depth
+        root = _make_tree()
+        tag = Node("tag")
+        # depth(1) is a positional selector whose .matches() raises NotImplementedError
+        # — graft() must route via matches_at instead.
+        result = root.graft(depth(1), tag)
+        self.assertIsNotNone(result)
+
+    def test_graft_depth_selector_correct_nodes_receive_child(self):
+        """Nodes at depth 1 (direct children of root) receive the grafted child."""
+        from AlgoTree.selectors import depth
+        root = _make_tree()
+        tag = Node("tag")
+        result = root.graft(depth(1), tag)
+
+        # Depth-1 nodes of _make_tree() are "a", "b", "c"
+        depth1_names = {"a", "b", "c"}
+        for child in result.children:
+            # Each depth-1 child must now have "tag" among its children
+            child_names = {c.name for c in child.children}
+            self.assertIn("tag", child_names,
+                          f"Expected 'tag' grafted onto depth-1 node '{child.name}'")
+
+        # root itself (depth 0) must NOT have received "tag"
+        root_child_names = {c.name for c in result.children}
+        self.assertIn("tag", root_child_names - depth1_names or set(),
+                      "Unexpected: root received 'tag' child") if False else None
+        # Simpler: check root's direct children are exactly the original ones plus nothing extra
+        self.assertEqual(root_child_names, depth1_names)
+
+    def test_graft_depth_selector_via_tree(self):
+        """Tree.graft also accepts a depth() positional selector without raising."""
+        from AlgoTree.selectors import depth
+        tree = Tree(_make_tree())
+        tag = Node("tag")
+        result = tree.graft(depth(1), tag)
+        self.assertIsNotNone(result)
+        # depth-1 children in the result each have "tag"
+        for child in result.root.children:
+            self.assertTrue(any(c.name == "tag" for c in child.children),
+                            f"depth-1 node '{child.name}' missing grafted 'tag'")
+
+
 if __name__ == "__main__":
     unittest.main()

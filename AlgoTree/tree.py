@@ -192,7 +192,7 @@ class Tree:
 
     def graft(
         self,
-        selector: Union[str, Callable[[Node], bool]],
+        selector: Union[str, Callable[[Node], bool], 'Selector'],
         subtree: Union[Node, 'Tree']
     ) -> 'Tree':
         """
