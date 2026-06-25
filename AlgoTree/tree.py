@@ -166,19 +166,22 @@ class Tree:
 
     def filter(self, predicate: Callable[[Node], bool]) -> 'Tree':
         """
-        Filter tree to nodes matching predicate.
+        Filter tree to nodes matching predicate (or Selector).
 
         Preserves tree structure - keeps ancestors of matching nodes.
-
-        Args:
-            predicate: Function that returns True for nodes to keep
-
-        Returns:
-            New filtered tree
         """
-        filtered = self._root.filter(predicate)
+        if hasattr(predicate, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            # Note: uses object identity; if the same Node object is aliased at
+            # multiple positions (structural sharing within one tree), all
+            # occurrences are kept.  Acceptable for now.
+            matched = {id(c.node) for c in walk_cursors(Cursor(self._root))
+                       if predicate.matches_at(c)}
+            pred = lambda n: id(n) in matched
+        else:
+            pred = predicate
+        filtered = self._root.filter(pred)
         if filtered is None:
-            # Return empty tree if nothing matches
             return Tree(Node('<empty>'))
         return Tree(filtered)
 
@@ -226,13 +229,12 @@ class Tree:
     def prune(self, selector: Union[str, Callable[[Node], bool]]) -> 'Tree':
         """
         Remove nodes matching selector.
-
-        Args:
-            selector: Node selector (string pattern or predicate)
-
-        Returns:
-            New tree with nodes pruned
         """
+        if hasattr(selector, 'matches_at'):
+            from .cursor import Cursor, walk_cursors
+            matched = {id(c.node) for c in walk_cursors(Cursor(self._root))
+                       if selector.matches_at(c)}
+            return self.filter(lambda n: id(n) not in matched)
         predicate = _make_predicate_fn(selector)
         return self.filter(lambda n: not predicate(n))
 

@@ -370,7 +370,7 @@ class Node:
         """Simple string representation."""
         return self._name
 
-    # Pickle support (handle weakrefs)
+    # Pickle support
 
     def __getstate__(self):
         """Get state for pickling."""

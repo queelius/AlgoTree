@@ -109,7 +109,7 @@ class Cursor:
         return Cursor(node, self._spine)
 
     def set_attr(self, **attrs: Any) -> 'Cursor':
-        """Return a new cursor with attributes merged into the focus node."""
+        """Return a new cursor whose focus node has these attrs set (shallow overwrite via Node.with_attrs)."""
         return Cursor(self._focus.with_attrs(**attrs), self._spine)
 
     # --- relatives ---

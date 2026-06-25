@@ -76,13 +76,10 @@ class MapTransformer(TreeTransformer):
 
 
 class FilterTransformer(TreeTransformer):
-    """Filter nodes by predicate."""
+    """Filter nodes by predicate or selector."""
 
     def __init__(self, predicate: Union[Selector, Callable[[Node], bool]]):
-        if isinstance(predicate, Selector):
-            self.predicate = predicate.matches
-        else:
-            self.predicate = predicate
+        self.predicate = predicate
 
     def __call__(self, tree: Tree) -> Tree:
         return tree.filter(self.predicate)
