@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from .tree import Tree
 from .node import Node
 from .selectors import Selector
+from ._utils import make_predicate as _make_predicate_fn
 
 T = TypeVar('T')
 S = TypeVar('S')
@@ -116,11 +117,12 @@ class GraftTransformer(TreeTransformer):
 
     def __call__(self, tree: Tree) -> Tree:
         if callable(self.subtree):
-            # Dynamic subtree based on matched node
+            predicate = _make_predicate_fn(self.selector)
+            make_subtree = self.subtree
+
             def add_dynamic(node: Node) -> Node:
-                if tree._matches(node, self.selector):
-                    new_subtree = self.subtree(node)
-                    return node.with_child(new_subtree)
+                if predicate(node):
+                    return node.with_child(make_subtree(node))
                 return node
             return Tree(tree.root.map(add_dynamic))
         else:
@@ -195,15 +197,14 @@ class AnnotateTransformer(TreeTransformer):
         self.annotations = annotations
 
     def __call__(self, tree: Tree) -> Tree:
+        predicate = _make_predicate_fn(self.selector) if self.selector is not None else None
+
         def annotate_node(node: Node) -> Node:
-            if self.selector is None or tree._matches(node, self.selector):
-                # Add annotations
-                computed_annotations = {}
-                for key, value in self.annotations.items():
-                    if callable(value):
-                        computed_annotations[key] = value(node)
-                    else:
-                        computed_annotations[key] = value
+            if predicate is None or predicate(node):
+                computed_annotations = {
+                    key: value(node) if callable(value) else value
+                    for key, value in self.annotations.items()
+                }
                 return node.with_attrs(**computed_annotations)
             return node
 

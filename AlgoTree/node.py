@@ -12,6 +12,8 @@ from typing import Any, Dict, Iterator, Optional, Union, Callable, TypeVar, Tupl
 from collections import deque
 import weakref
 
+from ._utils import make_predicate as _make_predicate_fn
+
 if TYPE_CHECKING:
     from .selectors import Selector
 
@@ -355,8 +357,7 @@ class Node:
         selector: Union[str, Callable[['Node'], bool], 'Selector']
     ) -> Callable[['Node'], bool]:
         """Convert selector to predicate function."""
-        from ._utils import make_predicate
-        return make_predicate(selector)
+        return _make_predicate_fn(selector)
 
     # Comparison and hashing
 

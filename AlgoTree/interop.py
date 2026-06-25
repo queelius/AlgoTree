@@ -258,40 +258,34 @@ def flat_dict_to_node(flat_dict: Dict[str, Any], root_key: Optional[str] = None)
         if key in visited:
             raise ValueError(f"Cycle detected at node '{key}'")
         visited.add(key)
+        try:
+            data = flat_dict.get(key)
+            if data is None:
+                return Node(key)
 
-        data = flat_dict.get(key)
-        if data is None:
-            # Node referenced but not in dict - create minimal node
+            name = data.get('.name', key)
+            attrs = {k: v for k, v in data.items() if not k.startswith('.')}
+
+            children_refs = data.get('.children', data.get('.edges', []))
+            children = []
+            for child_ref in children_refs:
+                if isinstance(child_ref, dict):
+                    child_key = child_ref.get('target', child_ref.get('id'))
+                else:
+                    child_key = child_ref
+
+                actual_key = child_key
+                if child_key not in flat_dict:
+                    prefixed_key = f"{key}/{child_key}"
+                    if prefixed_key in flat_dict:
+                        actual_key = prefixed_key
+
+                children.append(build_node(actual_key, visited))
+
+            return Node(name, *children, attrs=attrs)
+        finally:
+            # Backtrack: allow this key to appear in sibling branches, even on error
             visited.discard(key)
-            return Node(key)
-
-        name = data.get('.name', key)
-
-        # Extract attributes (non-dot-prefixed keys)
-        attrs = {k: v for k, v in data.items() if not k.startswith('.')}
-
-        # Build children
-        children_refs = data.get('.children', data.get('.edges', []))
-        children = []
-        for child_ref in children_refs:
-            if isinstance(child_ref, dict):
-                child_key = child_ref.get('target', child_ref.get('id'))
-            else:
-                child_key = child_ref
-
-            # Find actual key in flat_dict (may have path prefix)
-            actual_key = child_key
-            if child_key not in flat_dict:
-                # Try with path prefix
-                prefixed_key = f"{key}/{child_key}"
-                if prefixed_key in flat_dict:
-                    actual_key = prefixed_key
-
-            children.append(build_node(actual_key, visited))
-
-        # Backtrack: allow this key to appear in sibling branches
-        visited.discard(key)
-        return Node(name, *children, attrs=attrs)
 
     return build_node(root_key, set())
 

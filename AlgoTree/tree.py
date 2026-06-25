@@ -8,6 +8,7 @@ following functional programming principles.
 from typing import Any, Callable, Iterator, Optional, Union, TypeVar, List, Dict, TYPE_CHECKING
 from functools import reduce
 from .node import Node
+from ._utils import make_predicate as _make_predicate_fn
 
 if TYPE_CHECKING:
     from .selectors import Selector
@@ -232,7 +233,8 @@ class Tree:
         Returns:
             New tree with nodes pruned
         """
-        return self.filter(lambda n: not self._matches(n, selector))
+        predicate = _make_predicate_fn(selector)
+        return self.filter(lambda n: not predicate(n))
 
     def graft(
         self,
@@ -252,8 +254,10 @@ class Tree:
         if isinstance(subtree, Tree):
             subtree = subtree.root
 
+        predicate = _make_predicate_fn(selector)
+
         def add_subtree(node: Node) -> Node:
-            if self._matches(node, selector):
+            if predicate(node):
                 return node.with_child(subtree)
             return node
 
@@ -449,16 +453,14 @@ class Tree:
 
     def _matches(self, node: Node, selector: Union[str, Callable[[Node], bool], 'Selector']) -> bool:
         """Check if node matches selector."""
-        from ._utils import matches_selector
-        return matches_selector(node, selector)
+        return _make_predicate_fn(selector)(node)
 
     def _make_predicate(
         self,
         selector: Union[str, Callable[[Node], bool], 'Selector']
     ) -> Callable[[Node], bool]:
         """Convert selector to predicate function."""
-        from ._utils import make_predicate
-        return make_predicate(selector)
+        return _make_predicate_fn(selector)
 
     # String representations
 
