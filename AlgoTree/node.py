@@ -22,6 +22,19 @@ T = TypeVar('T')
 NodeType = TypeVar('NodeType', bound='Node')
 
 
+def _default_scalar(s: str):
+    """Try to parse s as int, then float, else return it as a str."""
+    try:
+        return int(s)
+    except (ValueError, TypeError):
+        pass
+    try:
+        return float(s)
+    except (ValueError, TypeError):
+        pass
+    return s
+
+
 class Node:
     """
     Immutable tree node with functional operations.
@@ -344,6 +357,54 @@ class Node:
         else:
             for child in self._children:
                 yield from child.leaves()
+
+    # List-AST bridge (name-as-operator convention)
+
+    @staticmethod
+    def from_list(data, parse_scalar=str) -> 'Node':
+        """
+        Build a Node tree from a nested-list AST (name-as-operator).
+
+        ``['op', child, ...]`` becomes ``Node('op', *[from_list(c) for c in children])``.
+        A non-list scalar is treated as a nullary leaf: ``42`` becomes ``Node('42')``.
+
+        Args:
+            data: A nested list or scalar.  An empty list raises ValueError.
+            parse_scalar: Only used in the signature for symmetry with to_list;
+                          names are always stringified via str().
+
+        Returns:
+            Root Node of the constructed tree.
+
+        Raises:
+            ValueError: If data is an empty list.
+        """
+        if isinstance(data, list):
+            if not data:
+                raise ValueError("cannot build a Node from an empty list")
+            head, *rest = data
+            return Node(str(head), *[Node.from_list(x, parse_scalar) for x in rest])
+        return Node(str(data))
+
+    def to_list(self, parse_scalar=None):
+        """
+        Inverse of from_list.
+
+        Leaf nodes are converted by parse_scalar (default: try int, then float,
+        then return the name as a str).  Internal nodes become
+        ``[name, *[c.to_list() for c in children]]``.
+
+        Args:
+            parse_scalar: Callable(str) -> value for leaves; default tries
+                          int then float then str.
+
+        Returns:
+            A scalar (for leaf nodes) or a list (for internal nodes).
+        """
+        ps = parse_scalar if parse_scalar is not None else _default_scalar
+        if not self._children:
+            return ps(self._name)
+        return [self._name] + [c.to_list(parse_scalar) for c in self._children]
 
     # Conversion methods
 
@@ -692,27 +753,28 @@ class Node:
 
         return current
 
-    def paths(self, to_leaves_only: bool = True) -> List[str]:
+    def paths(self, to_leaves_only: bool = True, delimiter: str = '/') -> List[str]:
         """
         Get all paths in this tree.
 
         Args:
             to_leaves_only: If True, only return paths to leaves
+            delimiter: Path segment separator (default: '/')
 
         Returns:
-            List of path strings (delimiter '/')
+            List of path strings joined by delimiter
         """
         from .cursor import Cursor, walk_cursors
         result = []
         for cursor in walk_cursors(Cursor(self)):
             if to_leaves_only and cursor.node.children:
                 continue
-            result.append('/'.join(cursor.path))
+            result.append(delimiter.join(cursor.path))
         return result
 
     def to_paths(self, delimiter: str = '/') -> List[str]:
         """Export tree as list of paths (all nodes, not just leaves)."""
-        return self.paths(to_leaves_only=False)
+        return self.paths(to_leaves_only=False, delimiter=delimiter)
 
     def nodes(self) -> List['Node']:
         """Get all nodes as a list (preorder)."""

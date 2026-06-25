@@ -271,17 +271,18 @@ class Tree:
         """
         return self._root.get_path(path, delimiter=delimiter)
 
-    def paths(self, to_leaves_only: bool = True) -> List[str]:
+    def paths(self, to_leaves_only: bool = True, delimiter: str = '/') -> List[str]:
         """
         Get all paths in tree.
 
         Args:
             to_leaves_only: If True, only return paths to leaves
+            delimiter: Path segment separator (default: '/')
 
         Returns:
-            List of path strings
+            List of path strings joined by delimiter
         """
-        return self._root.paths(to_leaves_only=to_leaves_only)
+        return self._root.paths(to_leaves_only=to_leaves_only, delimiter=delimiter)
 
     # Tree properties
 
